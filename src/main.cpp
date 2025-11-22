@@ -6,40 +6,64 @@
  * Licensed under the MIT License
  */
 
-#include <iostream>
-#include <string>
+#include <kappa/Application.hpp>
+#include <kappa/Log.hpp>
 
-// Platform detection
-#if defined(PLATFORM_WINDOWS)
-    const char* PLATFORM_NAME = "Windows";
-#elif defined(PLATFORM_MACOS)
-    const char* PLATFORM_NAME = "macOS";
-#elif defined(PLATFORM_LINUX)
-    const char* PLATFORM_NAME = "Linux";
-#else
-    const char* PLATFORM_NAME = "Unknown";
-#endif
+/**
+ * Main application class for Precision Guitar Tuner
+ * Extends kappa::Application to provide the application lifecycle
+ */
+class PrecisionTunerApp : public kappa::Application {
+public:
+    PrecisionTunerApp()
+        : Application({
+            .title = "Precision Guitar Tuner v1.0.0",
+            .width = 1024,
+            .height = 768,
+            .vsync = true
+        })
+    {
+        KAPPA_INFO("Precision Tuner initialized");
+    }
 
+    ~PrecisionTunerApp() override {
+        KAPPA_INFO("Precision Tuner shutting down");
+    }
+
+protected:
+    void onInit() override {
+        KAPPA_INFO("Application initialized");
+
+        // TODO: Push layers
+        // pushLayer(new AudioProcessingLayer());
+        // pushLayer(new TunerVisualizationLayer());
+        // pushLayer(new SettingsLayer());
+    }
+
+    void onUpdate([[maybe_unused]] float deltaTime) override {
+        // Application-level update logic (if needed)
+    }
+
+    void onRender() override {
+        // Application-level rendering (if needed)
+    }
+};
+
+/**
+ * Application entry point
+ * Creates and runs the kappa-core application
+ */
 int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) {
-    std::cout << "====================================\n";
-    std::cout << "  Precision Guitar Tuner v1.0.0\n";
-    std::cout << "====================================\n";
-    std::cout << "Platform: " << PLATFORM_NAME << "\n";
-    std::cout << "C++ Standard: C++" << __cplusplus << "\n";
-    std::cout << "====================================\n\n";
+    // Initialize kappa logging
+    kappa::Log::init();
 
-    // TODO: Initialize kappa-core Application
-    // TODO: Create and push layers:
-    //   - AudioProcessingLayer (bottom)
-    //   - TunerVisualizationLayer (middle)
-    //   - SettingsLayer (top)
-    // TODO: Run application main loop
+    KAPPA_INFO("====================================");
+    KAPPA_INFO("  Precision Guitar Tuner v1.0.0");
+    KAPPA_INFO("====================================");
 
-    std::cout << "Status: Skeleton application (Phase 0)\n";
-    std::cout << "Next: Add kappa-core framework integration\n\n";
-
-    std::cout << "Press Enter to exit...\n";
-    std::cin.get();
+    // Create and run application
+    auto app = std::make_unique<PrecisionTunerApp>();
+    app->run();
 
     return 0;
 }

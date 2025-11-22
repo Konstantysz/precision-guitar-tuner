@@ -6,22 +6,10 @@
   "homepage": "https://github.com/yourorg/precision-guitar-tuner",
   "license": "MIT",
   "dependencies": [
-    {
-      "name": "glfw3",
-      "version>=": "3.3.8"
-    },
-    {
-      "name": "glad",
-      "version>=": "0.1.36"
-    },
-    {
-      "name": "glm",
-      "version>=": "0.9.9"
-    },
-    {
-      "name": "spdlog",
-      "version>=": "1.11.0"
-    }
+    "glfw3",
+    "glad",
+    "glm",
+    "spdlog"
   ],
-  "builtin-baseline": "latest"
+  "builtin-baseline": "a62ce77d56ee07513b4b67de1ec2daeaebfae51a"
 }

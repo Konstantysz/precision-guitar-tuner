@@ -6,7 +6,7 @@ This file tracks all external dependencies and their pinned versions for reprodu
 
 | Component | Repository | Version/Commit | Date Pinned | Status |
 |-----------|------------|----------------|-------------|---------|
-| kappa-core | https://github.com/Konstantysz/kappa-core | TBD | TBD | ⏳ Pending |
+| kappa-core | https://github.com/Konstantysz/kappa-core | v0.5.0 (72a2470) | 2025-01-22 | ✅ Active |
 | lib-guitar-io | TBD (to be created) | TBD | TBD | 📝 Not Created |
 | lib-guitar-dsp | TBD (to be created) | TBD | TBD | 📝 Not Created |
 

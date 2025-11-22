@@ -37,13 +37,15 @@ if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
     endif()
 endif()
 
-# TODO: Verify submodules exist once we add them
-# if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/kappa-core/CMakeLists.txt")
-#     message(FATAL_ERROR "kappa-core submodule not found. Run: git submodule update --init --recursive")
-# endif()
+# Verify kappa-core submodule exists
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/kappa-core/CMakeLists.txt")
+    message(FATAL_ERROR "kappa-core submodule not found. Run: git submodule update --init --recursive")
+endif()
 
-# TODO: Add submodules once created
-# add_subdirectory(external/kappa-core)
+# Add kappa-core framework
+add_subdirectory(external/kappa-core)
+
+# TODO: Add lib-guitar-io and lib-guitar-dsp once created
 # add_subdirectory(external/lib-guitar-io)
 # add_subdirectory(external/lib-guitar-dsp)
 
@@ -56,9 +58,13 @@ target_include_directories(precision-tuner PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-# TODO: Link submodule libraries once they exist
+# Link kappa-core framework
+target_link_libraries(precision-tuner PRIVATE
+    kappa::core
+)
+
+# TODO: Link lib-guitar-io and lib-guitar-dsp once created
 # target_link_libraries(precision-tuner PRIVATE
-#     kappa::core
 #     guitar-io
 #     guitar-dsp
 # )
