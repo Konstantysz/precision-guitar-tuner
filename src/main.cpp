@@ -6,11 +6,11 @@
  * Licensed under the MIT License
  */
 
+#include "AudioProcessingLayer.h"
+#include "TunerVisualizationLayer.h"
 #include <Application.h>
 #include <Logger.h>
 #include <memory>
-#include "AudioProcessingLayer.h"
-#include "TunerVisualizationLayer.h"
 
 /**
  * Main application class for Precision Guitar Tuner
@@ -20,14 +20,10 @@ class PrecisionTunerApp : public Kappa::Application
 {
 public:
     PrecisionTunerApp()
-        : Application(Kappa::ApplicationSpecification{
-            .name = "Precision Guitar Tuner",
-            .windowSpecification = {
-                .title = "Precision Guitar Tuner v0.0.1 - Audio Engine Active",
-                .width = 1024,
-                .height = 768
-            }
-        })
+        : Application(Kappa::ApplicationSpecification{ .name = "Precision Guitar Tuner",
+              .windowSpecification = { .title = "Precision Guitar Tuner v0.0.1 - Audio Engine Active",
+                  .width = 1024,
+                  .height = 768 } })
     {
         LOG_INFO("Precision Tuner initialized");
 
@@ -38,7 +34,7 @@ public:
         // Note: TunerVisualizationLayer needs reference to AudioProcessingLayer
         // We'll use GetLayers() to access the audio layer
         auto layers = GetLayers();
-        auto* audioLayer = dynamic_cast<AudioProcessingLayer*>(layers[0].get());
+        auto *audioLayer = dynamic_cast<AudioProcessingLayer *>(layers[0].get());
         if (audioLayer)
         {
             PushLayer<TunerVisualizationLayer>(*audioLayer);
@@ -57,7 +53,7 @@ public:
  * Application entry point
  * Creates and runs the kappa-core application
  */
-int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
+int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
 {
     LOG_INFO("====================================");
     LOG_INFO("  Precision Guitar Tuner v0.0.1");

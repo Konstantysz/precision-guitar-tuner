@@ -2,8 +2,7 @@
 #include <Logger.h>
 #include <format>
 
-TunerVisualizationLayer::TunerVisualizationLayer(AudioProcessingLayer& audioLayer)
-    : audioLayer_(audioLayer)
+TunerVisualizationLayer::TunerVisualizationLayer(AudioProcessingLayer &audioLayer) : audioLayer_(audioLayer)
 {
     LOG_INFO("TunerVisualizationLayer - Initializing UI");
 }
@@ -27,11 +26,11 @@ void TunerVisualizationLayer::OnUpdate(float deltaTime)
 
             // Log detected pitch (temporary - will be replaced with OpenGL rendering)
             LOG_INFO("Detected: {}{} ({:.2f} Hz) | Deviation: {:+.1f} cents | Confidence: {:.0f}%",
-                     currentNote_.name,
-                     currentNote_.octave,
-                     pitchData.frequency,
-                     currentNote_.cents,
-                     pitchData.confidence * 100.0f);
+                currentNote_.name,
+                currentNote_.octave,
+                pitchData.frequency,
+                currentNote_.cents,
+                pitchData.confidence * 100.0f);
         }
     }
 }

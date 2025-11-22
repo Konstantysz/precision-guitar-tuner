@@ -1,16 +1,13 @@
 #include "AudioProcessingLayer.h"
-#include <AudioDeviceManager.h>
 #include <Logger.h>
+#include <AudioDeviceManager.h>
 
-AudioProcessingLayer::AudioProcessingLayer(const Config& config)
-    : config_(config)
-    , audioDevice_(std::make_unique<GuitarIO::AudioDevice>())
-    , pitchDetector_(std::make_unique<GuitarDSP::YinPitchDetector>(
-        GuitarDSP::YinPitchDetector::Config{
-            .threshold = 0.15f,
-            .minFrequency = config.minFrequency,
-            .maxFrequency = config.maxFrequency
-        }))
+AudioProcessingLayer::AudioProcessingLayer(const Config &config)
+    : config_(config), audioDevice_(std::make_unique<GuitarIO::AudioDevice>()),
+      pitchDetector_(
+          std::make_unique<GuitarDSP::YinPitchDetector>(GuitarDSP::YinPitchDetector::Config{ .threshold = 0.15f,
+              .minFrequency = config.minFrequency,
+              .maxFrequency = config.maxFrequency }))
 {
     // Pre-allocate processing buffer (avoid allocations in audio callback)
     processingBuffer_.resize(config_.bufferSize);
@@ -21,8 +18,8 @@ AudioProcessingLayer::AudioProcessingLayer(const Config& config)
     GuitarIO::AudioStreamConfig streamConfig{
         .sampleRate = config_.sampleRate,
         .bufferSize = config_.bufferSize,
-        .inputChannels = 1,  // Mono input for guitar
-        .outputChannels = 0  // No output (input-only)
+        .inputChannels = 1, // Mono input for guitar
+        .outputChannels = 0 // No output (input-only)
     };
 
     // Open default audio input device
@@ -82,13 +79,13 @@ bool AudioProcessingLayer::IsRunning() const
 
 std::vector<std::string> AudioProcessingLayer::GetAvailableDevices() const
 {
-    auto& manager = GuitarIO::AudioDeviceManager::Get();
+    auto &manager = GuitarIO::AudioDeviceManager::Get();
     auto devices = manager.EnumerateInputDevices();
 
     std::vector<std::string> deviceNames;
     deviceNames.reserve(devices.size());
 
-    for (const auto& device : devices)
+    for (const auto &device : devices)
     {
         deviceNames.push_back(device.name);
     }
@@ -96,12 +93,12 @@ std::vector<std::string> AudioProcessingLayer::GetAvailableDevices() const
     return deviceNames;
 }
 
-int AudioProcessingLayer::AudioCallback(const float* inputBuffer,
-                                       [[maybe_unused]] float* outputBuffer,
-                                       size_t frameCount,
-                                       void* userData)
+int AudioProcessingLayer::AudioCallback(const float *inputBuffer,
+    [[maybe_unused]] float *outputBuffer,
+    size_t frameCount,
+    void *userData)
 {
-    auto* layer = static_cast<AudioProcessingLayer*>(userData);
+    auto *layer = static_cast<AudioProcessingLayer *>(userData);
     if (!layer || !inputBuffer)
     {
         return 1; // Stop stream
@@ -113,7 +110,7 @@ int AudioProcessingLayer::AudioCallback(const float* inputBuffer,
     return 0; // Continue stream
 }
 
-void AudioProcessingLayer::ProcessAudio(const float* inputBuffer, size_t frameCount)
+void AudioProcessingLayer::ProcessAudio(const float *inputBuffer, size_t frameCount)
 {
     // Detect pitch using YIN algorithm
     auto result = pitchDetector_->Detect(inputBuffer, frameCount, static_cast<float>(config_.sampleRate));

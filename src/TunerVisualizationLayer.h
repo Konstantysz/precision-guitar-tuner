@@ -1,9 +1,9 @@
 #pragma once
 
-#include <Layer.h>
 #include "AudioProcessingLayer.h"
-#include <NoteConverter.h>
+#include <Layer.h>
 #include <memory>
+#include <NoteConverter.h>
 
 /**
  * @brief Layer responsible for rendering the tuner UI
@@ -20,7 +20,7 @@ public:
      * @brief Constructs tuner visualization layer
      * @param audioLayer Reference to audio processing layer
      */
-    explicit TunerVisualizationLayer(AudioProcessingLayer& audioLayer);
+    explicit TunerVisualizationLayer(AudioProcessingLayer &audioLayer);
 
     /**
      * @brief Destructor
@@ -39,7 +39,7 @@ public:
     void OnRender() override;
 
 private:
-    AudioProcessingLayer& audioLayer_;
+    AudioProcessingLayer &audioLayer_;
 
     // UI state
     GuitarDSP::NoteInfo currentNote_;
