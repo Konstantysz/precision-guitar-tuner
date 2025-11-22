@@ -20,7 +20,7 @@ public:
         : Application(Kappa::ApplicationSpecification{
             .name = "Precision Guitar Tuner",
             .windowSpecification = {
-                .title = "Precision Guitar Tuner v1.0.0",
+                .title = "Precision Guitar Tuner v0.0.1",
                 .width = 1024,
                 .height = 768
             }
@@ -45,7 +45,7 @@ public:
  */
 int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) {
     LOG_INFO("====================================");
-    LOG_INFO("  Precision Guitar Tuner v1.0.0");
+    LOG_INFO("  Precision Guitar Tuner v0.0.1");
     LOG_INFO("====================================");
 
     // Create and run application

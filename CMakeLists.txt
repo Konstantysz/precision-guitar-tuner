@@ -5,7 +5,7 @@ if(NOT DEFINED VCPKG_TARGET_TRIPLET)
     set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "")
 endif()
 
-project(PrecisionGuitarTuner VERSION 1.0.0 LANGUAGES CXX)
+project(PrecisionGuitarTuner VERSION 0.0.1 LANGUAGES CXX)
 
 # C++20 standard
 set(CMAKE_CXX_STANDARD 20)
@@ -56,21 +56,21 @@ add_subdirectory(external/kappa-core)
 # add_subdirectory(external/lib-guitar-dsp)
 
 # Main application
-add_executable(precision-tuner
+add_executable(precision-guitar-tuner
     src/main.cpp
 )
 
-target_include_directories(precision-tuner PRIVATE
+target_include_directories(precision-guitar-tuner PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 # Link kappa-core framework
-target_link_libraries(precision-tuner PRIVATE
+target_link_libraries(precision-guitar-tuner PRIVATE
     Kappa
 )
 
 # TODO: Link lib-guitar-io and lib-guitar-dsp once created
-# target_link_libraries(precision-tuner PRIVATE
+# target_link_libraries(precision-guitar-tuner PRIVATE
 #     guitar-io
 #     guitar-dsp
 # )
@@ -82,20 +82,20 @@ if(WIN32)
 
     # Keep console for now (skeleton app)
     # TODO: Change to WIN32_EXECUTABLE TRUE when GUI is ready
-    set_target_properties(precision-tuner PROPERTIES
+    set_target_properties(precision-guitar-tuner PROPERTIES
         WIN32_EXECUTABLE FALSE
     )
 elseif(APPLE)
     # CoreAudio frameworks (via RtAudio in lib-guitar-io)
     # TODO: Add when lib-guitar-io is ready
-    # target_link_libraries(precision-tuner PRIVATE
+    # target_link_libraries(precision-guitar-tuner PRIVATE
     #     "-framework CoreAudio"
     #     "-framework AudioToolbox"
     #     "-framework CoreFoundation"
     # )
 
     # macOS bundle settings
-    set_target_properties(precision-tuner PROPERTIES
+    set_target_properties(precision-guitar-tuner PROPERTIES
         MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_GUI_IDENTIFIER "com.precisiontuner.app"
         MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
@@ -106,7 +106,7 @@ elseif(UNIX)
     find_package(ALSA QUIET)
     if(ALSA_FOUND)
         # TODO: Add when lib-guitar-io is ready
-        # target_link_libraries(precision-tuner PRIVATE ${ALSA_LIBRARIES})
+        # target_link_libraries(precision-guitar-tuner PRIVATE ${ALSA_LIBRARIES})
         message(STATUS "Found ALSA: ${ALSA_LIBRARIES}")
     else()
         message(WARNING "ALSA not found. Audio I/O may not work on Linux.")
@@ -115,18 +115,16 @@ endif()
 
 # Compiler warnings
 if(MSVC)
-    target_compile_options(precision-tuner PRIVATE /W4)
-    # TODO: Re-enable /WX when kappa-core headers are warning-free
+    target_compile_options(precision-guitar-tuner PRIVATE /WX)
 else()
-    target_compile_options(precision-tuner PRIVATE
+    target_compile_options(precision-guitar-tuner PRIVATE
         -Wall -Wextra -Wpedantic
-        -Wno-unused-parameter  # Common in callback interfaces
+        -Wno-unused-parameter -Werror
     )
-    # TODO: Re-enable -Werror when kappa-core headers are warning-free
 endif()
 
 # Installation
-install(TARGETS precision-tuner
+install(TARGETS precision-guitar-tuner
     RUNTIME DESTINATION bin
     BUNDLE DESTINATION .
 )

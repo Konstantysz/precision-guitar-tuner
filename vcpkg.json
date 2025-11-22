@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "precision-guitar-tuner",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Professional-grade desktop guitar tuner with ±0.1 cent accuracy",
   "homepage": "https://github.com/yourorg/precision-guitar-tuner",
   "license": "MIT",

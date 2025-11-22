@@ -103,10 +103,10 @@ cmake --build build
 
 ```bash
 # Windows
-.\build\Release\precision-tuner.exe
+.\build\Release\precision-guitar-tuner.exe
 
 # macOS/Linux
-./build/precision-tuner
+./build/precision-guitar-tuner
 ```
 
 ### Running Tests
@@ -565,8 +565,8 @@ Always update **DEPENDENCIES.md** when changing submodule versions:
 
 | Component | Repository | Version/Commit | Date Pinned |
 |-----------|------------|----------------|-------------|
-| lib-guitar-io | github.com/yourorg/lib-guitar-io | v1.0.0 (a1b2c3d) | 2025-01-15 |
-| lib-guitar-dsp | github.com/yourorg/lib-guitar-dsp | v1.0.0 (e4f5g6h) | 2025-01-15 |
+| lib-guitar-io | github.com/yourorg/lib-guitar-io | v0.0.1 (a1b2c3d) | 2025-01-15 |
+| lib-guitar-dsp | github.com/yourorg/lib-guitar-dsp | v0.0.1 (e4f5g6h) | 2025-01-15 |
 | kappa-core | github.com/Konstantysz/kappa-core | commit i7j8k9l | 2025-01-15 |
 ```
 

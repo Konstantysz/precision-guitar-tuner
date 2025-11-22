@@ -86,8 +86,8 @@ cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=[path-to-vcpkg]/scripts/buildsystems/
 cmake --build build --config Release
 
 # Run
-# Windows: .\build\bin\Release\precision-tuner.exe
-# macOS/Linux: ./build/bin/precision-tuner
+# Windows: .\build\bin\Release\precision-guitar-tuner.exe
+# macOS/Linux: ./build/bin/precision-guitar-tuner
 ```
 
 ## Architecture
