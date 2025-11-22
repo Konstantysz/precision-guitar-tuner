@@ -213,6 +213,31 @@ The application automatically selects the best audio API per platform:
 
 ## Development Guidelines
 
+### Coding Standards
+
+**Naming Conventions:**
+- **PascalCase** for classes, structs, and functions
+  - Examples: `AudioProcessingLayer`, `GetLatestPitch()`, `OnUpdate()`
+- **camelCase** for ALL variables (including class member variables)
+  - **NO trailing underscores** on member variables
+  - Examples: `config`, `audioDevice`, `pitchDetector`, `latestFrequency`
+  - Local variables: `pitchData`, `sampleRate`, `bufferSize`
+
+**Code Formatting:**
+- **Line limit:** 120 characters
+- **Indentation:** 4 spaces (no tabs)
+- **Brace style:** Allman (opening braces on new lines)
+- **Pointer alignment:** Right-aligned (`Type *ptr`, not `Type* ptr`)
+- **Include ordering:** Automatically sorted by clang-format with priority system
+
+**Formatting Tools:**
+- `.clang-format` - C++20 code formatting (120 char limit, Allman braces)
+- `.clang-tidy` - Static analysis with C++20 modernize checks
+- `.cmake-format` - CMake file formatting
+- `.pre-commit-config.yaml` - Automated formatting on commit
+
+Run `clang-format -i <file>` to format individual files, or let pre-commit hooks handle it automatically.
+
 ### C++20 Standards
 
 - Use **concepts** for template constraints
