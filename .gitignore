@@ -89,3 +89,6 @@ config.ini
 settings.json
 .claude/settings.local.json
 .mcp.json
+
+# Agent working directories
+.serena/

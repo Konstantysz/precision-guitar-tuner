@@ -2,6 +2,8 @@
 
 #include "AudioProcessingLayer.h"
 #include <Layer.h>
+#include <glad/glad.h>
+#include <glm/glm.hpp>
 #include <memory>
 #include <NoteConverter.h>
 
@@ -39,10 +41,33 @@ public:
     void OnRender() override;
 
 private:
+    // Helper methods for rendering
+    void InitializeOpenGL();
+    void RenderBackground();
+    void RenderCentDeviationMeter();
+    void RenderTuningIndicator();
+    glm::vec3 GetColorForCents(float cents);
+    void DrawFilledRect(float x, float y, float width, float height, const glm::vec3 &color);
+    void DrawOutlineRect(float x, float y, float width, float height, const glm::vec3 &color, float lineWidth = 2.0f);
+    void DrawCircle(float x, float y, float radius, const glm::vec3 &color, bool filled = true);
+    void SetupShaders();
+
     AudioProcessingLayer &audioLayer;
+
+    // OpenGL resources
+    bool initialized = false;
+    GLuint shaderProgram = 0;
+    GLuint VAO = 0;
+    GLuint VBO = 0;
 
     // UI state
     GuitarDSP::NoteInfo currentNote;
     float updateTimer = 0.0f;
+    bool hasPitchData = false;
     static constexpr float UPDATE_INTERVAL = 0.1f; // Update UI every 100ms
+
+    // Visual constants
+    static constexpr float METER_WIDTH = 0.8f;       // 80% of screen width
+    static constexpr float METER_HEIGHT = 0.05f;     // 5% of screen height
+    static constexpr float INDICATOR_RADIUS = 0.08f; // Circular indicator radius
 };

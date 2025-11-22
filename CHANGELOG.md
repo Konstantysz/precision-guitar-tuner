@@ -8,12 +8,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- OpenGL rendering for visual tuner display
-- Tuning accuracy indicator (green zone for in-tune)
-- Cent deviation meter visualization
+
+- Text rendering for note names and frequency display
+- Strobe tuner visualization mode
 - Settings layer for audio device selection
 - Configuration persistence
-- Alternative tuning support
+- Alternative tuning support (Drop D, chromatic, etc.)
+
+## [0.0.2] - 2025-11-23
+
+### Added
+
+- **Modern OpenGL Rendering System**
+  - GLSL 330 vertex/fragment shaders for 2D geometry
+  - Core Profile compatible (no deprecated immediate mode)
+  - GPU-accelerated rendering with VBOs and VAOs
+  - Real-time 60 FPS visualization
+
+- **Visual Tuner Display**
+  - Horizontal cent deviation meter (±50 cent range)
+  - Tick marks at ±10, ±20, ±30, ±40, ±50 cents
+  - Center line indicator for perfect tuning
+  - White outline border on meter
+  - Always-visible UI (meter displays even without audio input)
+
+- **Color-Coded Tuning Feedback**
+  - Dynamic color indicator bar on deviation meter
+  - Large circular tuning indicator above meter
+  - Smooth color transitions based on tuning accuracy:
+    - Green (±0-3 cents): In tune
+    - Yellow-Green (±3-10 cents): Close
+    - Orange (±10-25 cents): Adjust more
+    - Red (>±25 cents): Out of tune
+  - Uses GLM color mixing for smooth gradients
+
+- **Rendering Architecture**
+  - `DrawFilledRect()`: Efficient rectangle rendering with triangles
+  - `DrawOutlineRect()`: Line-based rectangle borders
+  - `DrawCircle()`: Triangle fan/line loop circle rendering
+  - Lazy OpenGL initialization on first render
+  - Proper resource management with VAO/VBO
+
+### Changed
+
+- **TunerVisualizationLayer** completely rewritten for modern OpenGL
+  - Removed console-only output
+  - Added full visual rendering pipeline
+  - Separated background, meter, and indicator rendering
+
+### Technical Highlights
+
+- Modern OpenGL 3.3+ with shaders (Core Profile)
+- Dynamic vertex data uploaded per frame
+- Efficient GPU-side geometry processing
+- Clean separation of concerns (rendering helpers)
+- Follows C++20 best practices
+- Code formatted with clang-format (Allman style, 120 char limit)
 
 ## [0.0.1] - 2025-01-22
 
