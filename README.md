@@ -72,12 +72,12 @@ sudo dnf install gcc-c++ cmake git alsa-lib-devel
 ### Building from Source
 
 ```bash
-# Clone the repository
-git clone --recursive https://github.com/yourorg/precision-guitar-tuner.git
+# Clone the repository with submodules
+git clone --recursive https://github.com/Konstantysz/precision-guitar-tuner.git
 cd precision-guitar-tuner
 
-# Install vcpkg dependencies (kappa-core requirements)
-vcpkg install glfw3 glad glm spdlog
+# Install vcpkg dependencies (automated via CMake)
+# vcpkg will automatically install: glfw3, glad, glm, nlohmann-json, spdlog
 
 # Configure with CMake
 cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=[path-to-vcpkg]/scripts/buildsystems/vcpkg.cmake
@@ -99,14 +99,14 @@ precision-guitar-tuner/
 ├── external/                    # Git submodules
 │   ├── kappa-core/             # Application framework (OpenGL, layers, events)
 │   ├── lib-guitar-io/          # Audio I/O abstraction (RtAudio wrapper)
-│   └── lib-guitar-dsp/         # DSP algorithms (PFFFT, YIN, MPM)
+│   └── lib-guitar-dsp/         # DSP algorithms (PFFFT, YIN)
 ├── src/
-│   ├── layers/                 # kappa-core Layer implementations
-│   │   ├── AudioProcessingLayer    # Real-time audio thread
-│   │   ├── TunerVisualizationLayer # Strobe/needle rendering
-│   │   └── SettingsLayer           # UI controls
-│   └── tuner/                  # Tuner-specific logic
-└── include/tuner/              # Public headers
+│   ├── AudioProcessingLayer.*  # Real-time audio I/O and pitch detection
+│   ├── TunerVisualizationLayer.* # UI rendering (OpenGL)
+│   └── main.cpp                # Application entry point
+└── .claude/                    # Development documentation
+    ├── DEVELOPMENT_PLAN.md     # 11-week roadmap
+    └── settings.json           # IDE configuration
 ```
 
 ### Design Principles
@@ -154,25 +154,44 @@ Development roadmap is in [.claude/DEVELOPMENT_PLAN.md](.claude/DEVELOPMENT_PLAN
 
 ## Roadmap
 
-### Phase 1: MVP (Weeks 1-8)
+### Phase 0: Repository Setup ✅ COMPLETED
+
 - [x] Project setup and documentation
-- [ ] Core audio infrastructure (lib-guitar-io)
-- [ ] DSP foundation (lib-guitar-dsp with YIN/MPM)
-- [ ] Basic UI and needle display
-- [ ] Cross-platform builds
+- [x] CMake build system with vcpkg
+- [x] Git submodules architecture
+- [x] kappa-core v0.5.1 integration
+- [x] Cross-platform builds (Windows/macOS/Linux)
 
-### Phase 2: Advanced Features (Weeks 9-12)
+### Phase 1: Audio Engine ✅ COMPLETED
+
+- [x] lib-guitar-io (RtAudio wrapper)
+- [x] lib-guitar-dsp (YIN algorithm)
+- [x] AudioProcessingLayer implementation
+- [x] Real-time pitch detection working
+- [x] Console logging of detected notes
+
+### Phase 2: Visual Tuner (In Progress)
+
+- [ ] OpenGL rendering in TunerVisualizationLayer
+- [ ] Note name display (large text)
+- [ ] Frequency display
+- [ ] Cent deviation meter
+- [ ] Tuning accuracy indicator (green zone)
+
+### Phase 3: Advanced Features (Future)
+
 - [ ] Strobe tuner visualization
-- [ ] Multiple tuning modes
+- [ ] Multiple tuning modes (drop, chromatic)
+- [ ] Settings layer (device selection)
+- [ ] Configuration persistence
 - [ ] Spectrum analyzer
-- [ ] Polyphonic tuning
-- [ ] Custom temperaments
 
-### Phase 3: Professional Tools (Future)
+### Phase 4: Professional Tools (Future)
+
 - [ ] VST/AU plugin for DAW integration
+- [ ] Polyphonic tuning
 - [ ] Intonation testing tools
-- [ ] Session logging and reports
-- [ ] Luthier-specific features
+- [ ] Custom temperaments
 
 ## Performance Targets
 
@@ -220,6 +239,15 @@ All dependencies are GPL-free and commercially compatible:
 
 ---
 
-**Status**: 🚧 In Development (Phase 0: Repository Setup)
+**Status**: 🚧 In Development (Phase 1 Complete - Audio Engine Working)
+
+**Latest Release**: v0.0.1 (2025-01-22)
+
+- ✅ Real-time pitch detection operational
+- ✅ YIN algorithm with ±0.1 cent target accuracy
+- ✅ Cross-platform audio I/O (ASIO/CoreAudio/ALSA)
+- 🔄 OpenGL visualization in progress
+
+See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 
 Built with ❤️ for musicians who demand precision.
