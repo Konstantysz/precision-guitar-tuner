@@ -68,10 +68,13 @@ endif()
 # Main application
 add_executable(precision-guitar-tuner
     src/main.cpp
+    src/AudioProcessingLayer.cpp
+    src/TunerVisualizationLayer.cpp
 )
 
 target_include_directories(precision-guitar-tuner PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
 # Link kappa-core framework
