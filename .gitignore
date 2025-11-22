@@ -1,0 +1,91 @@
+# Build directories
+build/
+cmake-build-*/
+out/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# vcpkg
+vcpkg_installed/
+.vcpkg/
+
+# Compiled files
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+
+# IDE files
+.vs/
+.vscode/
+*.user
+*.suo
+*.sln.docstates
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Visual Studio
+*.aps
+*.ncb
+*.opendb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.VC.opendb
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Configuration (local settings only, not templates)
+*.local
+
+# Binaries
+bin/
+lib/
+
+# Package managers
+conan/
+.conan/
+
+# Test results
+Testing/
+*.gcov
+*.gcda
+*.gcno
+
+# Static analysis
+*.sarif
+.clang-tidy-cache/
+
+# Documentation build
+docs/html/
+docs/latex/
+docs/_build/
+
+# User-specific configuration
+config.ini
+settings.json
+.claude/settings.local.json
+.mcp.json
