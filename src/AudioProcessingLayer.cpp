@@ -3,56 +3,56 @@
 #include <AudioDeviceManager.h>
 
 AudioProcessingLayer::AudioProcessingLayer(const Config &config)
-    : config_(config), audioDevice_(std::make_unique<GuitarIO::AudioDevice>()),
-      pitchDetector_(
+    : config(config), audioDevice(std::make_unique<GuitarIO::AudioDevice>()),
+      pitchDetector(
           std::make_unique<GuitarDSP::YinPitchDetector>(GuitarDSP::YinPitchDetector::Config{ .threshold = 0.15f,
               .minFrequency = config.minFrequency,
               .maxFrequency = config.maxFrequency }))
 {
     // Pre-allocate processing buffer (avoid allocations in audio callback)
-    processingBuffer_.resize(config_.bufferSize);
+    processingBuffer.resize(config.bufferSize);
 
     LOG_INFO("AudioProcessingLayer - Initializing audio I/O");
 
     // Configure audio stream
     GuitarIO::AudioStreamConfig streamConfig{
-        .sampleRate = config_.sampleRate,
-        .bufferSize = config_.bufferSize,
+        .sampleRate = config.sampleRate,
+        .bufferSize = config.bufferSize,
         .inputChannels = 1, // Mono input for guitar
         .outputChannels = 0 // No output (input-only)
     };
 
     // Open default audio input device
-    if (!audioDevice_->OpenDefault(streamConfig, AudioCallback, this))
+    if (!audioDevice->OpenDefault(streamConfig, AudioCallback, this))
     {
-        LOG_ERROR("Failed to open audio device: {}", audioDevice_->GetLastError());
+        LOG_ERROR("Failed to open audio device: {}", audioDevice->GetLastError());
         return;
     }
 
     // Start audio stream
-    if (!audioDevice_->Start())
+    if (!audioDevice->Start())
     {
-        LOG_ERROR("Failed to start audio stream: {}", audioDevice_->GetLastError());
+        LOG_ERROR("Failed to start audio stream: {}", audioDevice->GetLastError());
         return;
     }
 
     LOG_INFO("Audio stream started successfully");
-    LOG_INFO("  Sample Rate: {} Hz", config_.sampleRate);
-    LOG_INFO("  Buffer Size: {} frames", config_.bufferSize);
-    LOG_INFO("  Frequency Range: {:.1f} - {:.1f} Hz", config_.minFrequency, config_.maxFrequency);
+    LOG_INFO("  Sample Rate: {} Hz", config.sampleRate);
+    LOG_INFO("  Buffer Size: {} frames", config.bufferSize);
+    LOG_INFO("  Frequency Range: {:.1f} - {:.1f} Hz", config.minFrequency, config.maxFrequency);
 }
 
 AudioProcessingLayer::~AudioProcessingLayer()
 {
-    if (audioDevice_->IsRunning())
+    if (audioDevice->IsRunning())
     {
         LOG_INFO("AudioProcessingLayer - Stopping audio stream");
-        audioDevice_->Stop();
+        audioDevice->Stop();
     }
 
-    if (audioDevice_->IsOpen())
+    if (audioDevice->IsOpen())
     {
-        audioDevice_->Close();
+        audioDevice->Close();
     }
 }
 
@@ -66,15 +66,15 @@ AudioProcessingLayer::PitchData AudioProcessingLayer::GetLatestPitch() const
 {
     // Lock-free read from atomic variables
     PitchData data;
-    data.detected = pitchDetected_.load(std::memory_order_relaxed);
-    data.frequency = latestFrequency_.load(std::memory_order_relaxed);
-    data.confidence = latestConfidence_.load(std::memory_order_relaxed);
+    data.detected = pitchDetected.load(std::memory_order_relaxed);
+    data.frequency = latestFrequency.load(std::memory_order_relaxed);
+    data.confidence = latestConfidence.load(std::memory_order_relaxed);
     return data;
 }
 
 bool AudioProcessingLayer::IsRunning() const
 {
-    return audioDevice_->IsRunning();
+    return audioDevice->IsRunning();
 }
 
 std::vector<std::string> AudioProcessingLayer::GetAvailableDevices() const
@@ -113,18 +113,18 @@ int AudioProcessingLayer::AudioCallback(const float *inputBuffer,
 void AudioProcessingLayer::ProcessAudio(const float *inputBuffer, size_t frameCount)
 {
     // Detect pitch using YIN algorithm
-    auto result = pitchDetector_->Detect(inputBuffer, frameCount, static_cast<float>(config_.sampleRate));
+    auto result = pitchDetector->Detect(inputBuffer, frameCount, static_cast<float>(config.sampleRate));
 
     if (result.has_value())
     {
         // Update atomic variables (lock-free communication with UI thread)
-        latestFrequency_.store(result->frequency, std::memory_order_relaxed);
-        latestConfidence_.store(result->confidence, std::memory_order_relaxed);
-        pitchDetected_.store(true, std::memory_order_relaxed);
+        latestFrequency.store(result->frequency, std::memory_order_relaxed);
+        latestConfidence.store(result->confidence, std::memory_order_relaxed);
+        pitchDetected.store(true, std::memory_order_relaxed);
     }
     else
     {
         // No pitch detected
-        pitchDetected_.store(false, std::memory_order_relaxed);
+        pitchDetected.store(false, std::memory_order_relaxed);
     }
 }

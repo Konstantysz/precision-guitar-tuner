@@ -93,15 +93,15 @@ private:
      */
     void ProcessAudio(const float *inputBuffer, size_t frameCount);
 
-    Config config_;
-    std::unique_ptr<GuitarIO::AudioDevice> audioDevice_;
-    std::unique_ptr<GuitarDSP::YinPitchDetector> pitchDetector_;
+    Config config;
+    std::unique_ptr<GuitarIO::AudioDevice> audioDevice;
+    std::unique_ptr<GuitarDSP::YinPitchDetector> pitchDetector;
 
     // Lock-free communication between audio thread and UI thread
-    std::atomic<float> latestFrequency_{ 0.0f };
-    std::atomic<float> latestConfidence_{ 0.0f };
-    std::atomic<bool> pitchDetected_{ false };
+    std::atomic<float> latestFrequency{ 0.0f };
+    std::atomic<float> latestConfidence{ 0.0f };
+    std::atomic<bool> pitchDetected{ false };
 
     // Pre-allocated buffer for audio processing (to avoid allocations in callback)
-    std::vector<float> processingBuffer_;
+    std::vector<float> processingBuffer;
 };

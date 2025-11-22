@@ -39,10 +39,10 @@ public:
     void OnRender() override;
 
 private:
-    AudioProcessingLayer &audioLayer_;
+    AudioProcessingLayer &audioLayer;
 
     // UI state
-    GuitarDSP::NoteInfo currentNote_;
-    float updateTimer_ = 0.0f;
+    GuitarDSP::NoteInfo currentNote;
+    float updateTimer = 0.0f;
     static constexpr float UPDATE_INTERVAL = 0.1f; // Update UI every 100ms
 };

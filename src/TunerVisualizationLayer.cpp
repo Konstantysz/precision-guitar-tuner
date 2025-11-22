@@ -2,34 +2,34 @@
 #include <Logger.h>
 #include <format>
 
-TunerVisualizationLayer::TunerVisualizationLayer(AudioProcessingLayer &audioLayer) : audioLayer_(audioLayer)
+TunerVisualizationLayer::TunerVisualizationLayer(AudioProcessingLayer &audioLayer) : audioLayer(audioLayer)
 {
     LOG_INFO("TunerVisualizationLayer - Initializing UI");
 }
 
 void TunerVisualizationLayer::OnUpdate(float deltaTime)
 {
-    updateTimer_ += deltaTime;
+    updateTimer += deltaTime;
 
     // Update UI at fixed interval to avoid excessive logging
-    if (updateTimer_ >= UPDATE_INTERVAL)
+    if (updateTimer >= UPDATE_INTERVAL)
     {
-        updateTimer_ = 0.0f;
+        updateTimer = 0.0f;
 
         // Get latest pitch data from audio layer
-        auto pitchData = audioLayer_.GetLatestPitch();
+        auto pitchData = audioLayer.GetLatestPitch();
 
         if (pitchData.detected && pitchData.confidence > 0.7f)
         {
             // Convert frequency to note
-            currentNote_ = GuitarDSP::NoteConverter::FrequencyToNote(pitchData.frequency);
+            currentNote = GuitarDSP::NoteConverter::FrequencyToNote(pitchData.frequency);
 
             // Log detected pitch (temporary - will be replaced with OpenGL rendering)
             LOG_INFO("Detected: {}{} ({:.2f} Hz) | Deviation: {:+.1f} cents | Confidence: {:.0f}%",
-                currentNote_.name,
-                currentNote_.octave,
+                currentNote.name,
+                currentNote.octave,
                 pitchData.frequency,
-                currentNote_.cents,
+                currentNote.cents,
                 pitchData.confidence * 100.0f);
         }
     }
