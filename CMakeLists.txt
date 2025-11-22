@@ -51,9 +51,19 @@ endif()
 # Add kappa-core framework
 add_subdirectory(external/kappa-core)
 
-# TODO: Add lib-guitar-io and lib-guitar-dsp once created
-# add_subdirectory(external/lib-guitar-io)
-# add_subdirectory(external/lib-guitar-dsp)
+# Verify lib-guitar-io exists
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/lib-guitar-io/CMakeLists.txt")
+    message(WARNING "lib-guitar-io not found. Audio I/O will not be available.")
+else()
+    add_subdirectory(external/lib-guitar-io)
+endif()
+
+# Verify lib-guitar-dsp exists
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/lib-guitar-dsp/CMakeLists.txt")
+    message(WARNING "lib-guitar-dsp not found. DSP algorithms will not be available.")
+else()
+    add_subdirectory(external/lib-guitar-dsp)
+endif()
 
 # Main application
 add_executable(precision-guitar-tuner
@@ -69,11 +79,16 @@ target_link_libraries(precision-guitar-tuner PRIVATE
     Kappa
 )
 
-# TODO: Link lib-guitar-io and lib-guitar-dsp once created
-# target_link_libraries(precision-guitar-tuner PRIVATE
-#     guitar-io
-#     guitar-dsp
-# )
+# Link lib-guitar-io and lib-guitar-dsp
+if(TARGET guitar-io)
+    target_link_libraries(precision-guitar-tuner PRIVATE guitar-io)
+    message(STATUS "lib-guitar-io linked successfully")
+endif()
+
+if(TARGET guitar-dsp)
+    target_link_libraries(precision-guitar-tuner PRIVATE guitar-dsp)
+    message(STATUS "lib-guitar-dsp linked successfully")
+endif()
 
 # Platform-specific settings
 if(WIN32)
