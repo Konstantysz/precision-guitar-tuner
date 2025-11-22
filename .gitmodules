@@ -5,6 +5,8 @@
 [submodule "external/lib-guitar-io"]
 	path = external/lib-guitar-io
 	url = git@github.com:Konstantysz/lib-guitar-io.git
+	branch = main
 [submodule "external/lib-guitar-dsp"]
 	path = external/lib-guitar-dsp
 	url = git@github.com:Konstantysz/lib-guitar-dsp.git
+	branch = main
