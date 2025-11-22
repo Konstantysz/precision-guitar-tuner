@@ -6,46 +6,36 @@
  * Licensed under the MIT License
  */
 
-#include <kappa/Application.hpp>
-#include <kappa/Log.hpp>
+#include <Application.h>
+#include <Logger.h>
+#include <memory>
 
 /**
  * Main application class for Precision Guitar Tuner
- * Extends kappa::Application to provide the application lifecycle
+ * Extends Kappa::Application to provide the application lifecycle
  */
-class PrecisionTunerApp : public kappa::Application {
+class PrecisionTunerApp : public Kappa::Application {
 public:
     PrecisionTunerApp()
-        : Application({
-            .title = "Precision Guitar Tuner v1.0.0",
-            .width = 1024,
-            .height = 768,
-            .vsync = true
+        : Application(Kappa::ApplicationSpecification{
+            .name = "Precision Guitar Tuner",
+            .windowSpecification = {
+                .title = "Precision Guitar Tuner v1.0.0",
+                .width = 1024,
+                .height = 768
+            }
         })
     {
-        KAPPA_INFO("Precision Tuner initialized");
+        LOG_INFO("Precision Tuner initialized");
+
+        // TODO: Push layers
+        // PushLayer<AudioProcessingLayer>();
+        // PushLayer<TunerVisualizationLayer>();
+        // PushLayer<SettingsLayer>();
     }
 
     ~PrecisionTunerApp() override {
-        KAPPA_INFO("Precision Tuner shutting down");
-    }
-
-protected:
-    void onInit() override {
-        KAPPA_INFO("Application initialized");
-
-        // TODO: Push layers
-        // pushLayer(new AudioProcessingLayer());
-        // pushLayer(new TunerVisualizationLayer());
-        // pushLayer(new SettingsLayer());
-    }
-
-    void onUpdate([[maybe_unused]] float deltaTime) override {
-        // Application-level update logic (if needed)
-    }
-
-    void onRender() override {
-        // Application-level rendering (if needed)
+        LOG_INFO("Precision Tuner shutting down");
     }
 };
 
@@ -54,16 +44,13 @@ protected:
  * Creates and runs the kappa-core application
  */
 int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) {
-    // Initialize kappa logging
-    kappa::Log::init();
-
-    KAPPA_INFO("====================================");
-    KAPPA_INFO("  Precision Guitar Tuner v1.0.0");
-    KAPPA_INFO("====================================");
+    LOG_INFO("====================================");
+    LOG_INFO("  Precision Guitar Tuner v1.0.0");
+    LOG_INFO("====================================");
 
     // Create and run application
     auto app = std::make_unique<PrecisionTunerApp>();
-    app->run();
+    app->Run();
 
     return 0;
 }
