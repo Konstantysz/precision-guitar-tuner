@@ -188,15 +188,19 @@ Development roadmap is in [.claude/DEVELOPMENT_PLAN.md](.claude/DEVELOPMENT_PLAN
 - [x] Precise cent deviation display
 - [x] "IN TUNE" indicator with visual feedback
 
-### Phase 3: Enhanced UI & Features (In Progress)
+### Phase 3: Enhanced UI & Features (In Progress - 29% Complete)
 
-- [ ] Responsive window sizing and layout
-- [ ] Move shaders to external .glsl files
-- [ ] Strobe tuner visualization
-- [ ] Multiple tuning modes (drop, chromatic)
-- [ ] Settings layer (device selection)
-- [ ] Configuration persistence
-- [ ] Spectrum analyzer
+- [x] **Move shaders to external .glsl files** ✅ COMPLETE
+  - `assets/shaders/geometry.vert/.frag` - Shape rendering
+  - `assets/shaders/text.vert/.frag` - Text rendering with stb_truetype
+  - CMake auto-copy to build directory
+- [ ] Configuration persistence (JSON save/load with nlohmann-json)
+- [ ] Responsive window sizing and layout (infrastructure ready)
+- [ ] Settings layer (device selection UI)
+- [ ] Multiple tuning modes (chromatic, standard, drop D, DADGAD, etc.)
+- [ ] Spectrum analyzer (optional - FFT visualization)
+
+**Note:** Strobe tuner deferred to Phase 5 per development plan
 
 ### Phase 4: Professional Tools (Future)
 
@@ -251,17 +255,21 @@ All dependencies are GPL-free and commercially compatible:
 
 ---
 
-**Status**: 🚧 In Development (Phase 2 Complete - Visual Tuner Working)
+**Status**: 🚧 In Development (Phase 3 In Progress - 29% Complete)
 
-**Latest Release**: v0.0.2 (2025-11-23)
+**Latest Release**: v0.0.3-alpha (2025-11-23)
 
-- ✅ Real-time pitch detection operational
-- ✅ YIN algorithm with ±0.1 cent target accuracy
+- ✅ Real-time pitch detection operational (YIN algorithm)
+- ✅ ±0.1 cent target accuracy
 - ✅ Cross-platform audio I/O (ASIO/CoreAudio/ALSA)
-- ✅ Modern OpenGL visualization with color-coded tuning feedback
-- ✅ Horizontal cent deviation meter
+- ✅ Modern OpenGL 3.3+ rendering with external GLSL shaders
+- ✅ TrueType font rendering (stb_truetype)
+- ✅ Color-coded tuning feedback (green/yellow/orange/red)
+- ✅ Horizontal cent deviation meter (±50 cents)
 - ✅ GPU-accelerated rendering at 60 FPS
-- 🔄 Text rendering for note names (Phase 3)
+- 🔄 Configuration persistence (Phase 3 - next priority)
+- 🔄 Settings layer with device selection (Phase 3)
+- 🔄 Multiple tuning modes (Phase 3)
 
 See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 

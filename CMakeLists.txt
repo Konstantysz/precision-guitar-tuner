@@ -68,6 +68,7 @@ endif()
 # Main application
 add_executable(precision-guitar-tuner
     src/PrecisionGuitarTuner.cpp
+    src/Config.cpp
     src/Layers/AudioProcessingLayer.cpp
     src/Layers/TunerVisualizationLayer.cpp
     src/FontRenderer.cpp

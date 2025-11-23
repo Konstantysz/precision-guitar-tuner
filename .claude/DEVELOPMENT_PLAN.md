@@ -139,50 +139,105 @@ Dependencies (Git Submodules)
 
 ---
 
-### Phase 3: Basic UI and Visualization (Weeks 4-5)
+### Phase 3: Enhanced UI and Features (Weeks 4-5) ✅ PARTIALLY COMPLETE
+
+**Status:** 2 of 7 major features complete, 5 in progress
+**Completed:** External GLSL shaders ✅, TrueType font rendering ✅
+**In Progress:** Responsive layout, Settings layer, Config persistence, Tuning modes, Spectrum analyzer
 
 **Goals:**
-- Implement TunerVisualizationLayer
-- Needle-style tuner display
-- Frequency and cents offset display
-- Basic settings panel
+
+- ✅ Externalize shaders to .glsl files (COMPLETE)
+- ✅ Implement TrueType font rendering (COMPLETE)
+- Responsive window sizing and layout
+- Settings layer with device selection
+- Configuration persistence (JSON save/load)
+- Multiple tuning modes (chromatic, standard, drop D, etc.)
+- Optional: Spectrum analyzer visualization
 
 **Tasks:**
 
-#### Rendering Layer
-1. [ ] Create TunerVisualizationLayer (kappa-core layer)
-2. [ ] Implement needle meter rendering (OpenGL)
-3. [ ] Add note name display (current detected note)
-4. [ ] Add frequency display (Hz)
-5. [ ] Add cents offset display (±50 cents range)
-6. [ ] Create "in-tune" indicator (green zone)
-7. [ ] Design OpenGL shaders for smooth needle animation
-8. [ ] Implement reference pitch line (target frequency)
+#### Rendering Layer ✅ COMPLETE
 
-#### Settings UI
-9. [ ] Create SettingsLayer (kappa-core layer)
-10. [ ] Add device selection dropdown
-11. [ ] Add reference pitch adjustment (A=430-450 Hz)
-12. [ ] Add tuning mode selector (chromatic, standard, drop D)
-13. [ ] Implement settings persistence (save/load config)
+1. [x] Create TunerVisualizationLayer (kappa-core layer)
+2. [x] Implement needle meter rendering (OpenGL)
+3. [x] Add note name display (current detected note)
+4. [x] Add frequency display (Hz)
+5. [x] Add cents offset display (±50 cents range)
+6. [x] Create "in-tune" indicator (green zone)
+7. [x] Design OpenGL shaders for smooth needle animation
+8. [x] **Externalize shaders to .glsl files** ✅ COMPLETE
+   - `assets/shaders/geometry.vert/.frag` - Shape rendering
+   - `assets/shaders/text.vert/.frag` - Text rendering with texture sampling
+   - CMake POST_BUILD command auto-copies to build directory
+9. [x] Implement reference pitch line (target frequency)
+10. [x] **TrueType font rendering with stb_truetype** ✅ COMPLETE
+    - FontRenderer.h/.cpp implementation
+    - Font atlas generation (512x512 texture)
+    - System font loading (Arial, Consola, Helvetica, DejaVu Sans)
+    - Antialiased text rendering
+    - Text width calculation for centering
 
-#### Application Polish
-14. [ ] Create Application class (kappa::Application subclass)
-15. [ ] Set up layer stack (Audio → Visualization → Settings)
-16. [ ] Implement window title and icon
-17. [ ] Add FPS counter for debugging
+#### Configuration System (NEW - High Priority)
+11. [ ] Create Config.h/.cpp class for application settings
+12. [ ] Implement JSON serialization with nlohmann-json (already in vcpkg)
+13. [ ] Save/load: audio device ID, reference pitch, tuning mode, window state
+14. [ ] Config file location: user directory (e.g., `~/.config/precision-tuner/config.json`)
+15. [ ] Integration in PrecisionGuitarTuner.cpp (load on startup, save on shutdown)
+
+#### Responsive Layout (Infrastructure Ready)
+16. [ ] Override OnEvent() in TunerVisualizationLayer to handle WindowResizeEvent
+17. [ ] Dynamic glViewport() updates on window resize
+18. [ ] Aspect-ratio-aware coordinate scaling (currently uses hardcoded NDC)
+19. [ ] Window state persistence via kappa-core WindowStatePersistence
+
+#### Settings UI (Infrastructure Ready)
+20. [ ] Create SettingsLayer (kappa-core layer)
+21. [ ] Choose UI framework: ImGui (recommended) or custom OpenGL controls
+22. [ ] Add device selection dropdown (uses AudioProcessingLayer::GetAvailableDevices())
+23. [ ] Add reference pitch adjustment slider (A=430-450 Hz)
+24. [ ] Add tuning mode selector (chromatic, standard, drop D, etc.)
+25. [ ] Runtime device switching (stop current, start new)
+26. [ ] Add SettingsLayer to application layer stack
+
+#### Multiple Tuning Modes (NEW)
+27. [ ] Create TuningPresets.h/.cpp class
+28. [ ] Implement tuning preset system with note/frequency arrays
+29. [ ] Add tuning presets: Standard (EADGBE), Drop D, Drop C, DADGAD, Open G, etc.
+30. [ ] Add chromatic mode (current behavior - any note)
+31. [ ] Visual indicator for "closest target string" in standard tuning modes
+32. [ ] Tuning mode selector UI in SettingsLayer
+33. [ ] Persist selected tuning mode in Config
+
+#### Optional: Spectrum Analyzer
+34. [ ] FFT visualization using existing PFFFT from lib-guitar-dsp
+35. [ ] Frequency magnitude spectrum bar graph
+36. [ ] Harmonic peak highlighting
+37. [ ] Toggle between tuner/spectrum modes
+
+#### Application Polish ✅ COMPLETE
+38. [x] Create Application class (kappa::Application subclass)
+39. [x] Set up layer stack (Audio → Visualization)
+40. [x] Implement window title and icon
+41. [ ] Add SettingsLayer to stack (pending implementation)
 
 **Deliverables:**
-- Functional tuner UI (needle display)
-- Device selection working
-- Settings save/load working
-- Responsive 60 FPS rendering
+- ✅ Functional tuner UI with modern OpenGL rendering
+- ✅ External GLSL shader files
+- ✅ TrueType font rendering for text display
+- ✅ 60 FPS rendering with color-coded tuning feedback
+- [ ] Responsive window layout
+- [ ] Settings layer with device selection
+- [ ] Configuration persistence
+- [ ] Multiple tuning modes
 
 **Success Criteria:**
-- Needle responds in real-time (<50ms visual latency)
-- UI is clear and readable
-- Settings persist between sessions
-- No UI lag or stuttering
+- ✅ Needle responds in real-time (<50ms visual latency)
+- ✅ UI is clear and readable
+- ✅ No UI lag or stuttering at 60 FPS
+- [ ] Settings persist between sessions
+- [ ] Window resize handled gracefully
+- [ ] Device switching works without restart
 
 ---
 
@@ -466,9 +521,20 @@ Dependencies (Git Submodules)
 
 ## Current Status
 
-**Phase:** Phase 0 - Repository Setup
-**Progress:** 10% (CLAUDE.md created)
-**Next Task:** Initialize git repository and create submodule structure
+**Phase:** Phase 2 Complete ✅ / Phase 3 In Progress (29% Complete)
+**Progress:** ~40% overall (Phases 0-2 complete, Phase 3 partially complete)
+**Completed Recently:**
+- ✅ External GLSL shader files (geometry.vert/frag, text.vert/frag)
+- ✅ TrueType font rendering with stb_truetype
+- ✅ Modern OpenGL rendering with color-coded tuning feedback
+- ✅ Real-time pitch detection with YIN algorithm
+
+**Next Priority Tasks (Phase 3):**
+1. Configuration persistence system (Config.h/.cpp with JSON save/load)
+2. Responsive window sizing and layout
+3. Settings layer with device selection UI
+4. Multiple tuning modes (chromatic, standard, drop D, etc.)
+
 **Blockers:** None
 
-**Last Updated:** 2025-01-22
+**Last Updated:** 2025-11-23
