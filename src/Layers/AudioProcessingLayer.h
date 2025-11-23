@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <AudioDevice.h>
+#include <AudioDeviceManager.h>
 #include <YinPitchDetector.h>
 
 namespace PrecisionTuner::Layers
@@ -78,6 +79,25 @@ public:
      */
     [[nodiscard]] std::vector<std::string> GetAvailableDevices() const;
 
+    /**
+     * @brief Returns available audio input device information (with IDs)
+     * @return Vector of device info structures
+     */
+    [[nodiscard]] std::vector<GuitarIO::AudioDeviceInfo> GetAvailableDeviceInfo() const;
+
+    /**
+     * @brief Gets the currently active device ID
+     * @return Current device ID (-1 if using default or not initialized)
+     */
+    [[nodiscard]] uint32_t GetCurrentDeviceId() const;
+
+    /**
+     * @brief Switches to a different audio device at runtime
+     * @param deviceId Device ID to switch to
+     * @return true if successful, false otherwise
+     */
+    bool SwitchDevice(uint32_t deviceId);
+
 private:
     /**
      * @brief Audio callback (real-time thread)
@@ -107,6 +127,9 @@ private:
 
     // Pre-allocated buffer for audio processing (to avoid allocations in callback)
     std::vector<float> processingBuffer;
+
+    // Current device tracking
+    uint32_t currentDeviceId = static_cast<uint32_t>(-1);
 };
 
 } // namespace PrecisionTuner::Layers

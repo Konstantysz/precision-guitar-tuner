@@ -1,23 +1,21 @@
 #pragma once
 
-#include "AudioProcessingLayer.h"
-#include "FontRenderer.h"
+#include <AudioProcessingLayer.h>
 #include <Layer.h>
-#include <glad/glad.h>
-#include <glm/glm.hpp>
-#include <memory>
 #include <NoteConverter.h>
+#include <imgui.h>
 
 namespace PrecisionTuner::Layers
 {
 
 /**
- * @brief Layer responsible for rendering the tuner UI
+ * @brief Layer responsible for rendering the tuner UI using ImGui
  *
  * Displays:
  * - Current detected note and frequency
- * - Cent deviation from target pitch
- * - Visual tuning indicator
+ * - Cent deviation from target pitch (-50 to +50 range)
+ * - Visual tuning indicator with color coding
+ * - IN TUNE indicator when within ±3 cents
  */
 class TunerVisualizationLayer : public Kappa::Layer
 {
@@ -40,54 +38,35 @@ public:
     void OnUpdate(float deltaTime) override;
 
     /**
-     * @brief Called every frame to render the layer
+     * @brief Called every frame to render the tuner UI
      */
     void OnRender() override;
 
 private:
-    // Helper methods for rendering
-    void InitializeOpenGL();
-    void RenderBackground();
+    /**
+     * @brief Renders the cent deviation meter (-50 to +50 range)
+     */
     void RenderCentDeviationMeter();
-    void RenderTuningIndicator();
-    glm::vec3 GetColorForCents(float cents);
-    void DrawFilledRect(float x, float y, float width, float height, const glm::vec3 &color);
-    void DrawOutlineRect(float x, float y, float width, float height, const glm::vec3 &color, float lineWidth = 2.0f);
-    void DrawCircle(float x, float y, float radius, const glm::vec3 &color, bool filled = true);
-    void SetupShaders();
 
-    // Helper methods for responsive layout
-    void UpdateViewport();
-    glm::vec2 ScaleToAspectRatio(float x, float y);
+    /**
+     * @brief Renders the tuning indicator (note name, frequency, cents)
+     */
+    void RenderTuningIndicator();
+
+    /**
+     * @brief Gets color for given cent deviation
+     * @param cents Cent deviation from target
+     * @return RGB color (green = in-tune, yellow = close, red = far)
+     */
+    ImVec4 GetColorForCents(float cents);
 
     AudioProcessingLayer &audioLayer;
-
-    // OpenGL resources
-    bool initialized = false;
-    GLuint geometryShaderProgram = 0;  // For shapes (circles, rects)
-    GLuint textShaderProgram = 0;       // For text rendering
-    GLuint VAO = 0;
-    GLuint VBO = 0;
-    GLuint textVAO = 0;
-    GLuint textVBO = 0;
-
-    std::unique_ptr<FontRenderer> fontRenderer;
 
     // UI state
     GuitarDSP::NoteInfo currentNote;
     float updateTimer = 0.0f;
     bool hasPitchData = false;
     static constexpr float UPDATE_INTERVAL = 0.1f; // Update UI every 100ms
-
-    // Window/viewport state for responsive layout
-    int viewportWidth = 0;
-    int viewportHeight = 0;
-    float aspectRatio = 1.0f;
-
-    // Visual constants (in NDC, will be scaled by aspect ratio)
-    static constexpr float METER_WIDTH = 0.8f;       // 80% of screen width
-    static constexpr float METER_HEIGHT = 0.05f;     // 5% of screen height
-    static constexpr float INDICATOR_RADIUS = 0.08f; // Circular indicator radius
 };
 
 } // namespace PrecisionTuner::Layers

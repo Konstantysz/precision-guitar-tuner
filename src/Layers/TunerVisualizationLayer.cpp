@@ -1,222 +1,17 @@
-#include "TunerVisualizationLayer.h"
-#include "FontRenderer.h"
-#include <Application.h>
+#include <TunerVisualizationLayer.h>
+#include <AudioProcessingLayer.h>
 #include <Logger.h>
+#include <imgui.h>
 #include <algorithm>
 #include <cmath>
 #include <format>
-#include <fstream>
-#include <sstream>
-#include <vector>
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 namespace PrecisionTuner::Layers
 {
 
-namespace
-{
-    // Helper function to load shader source from file
-    std::string LoadShaderFromFile(const std::string &filepath)
-    {
-        std::ifstream file(filepath);
-        if (!file.is_open())
-        {
-            LOG_ERROR("Failed to open shader file: {}", filepath);
-            return "";
-        }
-
-        std::stringstream buffer;
-        buffer << file.rdbuf();
-        return buffer.str();
-    }
-} // anonymous namespace
-
 TunerVisualizationLayer::TunerVisualizationLayer(AudioProcessingLayer &audioLayer) : audioLayer(audioLayer)
 {
-    LOG_INFO("TunerVisualizationLayer - Initializing UI");
-}
-
-void TunerVisualizationLayer::InitializeOpenGL()
-{
-    LOG_INFO("TunerVisualizationLayer - Setting up OpenGL state");
-
-    // Setup shaders
-    SetupShaders();
-
-    // Create VAO and VBO for geometry
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    // Position attribute
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-
-    // Color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(2 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    glBindVertexArray(0);
-
-    // Create VAO and VBO for text (position + texcoord + color = 7 floats)
-    glGenVertexArrays(1, &textVAO);
-    glGenBuffers(1, &textVBO);
-
-    glBindVertexArray(textVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, textVBO);
-
-    // Position attribute
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-
-    // Texture coordinate attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *)(2 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    // Color attribute
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *)(4 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-
-    glBindVertexArray(0);
-
-    // Enable blending for smooth colors and text
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // Disable depth test (2D rendering)
-    glDisable(GL_DEPTH_TEST);
-
-    // Initialize font renderer - try Windows system fonts first
-    const char *fontPaths[] = {
-        "C:/Windows/Fonts/arial.ttf",
-        "C:/Windows/Fonts/consola.ttf",
-        "/System/Library/Fonts/Helvetica.ttc",  // macOS
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"  // Linux
-    };
-
-    for (const char *path : fontPaths)
-    {
-        try
-        {
-            fontRenderer = std::make_unique<FontRenderer>(path, 48.0f);
-            if (fontRenderer)
-            {
-                LOG_INFO("Loaded font: {}", path);
-                break;
-            }
-        }
-        catch (...)
-        {
-            // Try next font
-        }
-    }
-
-    if (!fontRenderer)
-    {
-        LOG_WARN("Failed to load any system font - text rendering disabled");
-    }
-
-    initialized = true;
-}
-
-void TunerVisualizationLayer::SetupShaders()
-{
-    GLint success;
-    GLchar infoLog[512];
-
-    // Load shader sources from files
-    std::string geometryVertSource = LoadShaderFromFile("assets/shaders/geometry.vert");
-    std::string geometryFragSource = LoadShaderFromFile("assets/shaders/geometry.frag");
-    std::string textVertSource = LoadShaderFromFile("assets/shaders/text.vert");
-    std::string textFragSource = LoadShaderFromFile("assets/shaders/text.frag");
-
-    const char *geometryVertexShaderSource = geometryVertSource.c_str();
-    const char *geometryFragmentShaderSource = geometryFragSource.c_str();
-    const char *textVertexShaderSource = textVertSource.c_str();
-    const char *textFragmentShaderSource = textFragSource.c_str();
-
-    // === Geometry Shaders (for shapes) ===
-    GLuint geometryVertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(geometryVertexShader, 1, &geometryVertexShaderSource, nullptr);
-    glCompileShader(geometryVertexShader);
-
-    glGetShaderiv(geometryVertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(geometryVertexShader, 512, nullptr, infoLog);
-        LOG_ERROR("Geometry vertex shader compilation failed: {}", infoLog);
-    }
-
-    GLuint geometryFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(geometryFragmentShader, 1, &geometryFragmentShaderSource, nullptr);
-    glCompileShader(geometryFragmentShader);
-
-    glGetShaderiv(geometryFragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(geometryFragmentShader, 512, nullptr, infoLog);
-        LOG_ERROR("Geometry fragment shader compilation failed: {}", infoLog);
-    }
-
-    geometryShaderProgram = glCreateProgram();
-    glAttachShader(geometryShaderProgram, geometryVertexShader);
-    glAttachShader(geometryShaderProgram, geometryFragmentShader);
-    glLinkProgram(geometryShaderProgram);
-
-    glGetProgramiv(geometryShaderProgram, GL_LINK_STATUS, &success);
-    if (!success)
-    {
-        glGetProgramInfoLog(geometryShaderProgram, 512, nullptr, infoLog);
-        LOG_ERROR("Geometry shader program linking failed: {}", infoLog);
-    }
-
-    glDeleteShader(geometryVertexShader);
-    glDeleteShader(geometryFragmentShader);
-
-    // === Text Shaders (for font rendering) ===
-    GLuint textVertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(textVertexShader, 1, &textVertexShaderSource, nullptr);
-    glCompileShader(textVertexShader);
-
-    glGetShaderiv(textVertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(textVertexShader, 512, nullptr, infoLog);
-        LOG_ERROR("Text vertex shader compilation failed: {}", infoLog);
-    }
-
-    GLuint textFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(textFragmentShader, 1, &textFragmentShaderSource, nullptr);
-    glCompileShader(textFragmentShader);
-
-    glGetShaderiv(textFragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(textFragmentShader, 512, nullptr, infoLog);
-        LOG_ERROR("Text fragment shader compilation failed: {}", infoLog);
-    }
-
-    textShaderProgram = glCreateProgram();
-    glAttachShader(textShaderProgram, textVertexShader);
-    glAttachShader(textShaderProgram, textFragmentShader);
-    glLinkProgram(textShaderProgram);
-
-    glGetProgramiv(textShaderProgram, GL_LINK_STATUS, &success);
-    if (!success)
-    {
-        glGetProgramInfoLog(textShaderProgram, 512, nullptr, infoLog);
-        LOG_ERROR("Text shader program linking failed: {}", infoLog);
-    }
-
-    glDeleteShader(textVertexShader);
-    glDeleteShader(textFragmentShader);
-
-    LOG_INFO("Geometry and text shaders compiled and linked successfully");
+    LOG_INFO("TunerVisualizationLayer - Initializing ImGui-based tuner UI");
 }
 
 void TunerVisualizationLayer::OnUpdate(float deltaTime)
@@ -254,61 +49,149 @@ void TunerVisualizationLayer::OnUpdate(float deltaTime)
 
 void TunerVisualizationLayer::OnRender()
 {
-    // Initialize OpenGL resources on first render
-    if (!initialized)
+    // Create main tuner window (fullscreen, no titlebar)
+    ImGuiViewport *viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->Pos);
+    ImGui::SetNextWindowSize(viewport->Size);
+
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration |
+                             ImGuiWindowFlags_NoMove |
+                             ImGuiWindowFlags_NoResize |
+                             ImGuiWindowFlags_NoSavedSettings |
+                             ImGuiWindowFlags_NoBringToFrontOnFocus;
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1f, 0.1f, 0.12f, 1.0f)); // Dark background
+
+    if (ImGui::Begin("Tuner", nullptr, flags))
     {
-        InitializeOpenGL();
-    }
-
-    // Update viewport and aspect ratio for responsive layout
-    UpdateViewport();
-
-    RenderBackground();
-
-    // Always render UI elements (even without pitch data for testing)
-    if (geometryShaderProgram != 0)
-    {
-        glUseProgram(geometryShaderProgram);
-        glBindVertexArray(VAO);
-
+        // Render tuner UI elements
+        RenderTuningIndicator();
         RenderCentDeviationMeter();
-
-        // Only render indicator if we have pitch data
-        if (hasPitchData)
-        {
-            RenderTuningIndicator();
-        }
-
-        glBindVertexArray(0);
-        glUseProgram(0);
     }
+    ImGui::End();
+
+    ImGui::PopStyleColor();
+    ImGui::PopStyleVar(2);
 }
 
-void TunerVisualizationLayer::RenderBackground()
+void TunerVisualizationLayer::RenderTuningIndicator()
 {
-    // Clear screen to dark background
-    glClearColor(0.1f, 0.1f, 0.12f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    if (!hasPitchData)
+    {
+        // Show "No signal" message when no pitch detected
+        ImVec2 windowSize = ImGui::GetWindowSize();
+        ImGui::SetCursorPos(ImVec2(windowSize.x * 0.5f - 100.0f, windowSize.y * 0.3f));
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.55f, 1.0f));
+        ImGui::Text("No signal detected");
+        ImGui::PopStyleColor();
+        return;
+    }
+
+    ImVec2 windowSize = ImGui::GetWindowSize();
+    ImDrawList *drawList = ImGui::GetWindowDrawList();
+    ImVec2 center(windowSize.x * 0.5f, windowSize.y * 0.3f);
+
+    // Get color based on cent deviation
+    ImVec4 color = GetColorForCents(currentNote.cents);
+    ImU32 colorU32 = ImGui::ColorConvertFloat4ToU32(color);
+
+    // Draw circular indicator
+    const float indicatorRadius = 80.0f;
+    drawList->AddCircleFilled(center, indicatorRadius, colorU32, 64);
+    drawList->AddCircle(center, indicatorRadius, IM_COL32(255, 255, 255, 255), 64, 3.0f);
+
+    // Draw "IN TUNE" indicator when within ±3 cents
+    if (std::abs(currentNote.cents) <= 3.0f)
+    {
+        // Pulsing border
+        const float pulseRadius = indicatorRadius * 1.3f;
+        drawList->AddCircle(center, pulseRadius, IM_COL32(51, 255, 77, 255), 64, 4.0f);
+
+        // Checkmark below circle
+        ImVec2 checkStart(center.x - 40.0f, center.y + indicatorRadius + 30.0f);
+        ImVec2 checkEnd(center.x + 40.0f, center.y + indicatorRadius + 30.0f);
+        drawList->AddRectFilled(checkStart, checkEnd, IM_COL32(51, 255, 77, 255), 10.0f);
+    }
+
+    // Display note name above indicator (e.g., "E4")
+    std::string noteText;
+    noteText += currentNote.name;
+    noteText += std::to_string(currentNote.octave);
+
+    ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[0]); // Use default font
+    ImVec2 noteTextSize = ImGui::CalcTextSize(noteText.c_str());
+    noteTextSize.x *= 2.0f; // Scale up
+    noteTextSize.y *= 2.0f;
+
+    ImGui::SetCursorPos(ImVec2(center.x - noteTextSize.x * 0.25f, center.y - indicatorRadius - 80.0f));
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+    ImGui::SetWindowFontScale(3.0f);
+    ImGui::Text("%s", noteText.c_str());
+    ImGui::SetWindowFontScale(1.0f);
+    ImGui::PopStyleColor();
+    ImGui::PopFont();
+
+    // Display frequency below indicator (e.g., "440.0 Hz")
+    std::string freqText = std::format("{:.1f} Hz", currentNote.frequency);
+    ImVec2 freqTextSize = ImGui::CalcTextSize(freqText.c_str());
+
+    ImGui::SetCursorPos(ImVec2(center.x - freqTextSize.x * 0.6f, center.y + indicatorRadius + 60.0f));
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.8f, 0.85f, 1.0f));
+    ImGui::SetWindowFontScale(1.2f);
+    ImGui::Text("%s", freqText.c_str());
+    ImGui::SetWindowFontScale(1.0f);
+    ImGui::PopStyleColor();
+
+    // Display cent deviation below frequency (e.g., "+2.3")
+    std::string centsText = std::format("{:+.1f} cents", currentNote.cents);
+    ImVec2 centsTextSize = ImGui::CalcTextSize(centsText.c_str());
+
+    ImGui::SetCursorPos(ImVec2(center.x - centsTextSize.x * 0.8f, center.y + indicatorRadius + 90.0f));
+    ImGui::PushStyleColor(ImGuiCol_Text, color);
+    ImGui::SetWindowFontScale(1.5f);
+    ImGui::Text("%s", centsText.c_str());
+    ImGui::SetWindowFontScale(1.0f);
+    ImGui::PopStyleColor();
 }
 
 void TunerVisualizationLayer::RenderCentDeviationMeter()
 {
-    // Render horizontal meter showing cent deviation from -50 to +50 cents
-    const float meterY = 0.0f; // Center vertically
+    ImVec2 windowSize = ImGui::GetWindowSize();
+    ImDrawList *drawList = ImGui::GetWindowDrawList();
+
+    // Meter dimensions and position
+    const float meterWidth = windowSize.x * 0.8f;
+    const float meterHeight = 60.0f;
+    const float meterY = windowSize.y * 0.65f;
+    const float meterX = (windowSize.x - meterWidth) * 0.5f;
 
     // Draw meter background (dark gray)
-    DrawFilledRect(
-        -METER_WIDTH / 2.0f, meterY - METER_HEIGHT / 2.0f, METER_WIDTH, METER_HEIGHT, glm::vec3(0.2f, 0.2f, 0.22f));
+    ImVec2 meterMin(meterX, meterY);
+    ImVec2 meterMax(meterX + meterWidth, meterY + meterHeight);
+    drawList->AddRectFilled(meterMin, meterMax, IM_COL32(51, 51, 56, 255), 5.0f);
 
     // Draw center line (white)
-    DrawFilledRect(-0.002f, meterY - METER_HEIGHT / 2.0f, 0.004f, METER_HEIGHT, glm::vec3(1.0f, 1.0f, 1.0f));
+    const float centerX = meterX + meterWidth * 0.5f;
+    drawList->AddRectFilled(
+        ImVec2(centerX - 2.0f, meterY),
+        ImVec2(centerX + 2.0f, meterY + meterHeight),
+        IM_COL32(255, 255, 255, 255)
+    );
 
     // Draw tick marks at ±10, ±20, ±30, ±40, ±50 cents
-    for (int cent : { -50, -40, -30, -20, -10, 10, 20, 30, 40, 50 })
+    for (int cent : {-50, -40, -30, -20, -10, 10, 20, 30, 40, 50})
     {
-        float x = (cent / 50.0f) * (METER_WIDTH / 2.0f);
-        float tickHeight = (cent % 20 == 0) ? METER_HEIGHT * 0.6f : METER_HEIGHT * 0.4f;
-        DrawFilledRect(x - 0.001f, meterY - tickHeight / 2.0f, 0.002f, tickHeight, glm::vec3(0.5f, 0.5f, 0.55f));
+        float x = centerX + (cent / 50.0f) * (meterWidth * 0.5f);
+        float tickHeight = (cent % 20 == 0) ? meterHeight * 0.6f : meterHeight * 0.4f;
+        float tickY = meterY + (meterHeight - tickHeight) * 0.5f;
+
+        drawList->AddRectFilled(
+            ImVec2(x - 1.0f, tickY),
+            ImVec2(x + 1.0f, tickY + tickHeight),
+            IM_COL32(128, 128, 140, 255)
+        );
     }
 
     // Draw current cent deviation position (colored indicator)
@@ -316,272 +199,59 @@ void TunerVisualizationLayer::RenderCentDeviationMeter()
     {
         // Clamp cents to ±50 range for display
         float clampedCents = std::clamp(currentNote.cents, -50.0f, 50.0f);
-        float indicatorX = (clampedCents / 50.0f) * (METER_WIDTH / 2.0f);
+        float indicatorX = centerX + (clampedCents / 50.0f) * (meterWidth * 0.5f);
 
-        glm::vec3 color = GetColorForCents(currentNote.cents);
-        DrawFilledRect(indicatorX - 0.008f, meterY - METER_HEIGHT * 0.8f, 0.016f, METER_HEIGHT * 1.6f, color);
+        ImVec4 color = GetColorForCents(currentNote.cents);
+        ImU32 colorU32 = ImGui::ColorConvertFloat4ToU32(color);
+
+        drawList->AddRectFilled(
+            ImVec2(indicatorX - 8.0f, meterY - 10.0f),
+            ImVec2(indicatorX + 8.0f, meterY + meterHeight + 10.0f),
+            colorU32,
+            5.0f
+        );
     }
 
     // Draw meter outline (white)
-    DrawOutlineRect(-METER_WIDTH / 2.0f,
-        meterY - METER_HEIGHT / 2.0f,
-        METER_WIDTH,
-        METER_HEIGHT,
-        glm::vec3(0.6f, 0.6f, 0.65f),
-        2.0f);
+    drawList->AddRect(meterMin, meterMax, IM_COL32(153, 153, 166, 255), 5.0f, 0, 2.0f);
 }
 
-void TunerVisualizationLayer::RenderTuningIndicator()
-{
-    // Render circular indicator above the meter
-    const float indicatorY = 0.3f;
-
-    if (hasPitchData)
-    {
-        glm::vec3 color = GetColorForCents(currentNote.cents);
-        DrawCircle(0.0f, indicatorY, INDICATOR_RADIUS, color, true);
-
-        // Draw outline
-        DrawCircle(0.0f, indicatorY, INDICATOR_RADIUS, glm::vec3(1.0f, 1.0f, 1.0f), false);
-
-        // Draw "IN TUNE" indicator when within ±3 cents
-        if (std::abs(currentNote.cents) <= 3.0f)
-        {
-            // Draw pulsing border around the circle to indicate perfect tuning
-            const float pulseRadius = INDICATOR_RADIUS * 1.3f;
-            DrawCircle(0.0f, indicatorY, pulseRadius, glm::vec3(0.2f, 1.0f, 0.3f), false);
-
-            // Draw checkmark-like indicator bars below the circle
-            const float checkY = indicatorY - INDICATOR_RADIUS - 0.05f;
-            DrawFilledRect(-0.04f, checkY, 0.08f, 0.02f, glm::vec3(0.2f, 1.0f, 0.3f));
-        }
-
-        // Display text using FontRenderer if available
-        if (fontRenderer)
-        {
-            // Display note name above the indicator (e.g., "E4")
-            std::string noteText;
-            noteText += currentNote.name;
-            noteText += std::to_string(currentNote.octave);
-            const float noteTextSize = 0.15f;
-            const float noteTextWidth = fontRenderer->GetTextWidth(noteText, noteTextSize);
-            fontRenderer->RenderText(noteText, -noteTextWidth * 0.5f, indicatorY + INDICATOR_RADIUS + 0.15f, noteTextSize, glm::vec3(1.0f, 1.0f, 1.0f), textShaderProgram, textVAO, textVBO);
-
-            // Display frequency below the indicator (e.g., "440.0 Hz")
-            std::string freqText = std::format("{:.1f} Hz", currentNote.frequency);
-            const float freqTextSize = 0.08f;
-            const float freqTextWidth = fontRenderer->GetTextWidth(freqText, freqTextSize);
-            fontRenderer->RenderText(freqText, -freqTextWidth * 0.5f, indicatorY - INDICATOR_RADIUS - 0.25f, freqTextSize, glm::vec3(0.8f, 0.8f, 0.85f), textShaderProgram, textVAO, textVBO);
-
-            // Display cent deviation below frequency (e.g., "+2.3")
-            std::string centsText = std::format("{:+.1f}", currentNote.cents);
-            const float centsTextSize = 0.12f;
-            const float centsTextWidth = fontRenderer->GetTextWidth(centsText, centsTextSize);
-            fontRenderer->RenderText(centsText, -centsTextWidth * 0.5f, indicatorY - INDICATOR_RADIUS - 0.45f, centsTextSize, color, textShaderProgram, textVAO, textVBO);
-        }
-    }
-}
-
-glm::vec3 TunerVisualizationLayer::GetColorForCents(float cents)
+ImVec4 TunerVisualizationLayer::GetColorForCents(float cents)
 {
     float absCents = std::abs(cents);
 
     if (absCents <= 3.0f)
     {
         // In tune - green
-        return glm::vec3(0.2f, 0.9f, 0.3f);
+        return ImVec4(0.2f, 0.9f, 0.3f, 1.0f);
     }
     else if (absCents <= 10.0f)
     {
         // Close - yellow-green blend
         float t = (absCents - 3.0f) / 7.0f;
-        return glm::mix(glm::vec3(0.2f, 0.9f, 0.3f), glm::vec3(0.9f, 0.9f, 0.2f), t);
+        return ImVec4(
+            0.2f + (0.7f * t),  // R: 0.2 -> 0.9
+            0.9f,                // G: 0.9
+            0.3f - (0.1f * t),  // B: 0.3 -> 0.2
+            1.0f
+        );
     }
     else if (absCents <= 25.0f)
     {
         // Getting far - yellow to orange
         float t = (absCents - 10.0f) / 15.0f;
-        return glm::mix(glm::vec3(0.9f, 0.9f, 0.2f), glm::vec3(0.9f, 0.5f, 0.1f), t);
+        return ImVec4(
+            0.9f,                // R: 0.9
+            0.9f - (0.4f * t),  // G: 0.9 -> 0.5
+            0.2f - (0.1f * t),  // B: 0.2 -> 0.1
+            1.0f
+        );
     }
     else
     {
         // Very out of tune - red
-        return glm::vec3(0.9f, 0.2f, 0.2f);
+        return ImVec4(0.9f, 0.2f, 0.2f, 1.0f);
     }
 }
-
-void TunerVisualizationLayer::DrawFilledRect(float x, float y, float width, float height, const glm::vec3 &color)
-{
-    // Create vertices for a filled rectangle (2 triangles)
-    float vertices[] = {
-        // positions        // colors
-        x,
-        y,
-        color.r,
-        color.g,
-        color.b, // bottom-left
-        x + width,
-        y,
-        color.r,
-        color.g,
-        color.b, // bottom-right
-        x + width,
-        y + height,
-        color.r,
-        color.g,
-        color.b, // top-right
-
-        x,
-        y,
-        color.r,
-        color.g,
-        color.b, // bottom-left
-        x + width,
-        y + height,
-        color.r,
-        color.g,
-        color.b, // top-right
-        x,
-        y + height,
-        color.r,
-        color.g,
-        color.b // top-left
-    };
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-}
-
-void TunerVisualizationLayer::DrawOutlineRect(float x,
-    float y,
-    float width,
-    float height,
-    const glm::vec3 &color,
-    float lineWidth)
-{
-    // Create vertices for rectangle outline
-    float vertices[] = {
-        // positions        // colors
-        x,
-        y,
-        color.r,
-        color.g,
-        color.b, // bottom-left
-        x + width,
-        y,
-        color.r,
-        color.g,
-        color.b, // bottom-right
-        x + width,
-        y + height,
-        color.r,
-        color.g,
-        color.b, // top-right
-        x,
-        y + height,
-        color.r,
-        color.g,
-        color.b // top-left
-    };
-
-    glLineWidth(lineWidth);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
-    glDrawArrays(GL_LINE_LOOP, 0, 4);
-}
-
-void TunerVisualizationLayer::DrawCircle(float x, float y, float radius, const glm::vec3 &color, bool filled)
-{
-    const int segments = 32;
-    std::vector<float> vertices;
-
-    if (filled)
-    {
-        // Triangle fan: center + perimeter vertices
-        vertices.push_back(x);
-        vertices.push_back(y);
-        vertices.push_back(color.r);
-        vertices.push_back(color.g);
-        vertices.push_back(color.b);
-
-        for (int i = 0; i <= segments; i++)
-        {
-            float angle = (i / static_cast<float>(segments)) * 2.0f * static_cast<float>(M_PI);
-            float vx = x + radius * std::cos(angle);
-            float vy = y + radius * std::sin(angle);
-            vertices.push_back(vx);
-            vertices.push_back(vy);
-            vertices.push_back(color.r);
-            vertices.push_back(color.g);
-            vertices.push_back(color.b);
-        }
-
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_DYNAMIC_DRAW);
-        glDrawArrays(GL_TRIANGLE_FAN, 0, segments + 2);
-    }
-    else
-    {
-        // Line loop for outline
-        for (int i = 0; i < segments; i++)
-        {
-            float angle = (i / static_cast<float>(segments)) * 2.0f * static_cast<float>(M_PI);
-            float vx = x + radius * std::cos(angle);
-            float vy = y + radius * std::sin(angle);
-            vertices.push_back(vx);
-            vertices.push_back(vy);
-            vertices.push_back(color.r);
-            vertices.push_back(color.g);
-            vertices.push_back(color.b);
-        }
-
-        glLineWidth(3.0f);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_DYNAMIC_DRAW);
-        glDrawArrays(GL_LINE_LOOP, 0, segments);
-    }
-}
-
-void TunerVisualizationLayer::UpdateViewport()
-{
-    // Get current framebuffer size from GLFW
-    // We need to query GLFW directly since kappa-core doesn't have resize callbacks yet
-    GLFWwindow *window = glfwGetCurrentContext();
-    if (!window)
-    {
-        return;
-    }
-
-    int newWidth = 0;
-    int newHeight = 0;
-    glfwGetFramebufferSize(window, &newWidth, &newHeight);
-
-    // Only update if size actually changed
-    if (newWidth != viewportWidth || newHeight != viewportHeight)
-    {
-        viewportWidth = newWidth;
-        viewportHeight = newHeight;
-
-        // Update OpenGL viewport to match framebuffer size
-        glViewport(0, 0, viewportWidth, viewportHeight);
-
-        // Calculate aspect ratio for coordinate scaling
-        if (viewportHeight > 0)
-        {
-            aspectRatio = static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight);
-        }
-
-        LOG_INFO("Viewport updated: {}x{} (aspect ratio: {:.2f})", viewportWidth, viewportHeight, aspectRatio);
-    }
-}
-
-glm::vec2 TunerVisualizationLayer::ScaleToAspectRatio(float x, float y)
-{
-    // Scale x coordinate by aspect ratio to maintain correct proportions
-    // This prevents UI elements from stretching when window aspect ratio changes
-    return glm::vec2(x / aspectRatio, y);
-}
-
 
 } // namespace PrecisionTuner::Layers

@@ -8,6 +8,7 @@
 
 #include "AudioProcessingLayer.h"
 #include "Config.h"
+#include "SettingsLayer.h"
 #include "TunerVisualizationLayer.h"
 #include <Application.h>
 #include <Logger.h>
@@ -56,6 +57,9 @@ public:
         if (audioLayer)
         {
             PushLayer<TunerVisualizationLayer>(*audioLayer);
+
+            // Push settings layer (renders on top, provides device selection and settings UI)
+            PushLayer<SettingsLayer>(*audioLayer, config);
         }
 
         LOG_INFO("All layers initialized");

@@ -65,13 +65,16 @@ else()
     add_subdirectory(external/lib-guitar-dsp)
 endif()
 
+# Find ImGui package (from vcpkg)
+find_package(imgui CONFIG REQUIRED)
+
 # Main application
 add_executable(precision-guitar-tuner
     src/PrecisionGuitarTuner.cpp
     src/Config.cpp
     src/Layers/AudioProcessingLayer.cpp
     src/Layers/TunerVisualizationLayer.cpp
-    src/FontRenderer.cpp
+    src/Layers/SettingsLayer.cpp
 )
 
 target_include_directories(precision-guitar-tuner PRIVATE
@@ -81,9 +84,10 @@ target_include_directories(precision-guitar-tuner PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/external/stb
 )
 
-# Link kappa-core framework
+# Link kappa-core framework and ImGui
 target_link_libraries(precision-guitar-tuner PRIVATE
     Kappa
+    imgui::imgui
 )
 
 # Link lib-guitar-io and lib-guitar-dsp
@@ -145,13 +149,7 @@ else()
     )
 endif()
 
-# Copy assets to build directory
-add_custom_command(TARGET precision-guitar-tuner POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/assets
-        $<TARGET_FILE_DIR:precision-guitar-tuner>/assets
-    COMMENT "Copying assets to build directory"
-)
+# Note: Shader assets no longer needed with ImGui-based rendering
 
 # Installation
 install(TARGETS precision-guitar-tuner

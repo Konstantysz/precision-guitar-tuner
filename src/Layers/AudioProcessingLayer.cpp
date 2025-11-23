@@ -37,6 +37,9 @@ AudioProcessingLayer::AudioProcessingLayer(const Config &config)
     auto defaultInfo = deviceManager.GetDeviceInfo(defaultId);
     LOG_INFO("Using default input device: [{}] {}", defaultId, defaultInfo.name);
 
+    // Track current device (will be default)
+    currentDeviceId = defaultId;
+
     // Configure audio stream
     GuitarIO::AudioStreamConfig streamConfig{
         .sampleRate = config.sampleRate,
@@ -150,6 +153,93 @@ void AudioProcessingLayer::ProcessAudio(const float *inputBuffer, size_t frameCo
         // No pitch detected
         pitchDetected.store(false, std::memory_order_relaxed);
     }
+}
+
+std::vector<GuitarIO::AudioDeviceInfo> AudioProcessingLayer::GetAvailableDeviceInfo() const
+{
+    auto &manager = GuitarIO::AudioDeviceManager::Get();
+    return manager.EnumerateInputDevices();
+}
+
+uint32_t AudioProcessingLayer::GetCurrentDeviceId() const
+{
+    return currentDeviceId;
+}
+
+bool AudioProcessingLayer::SwitchDevice(uint32_t deviceId)
+{
+    LOG_INFO("Switching to audio device ID: {}", deviceId);
+
+    // Stop current stream if running
+    if (audioDevice->IsRunning())
+    {
+        LOG_INFO("Stopping current audio stream...");
+        if (!audioDevice->Stop())
+        {
+            LOG_ERROR("Failed to stop audio stream: {}", audioDevice->GetLastError());
+            return false;
+        }
+    }
+
+    // Close current device if open
+    if (audioDevice->IsOpen())
+    {
+        LOG_INFO("Closing current audio device...");
+        audioDevice->Close();
+    }
+
+    // Configure audio stream
+    GuitarIO::AudioStreamConfig streamConfig{
+        .sampleRate = config.sampleRate,
+        .bufferSize = config.bufferSize,
+        .inputChannels = 1, // Mono input for guitar
+        .outputChannels = 0 // No output (input-only)
+    };
+
+    // Open new device
+    LOG_INFO("Opening new audio device...");
+    if (!audioDevice->Open(deviceId, streamConfig, AudioCallback, this))
+    {
+        LOG_ERROR("Failed to open audio device: {}", audioDevice->GetLastError());
+
+        // Try to reopen default device as fallback
+        LOG_WARN("Attempting to reopen default device as fallback...");
+        if (audioDevice->OpenDefault(streamConfig, AudioCallback, this))
+        {
+            audioDevice->Start();
+            currentDeviceId = static_cast<uint32_t>(-1);
+            LOG_INFO("Fallback to default device successful");
+        }
+        return false;
+    }
+
+    // Start new stream
+    LOG_INFO("Starting new audio stream...");
+    if (!audioDevice->Start())
+    {
+        LOG_ERROR("Failed to start audio stream: {}", audioDevice->GetLastError());
+        audioDevice->Close();
+
+        // Try to reopen default device as fallback
+        LOG_WARN("Attempting to reopen default device as fallback...");
+        if (audioDevice->OpenDefault(streamConfig, AudioCallback, this))
+        {
+            audioDevice->Start();
+            currentDeviceId = static_cast<uint32_t>(-1);
+            LOG_INFO("Fallback to default device successful");
+        }
+        return false;
+    }
+
+    // Update current device ID
+    currentDeviceId = deviceId;
+
+    // Log device info
+    auto &manager = GuitarIO::AudioDeviceManager::Get();
+    auto deviceInfo = manager.GetDeviceInfo(deviceId);
+    LOG_INFO("Successfully switched to device: [{}] {}", deviceId, deviceInfo.name);
+
+    return true;
 }
 
 } // namespace PrecisionTuner::Layers
