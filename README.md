@@ -188,7 +188,7 @@ Development roadmap is in [.claude/DEVELOPMENT_PLAN.md](.claude/DEVELOPMENT_PLAN
 - [x] Precise cent deviation display
 - [x] "IN TUNE" indicator with visual feedback
 
-### Phase 3: Enhanced UI & Features (In Progress - 43% Complete)
+### Phase 3: Enhanced UI & Features (In Progress - 57% Complete)
 
 - [x] **Move shaders to external .glsl files** ✅ COMPLETE
   - `assets/shaders/geometry.vert/.frag` - Shape rendering
@@ -197,9 +197,10 @@ Development roadmap is in [.claude/DEVELOPMENT_PLAN.md](.claude/DEVELOPMENT_PLAN
 - [x] **Configuration persistence** ✅ COMPLETE
   - JSON save/load with nlohmann-json
   - Platform-specific config paths (Windows/macOS/Linux)
-  - Window size, audio device, tuning mode persistence
-  - Automatic save on shutdown, load on startup
-- [ ] Responsive window sizing and layout (infrastructure ready)
+- [x] **Responsive window sizing and layout** ✅ COMPLETE
+  - Dynamic viewport updates via GLFW framebuffer queries
+  - Window size constraints (400×300 min, 3840×2160 max)
+  - Config persistence for window dimensions
 - [ ] Settings layer (device selection UI)
 - [ ] Multiple tuning modes (chromatic, standard, drop D, DADGAD, etc.)
 - [ ] Spectrum analyzer (optional - FFT visualization)

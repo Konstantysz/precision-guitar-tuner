@@ -141,16 +141,16 @@ Dependencies (Git Submodules)
 
 ### Phase 3: Enhanced UI and Features (Weeks 4-5) ✅ PARTIALLY COMPLETE
 
-**Status:** 3 of 7 major features complete, 4 in progress (43%)
-**Completed:** External GLSL shaders ✅, TrueType font rendering ✅, Configuration persistence ✅
-**In Progress:** Responsive layout, Settings layer, Tuning modes, Spectrum analyzer
+**Status:** 4 of 7 major features complete, 3 in progress (57%)
+**Completed:** External GLSL shaders ✅, TrueType font rendering ✅, Configuration persistence ✅, Responsive layout ✅
+**In Progress:** Settings layer, Tuning modes, Spectrum analyzer
 
 **Goals:**
 
 - ✅ Externalize shaders to .glsl files (COMPLETE)
 - ✅ Implement TrueType font rendering (COMPLETE)
 - ✅ Configuration persistence (JSON save/load) (COMPLETE)
-- Responsive window sizing and layout
+- ✅ Responsive window sizing and layout (COMPLETE)
 - Settings layer with device selection
 - Multiple tuning modes (chromatic, standard, drop D, etc.)
 - Optional: Spectrum analyzer visualization
@@ -189,35 +189,36 @@ Dependencies (Git Submodules)
     - Linux: `~/.config/PrecisionTuner/config.json`
 15. [x] Integration in PrecisionGuitarTuner.cpp (load on startup, save on shutdown)
 
-#### Responsive Layout (Infrastructure Ready)
-16. [ ] Override OnEvent() in TunerVisualizationLayer to handle WindowResizeEvent
-17. [ ] Dynamic glViewport() updates on window resize
-18. [ ] Aspect-ratio-aware coordinate scaling (currently uses hardcoded NDC)
-19. [ ] Window state persistence via kappa-core WindowStatePersistence
+#### Responsive Layout ✅ COMPLETE
+16. [x] ~~Override OnEvent() in TunerVisualizationLayer to handle WindowResizeEvent~~ (used GLFW direct query instead)
+17. [x] Dynamic glViewport() updates on window resize
+18. [x] Aspect-ratio-aware coordinate scaling (ScaleToAspectRatio() helper method added)
+19. [x] Window state persistence via Config system (width/height saved to config.json)
+20. [x] Window size constraints (400×300 minimum, 3840×2160 maximum)
 
 #### Settings UI (Infrastructure Ready)
-20. [ ] Create SettingsLayer (kappa-core layer)
-21. [ ] Choose UI framework: ImGui (recommended) or custom OpenGL controls
-22. [ ] Add device selection dropdown (uses AudioProcessingLayer::GetAvailableDevices())
-23. [ ] Add reference pitch adjustment slider (A=430-450 Hz)
-24. [ ] Add tuning mode selector (chromatic, standard, drop D, etc.)
-25. [ ] Runtime device switching (stop current, start new)
-26. [ ] Add SettingsLayer to application layer stack
+21. [ ] Create SettingsLayer (kappa-core layer)
+22. [ ] Choose UI framework: ImGui (recommended) or custom OpenGL controls
+23. [ ] Add device selection dropdown (uses AudioProcessingLayer::GetAvailableDevices())
+24. [ ] Add reference pitch adjustment slider (A=430-450 Hz)
+25. [ ] Add tuning mode selector (chromatic, standard, drop D, etc.)
+26. [ ] Runtime device switching (stop current, start new)
+27. [ ] Add SettingsLayer to application layer stack
 
 #### Multiple Tuning Modes (NEW)
-27. [ ] Create TuningPresets.h/.cpp class
-28. [ ] Implement tuning preset system with note/frequency arrays
-29. [ ] Add tuning presets: Standard (EADGBE), Drop D, Drop C, DADGAD, Open G, etc.
-30. [ ] Add chromatic mode (current behavior - any note)
-31. [ ] Visual indicator for "closest target string" in standard tuning modes
-32. [ ] Tuning mode selector UI in SettingsLayer
-33. [ ] Persist selected tuning mode in Config
+28. [ ] Create TuningPresets.h/.cpp class
+29. [ ] Implement tuning preset system with note/frequency arrays
+30. [ ] Add tuning presets: Standard (EADGBE), Drop D, Drop C, DADGAD, Open G, etc.
+31. [ ] Add chromatic mode (current behavior - any note)
+32. [ ] Visual indicator for "closest target string" in standard tuning modes
+33. [ ] Tuning mode selector UI in SettingsLayer
+34. [ ] Persist selected tuning mode in Config
 
 #### Optional: Spectrum Analyzer
-34. [ ] FFT visualization using existing PFFFT from lib-guitar-dsp
-35. [ ] Frequency magnitude spectrum bar graph
-36. [ ] Harmonic peak highlighting
-37. [ ] Toggle between tuner/spectrum modes
+35. [ ] FFT visualization using existing PFFFT from lib-guitar-dsp
+36. [ ] Frequency magnitude spectrum bar graph
+37. [ ] Harmonic peak highlighting
+38. [ ] Toggle between tuner/spectrum modes
 
 #### Application Polish ✅ COMPLETE
 38. [x] Create Application class (kappa::Application subclass)
@@ -231,7 +232,7 @@ Dependencies (Git Submodules)
 - ✅ TrueType font rendering for text display
 - ✅ 60 FPS rendering with color-coded tuning feedback
 - ✅ Configuration persistence (JSON save/load with platform paths)
-- [ ] Responsive window layout
+- ✅ Responsive window layout with size constraints
 - [ ] Settings layer with device selection
 - [ ] Multiple tuning modes
 
@@ -240,7 +241,7 @@ Dependencies (Git Submodules)
 - ✅ UI is clear and readable
 - ✅ No UI lag or stuttering at 60 FPS
 - ✅ Settings persist between sessions (config save/load working)
-- [ ] Window resize handled gracefully
+- ✅ Window resize handled gracefully (400×300 min, 3840×2160 max)
 - [ ] Device switching works without restart
 
 ---
@@ -525,9 +526,10 @@ Dependencies (Git Submodules)
 
 ## Current Status
 
-**Phase:** Phase 2 Complete ✅ / Phase 3 In Progress (43% Complete)
-**Progress:** ~45% overall (Phases 0-2 complete, Phase 3 at 43%)
+**Phase:** Phase 2 Complete ✅ / Phase 3 In Progress (57% Complete)
+**Progress:** ~50% overall (Phases 0-2 complete, Phase 3 at 57%)
 **Completed Recently:**
+- ✅ Responsive window sizing and layout (GLFW framebuffer queries, size constraints)
 - ✅ External GLSL shader files (geometry.vert/frag, text.vert/frag)
 - ✅ TrueType font rendering with stb_truetype
 - ✅ Configuration persistence (JSON save/load, platform-specific paths)
@@ -535,10 +537,9 @@ Dependencies (Git Submodules)
 - ✅ Real-time pitch detection with YIN algorithm
 
 **Next Priority Tasks (Phase 3):**
-1. Responsive window sizing and layout (infrastructure ready)
-2. Settings layer with device selection UI (requires ImGui decision)
-3. Multiple tuning modes (chromatic, standard, drop D, etc.)
-4. Optional: Spectrum analyzer visualization
+1. Settings layer with device selection UI (requires ImGui decision)
+2. Multiple tuning modes (chromatic, standard, drop D, etc.)
+3. Optional: Spectrum analyzer visualization
 
 **Blockers:** None
 
