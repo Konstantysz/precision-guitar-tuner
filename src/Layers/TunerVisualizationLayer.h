@@ -56,6 +56,10 @@ private:
     void DrawCircle(float x, float y, float radius, const glm::vec3 &color, bool filled = true);
     void SetupShaders();
 
+    // Helper methods for responsive layout
+    void UpdateViewport();
+    glm::vec2 ScaleToAspectRatio(float x, float y);
+
     AudioProcessingLayer &audioLayer;
 
     // OpenGL resources
@@ -75,7 +79,12 @@ private:
     bool hasPitchData = false;
     static constexpr float UPDATE_INTERVAL = 0.1f; // Update UI every 100ms
 
-    // Visual constants
+    // Window/viewport state for responsive layout
+    int viewportWidth = 0;
+    int viewportHeight = 0;
+    float aspectRatio = 1.0f;
+
+    // Visual constants (in NDC, will be scaled by aspect ratio)
     static constexpr float METER_WIDTH = 0.8f;       // 80% of screen width
     static constexpr float METER_HEIGHT = 0.05f;     // 5% of screen height
     static constexpr float INDICATOR_RADIUS = 0.08f; // Circular indicator radius

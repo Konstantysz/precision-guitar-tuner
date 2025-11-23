@@ -28,6 +28,19 @@ public:
     {
         LOG_INFO("Precision Tuner initialized");
 
+        // Set minimum and maximum window size constraints
+        GLFWwindow *window = glfwGetCurrentContext();
+        if (window)
+        {
+            constexpr int MIN_WIDTH = 400;
+            constexpr int MIN_HEIGHT = 300;
+            constexpr int MAX_WIDTH = 3840;  // 4K resolution
+            constexpr int MAX_HEIGHT = 2160; // 4K resolution
+
+            glfwSetWindowSizeLimits(window, MIN_WIDTH, MIN_HEIGHT, MAX_WIDTH, MAX_HEIGHT);
+            LOG_INFO("Window size limits set: {}x{} to {}x{}", MIN_WIDTH, MIN_HEIGHT, MAX_WIDTH, MAX_HEIGHT);
+        }
+
         // Load configuration
         config = Config::Load();
         LOG_INFO("Configuration loaded");
@@ -51,6 +64,24 @@ public:
     ~PrecisionTunerApp() override
     {
         LOG_INFO("Precision Tuner shutting down");
+
+        // Update config with current window size before saving
+        GLFWwindow *window = glfwGetCurrentContext();
+        if (window)
+        {
+            int width = 0;
+            int height = 0;
+            glfwGetWindowSize(window, &width, &height);
+
+            // Apply minimum and maximum constraints
+            constexpr int MIN_WIDTH = 400;
+            constexpr int MIN_HEIGHT = 300;
+            constexpr int MAX_WIDTH = 3840;  // 4K resolution
+            constexpr int MAX_HEIGHT = 2160; // 4K resolution
+
+            config.window.width = std::clamp(width, MIN_WIDTH, MAX_WIDTH);
+            config.window.height = std::clamp(height, MIN_HEIGHT, MAX_HEIGHT);
+        }
 
         // Save configuration
         if (config.Save())

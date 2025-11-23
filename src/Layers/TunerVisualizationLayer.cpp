@@ -1,5 +1,6 @@
 #include "TunerVisualizationLayer.h"
 #include "FontRenderer.h"
+#include <Application.h>
 #include <Logger.h>
 #include <algorithm>
 #include <cmath>
@@ -258,6 +259,9 @@ void TunerVisualizationLayer::OnRender()
     {
         InitializeOpenGL();
     }
+
+    // Update viewport and aspect ratio for responsive layout
+    UpdateViewport();
 
     RenderBackground();
 
@@ -537,6 +541,46 @@ void TunerVisualizationLayer::DrawCircle(float x, float y, float radius, const g
         glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_DYNAMIC_DRAW);
         glDrawArrays(GL_LINE_LOOP, 0, segments);
     }
+}
+
+void TunerVisualizationLayer::UpdateViewport()
+{
+    // Get current framebuffer size from GLFW
+    // We need to query GLFW directly since kappa-core doesn't have resize callbacks yet
+    GLFWwindow *window = glfwGetCurrentContext();
+    if (!window)
+    {
+        return;
+    }
+
+    int newWidth = 0;
+    int newHeight = 0;
+    glfwGetFramebufferSize(window, &newWidth, &newHeight);
+
+    // Only update if size actually changed
+    if (newWidth != viewportWidth || newHeight != viewportHeight)
+    {
+        viewportWidth = newWidth;
+        viewportHeight = newHeight;
+
+        // Update OpenGL viewport to match framebuffer size
+        glViewport(0, 0, viewportWidth, viewportHeight);
+
+        // Calculate aspect ratio for coordinate scaling
+        if (viewportHeight > 0)
+        {
+            aspectRatio = static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight);
+        }
+
+        LOG_INFO("Viewport updated: {}x{} (aspect ratio: {:.2f})", viewportWidth, viewportHeight, aspectRatio);
+    }
+}
+
+glm::vec2 TunerVisualizationLayer::ScaleToAspectRatio(float x, float y)
+{
+    // Scale x coordinate by aspect ratio to maintain correct proportions
+    // This prevents UI elements from stretching when window aspect ratio changes
+    return glm::vec2(x / aspectRatio, y);
 }
 
 
