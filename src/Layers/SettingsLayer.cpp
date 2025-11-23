@@ -6,6 +6,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <GLFW/glfw3.h>
+#include <algorithm>
 
 namespace PrecisionTuner::Layers
 {
@@ -133,13 +134,12 @@ void SettingsLayer::RenderDeviceSelector()
 
         // Find current device in list
         uint32_t currentDeviceId = audioLayer.GetCurrentDeviceId();
-        for (size_t i = 0; i < availableDevices.size(); ++i)
+        auto it = std::ranges::find_if(availableDevices,
+            [currentDeviceId](const auto &device) { return device.id == currentDeviceId; });
+
+        if (it != availableDevices.end())
         {
-            if (availableDevices[i].id == currentDeviceId)
-            {
-                selectedDeviceIndex = static_cast<int>(i);
-                break;
-            }
+            selectedDeviceIndex = static_cast<int>(std::distance(availableDevices.begin(), it));
         }
     }
 

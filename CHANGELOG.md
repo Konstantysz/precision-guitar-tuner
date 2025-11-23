@@ -15,6 +15,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Configuration persistence
 - Alternative tuning support (Drop D, chromatic, etc.)
 
+### Changed
+
+- **C++20 Modernization** (2025-11-23)
+  - Updated `lib-guitar-io` to use `std::span<const float>` and `std::span<float>` for audio buffers instead of raw pointers
+  - Updated `lib-guitar-dsp` `PitchDetector::Detect` to accept `std::span<const float>` instead of pointer + size
+  - Updated `AudioProcessingLayer` to match new library interfaces
+  - Entire audio pipeline now uses `std::span` for type safety and bounds checking
+  - Replaced manual loop in `SettingsLayer` with `std::ranges::find_if` for device selection
+
+### Fixed
+
+- **Security** (2025-11-23)
+  - Added null check for `getpwuid` result in `Config.cpp` to prevent potential crash on Linux
+
+### Added
+
+- **Maintainability** (2025-11-23)
+  - Centralized window size constants in `Config.h` as `static constexpr` members of `WindowConfig`
+  - Added pre-allocation of `YinPitchDetector` buffers during initialization to ensure real-time safety
+  - Created basic test infrastructure with `tests/CMakeLists.txt` and `tests/ConfigTest.cpp`
+
+### Removed
+
+- **Dead Code** (2025-11-23)
+  - Removed unused `FontRenderer.cpp` and `FontRenderer.h` (functionality replaced by ImGui)
+
 ## [0.0.1] - 2025-11-23 (Unreleased)
 
 ### Added

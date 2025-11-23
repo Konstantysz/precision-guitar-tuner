@@ -66,9 +66,19 @@ std::filesystem::path Config::GetDefaultConfigPath()
         if (home == nullptr)
         {
             struct passwd *pw = getpwuid(getuid());
-            home = pw->pw_dir;
+            if (pw != nullptr)
+            {
+                home = pw->pw_dir;
+            }
         }
-        configDir = std::filesystem::path(home) / ".config" / "PrecisionTuner";
+        if (home != nullptr)
+        {
+            configDir = std::filesystem::path(home) / ".config" / "PrecisionTuner";
+        }
+        else
+        {
+            configDir = std::filesystem::current_path();
+        }
     }
 #else
     // Fallback: current directory

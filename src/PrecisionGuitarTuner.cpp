@@ -33,13 +33,16 @@ public:
         GLFWwindow *window = glfwGetCurrentContext();
         if (window)
         {
-            constexpr int MIN_WIDTH = 400;
-            constexpr int MIN_HEIGHT = 300;
-            constexpr int MAX_WIDTH = 3840;  // 4K resolution
-            constexpr int MAX_HEIGHT = 2160; // 4K resolution
-
-            glfwSetWindowSizeLimits(window, MIN_WIDTH, MIN_HEIGHT, MAX_WIDTH, MAX_HEIGHT);
-            LOG_INFO("Window size limits set: {}x{} to {}x{}", MIN_WIDTH, MIN_HEIGHT, MAX_WIDTH, MAX_HEIGHT);
+            glfwSetWindowSizeLimits(window, 
+                WindowConfig::MIN_WIDTH, 
+                WindowConfig::MIN_HEIGHT, 
+                WindowConfig::MAX_WIDTH, 
+                WindowConfig::MAX_HEIGHT);
+            LOG_INFO("Window size limits set: {}x{} to {}x{}", 
+                WindowConfig::MIN_WIDTH, 
+                WindowConfig::MIN_HEIGHT, 
+                WindowConfig::MAX_WIDTH, 
+                WindowConfig::MAX_HEIGHT);
         }
 
         // Load configuration
@@ -78,13 +81,12 @@ public:
             glfwGetWindowSize(window, &width, &height);
 
             // Apply minimum and maximum constraints
-            constexpr int MIN_WIDTH = 400;
-            constexpr int MIN_HEIGHT = 300;
-            constexpr int MAX_WIDTH = 3840;  // 4K resolution
-            constexpr int MAX_HEIGHT = 2160; // 4K resolution
-
-            config.window.width = std::clamp(width, MIN_WIDTH, MAX_WIDTH);
-            config.window.height = std::clamp(height, MIN_HEIGHT, MAX_HEIGHT);
+            config.window.width = std::clamp(width, 
+                WindowConfig::MIN_WIDTH, 
+                WindowConfig::MAX_WIDTH);
+            config.window.height = std::clamp(height, 
+                WindowConfig::MIN_HEIGHT, 
+                WindowConfig::MAX_HEIGHT);
         }
 
         // Save configuration

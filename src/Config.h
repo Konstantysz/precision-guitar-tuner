@@ -43,6 +43,12 @@ struct WindowConfig
     int posY = -1;  // -1 means centered
     bool isMaximized = false;
 
+    // Window constraints
+    static constexpr int MIN_WIDTH = 400;
+    static constexpr int MIN_HEIGHT = 300;
+    static constexpr int MAX_WIDTH = 3840;  // 4K resolution
+    static constexpr int MAX_HEIGHT = 2160; // 4K resolution
+
     // JSON serialization
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(WindowConfig, width, height, posX, posY, isMaximized)
 };

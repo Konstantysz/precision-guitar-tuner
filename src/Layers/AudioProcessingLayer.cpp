@@ -66,6 +66,13 @@ AudioProcessingLayer::AudioProcessingLayer(const Config &config)
     LOG_INFO("  Sample Rate: {} Hz", config.sampleRate);
     LOG_INFO("  Buffer Size: {} frames", config.bufferSize);
     LOG_INFO("  Frequency Range: {:.1f} - {:.1f} Hz", config.minFrequency, config.maxFrequency);
+    LOG_INFO("  Frequency Range: {:.1f} - {:.1f} Hz", config.minFrequency, config.maxFrequency);
+
+    // Pre-allocate YinPitchDetector internal buffer by running a dummy detection
+    // This ensures no allocations happen during the first real audio callback
+    std::vector<float> dummyBuffer(config.bufferSize, 0.0f);
+    (void)pitchDetector->Detect(dummyBuffer, static_cast<float>(config.sampleRate));
+    LOG_INFO("YinPitchDetector initialized and pre-allocated");
 }
 
 AudioProcessingLayer::~AudioProcessingLayer()
@@ -119,27 +126,26 @@ std::vector<std::string> AudioProcessingLayer::GetAvailableDevices() const
     return deviceNames;
 }
 
-int AudioProcessingLayer::AudioCallback(const float *inputBuffer,
-    [[maybe_unused]] float *outputBuffer,
-    size_t frameCount,
+int AudioProcessingLayer::AudioCallback(std::span<const float> inputBuffer,
+    [[maybe_unused]] std::span<float> outputBuffer,
     void *userData)
 {
     auto *layer = static_cast<AudioProcessingLayer *>(userData);
-    if (!layer || !inputBuffer)
+    if (!layer || inputBuffer.empty())
     {
         return 1; // Stop stream
     }
 
     // Process audio in real-time thread
-    layer->ProcessAudio(inputBuffer, frameCount);
+    layer->ProcessAudio(inputBuffer);
 
     return 0; // Continue stream
 }
 
-void AudioProcessingLayer::ProcessAudio(const float *inputBuffer, size_t frameCount)
+void AudioProcessingLayer::ProcessAudio(std::span<const float> inputBuffer)
 {
     // Detect pitch using YIN algorithm
-    auto result = pitchDetector->Detect(inputBuffer, frameCount, static_cast<float>(config.sampleRate));
+    auto result = pitchDetector->Detect(inputBuffer, static_cast<float>(config.sampleRate));
 
     if (result.has_value())
     {

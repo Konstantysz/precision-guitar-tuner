@@ -7,6 +7,7 @@
 #include <AudioDevice.h>
 #include <AudioDeviceManager.h>
 #include <YinPitchDetector.h>
+#include <span>
 
 namespace PrecisionTuner::Layers
 {
@@ -103,18 +104,16 @@ private:
      * @brief Audio callback (real-time thread)
      * @param inputBuffer Input audio samples
      * @param outputBuffer Output audio samples (unused)
-     * @param frameCount Number of frames
      * @param userData User data pointer
      * @return 0 to continue, non-zero to stop
      */
-    static int AudioCallback(const float *inputBuffer, float *outputBuffer, size_t frameCount, void *userData);
+    static int AudioCallback(std::span<const float> inputBuffer, std::span<float> outputBuffer, void *userData);
 
     /**
      * @brief Processes audio buffer and detects pitch (real-time thread)
      * @param inputBuffer Input audio samples
-     * @param frameCount Number of frames
      */
-    void ProcessAudio(const float *inputBuffer, size_t frameCount);
+    void ProcessAudio(std::span<const float> inputBuffer);
 
     Config config;
     std::unique_ptr<GuitarIO::AudioDevice> audioDevice;

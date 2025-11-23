@@ -51,10 +51,12 @@ This project uses git submodules for code reuse across a planned 4-application g
 
 - **lib-guitar-io**: Provides cross-platform audio device management and real-time I/O
   - Wraps RtAudio with RAII patterns
+  - Uses std::span for type-safe audio buffer handling
   - Handles device enumeration, hot-plug detection
   - Abstracts ASIO/CoreAudio/ALSA platform differences
 
 - **lib-guitar-dsp**: Provides signal processing algorithms
+  - Uses std::span for type-safe buffer interfaces
   - PFFFT (BSD-licensed FFT, GPL-free)
   - YIN pitch detection (primary, 0.78% error rate)
   - MPM (McLeod Pitch Method, better for vibrato)
@@ -155,11 +157,11 @@ pushLayer(new SettingsLayer());             // Top: UI controls
 ```
 Audio Input (Rocksmith cable / USB interface)
     ↓
-lib-guitar-io: RtAudio callback (audio thread)
+lib-guitar-io: RtAudio callback (audio thread) → std::span wrapper
     ↓
-Circular buffer (lock-free, real-time safe)
+AudioProcessingLayer: std::span<const float>
     ↓
-lib-guitar-dsp: YIN pitch detection
+lib-guitar-dsp: YIN pitch detection (std::span interface)
     ↓
 Event published to UI thread
     ↓

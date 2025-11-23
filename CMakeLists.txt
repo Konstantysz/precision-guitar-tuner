@@ -157,9 +157,9 @@ install(TARGETS precision-guitar-tuner
     BUNDLE DESTINATION .
 )
 
-# Testing (TODO: add when tests are created)
-# enable_testing()
-# add_subdirectory(tests)
+# Testing
+enable_testing()
+add_subdirectory(tests)
 
 # Print configuration summary
 message(STATUS "")
