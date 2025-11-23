@@ -11,8 +11,8 @@
 namespace PrecisionTuner::Layers
 {
 
-SettingsLayer::SettingsLayer(AudioProcessingLayer &audioLayer, PrecisionTuner::Config &config)
-    : audioLayer(audioLayer), config(config)
+SettingsLayer::SettingsLayer(AudioProcessingLayer &audioLayer, TunerVisualizationLayer &tunerLayer, PrecisionTuner::Config &config)
+    : audioLayer(audioLayer), tunerLayer(tunerLayer), config(config)
 {
     LOG_INFO("SettingsLayer - Initializing");
     InitializeImGui();
@@ -81,7 +81,8 @@ void SettingsLayer::OnRender()
     }
 
     // Create settings window (positioned in bottom right corner)
-    if (showSettings)
+    // Only render if tuner layer indicates settings should be visible
+    if (showSettings && tunerLayer.IsSettingsVisible())
     {
         ImGuiViewport *viewport = ImGui::GetMainViewport();
         ImVec2 windowSize(450, 350);

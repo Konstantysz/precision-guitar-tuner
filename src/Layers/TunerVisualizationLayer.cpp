@@ -66,6 +66,21 @@ void TunerVisualizationLayer::OnRender()
 
     if (ImGui::Begin("Tuner", nullptr, flags))
     {
+        // Render settings toggle button in top-right corner
+        ImVec2 windowSize = ImGui::GetWindowSize();
+        ImGui::SetCursorPos(ImVec2(windowSize.x - 150.0f, 10.0f));
+
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.4f, 0.6f, 0.8f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.4f, 0.5f, 0.7f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.6f, 0.8f, 1.0f));
+
+        if (ImGui::Button(showSettingsPanel ? "Hide Settings" : "Show Settings", ImVec2(140.0f, 30.0f)))
+        {
+            showSettingsPanel = !showSettingsPanel;
+        }
+
+        ImGui::PopStyleColor(3);
+
         // Render tuner UI elements
         RenderTuningIndicator();
         RenderCentDeviationMeter();

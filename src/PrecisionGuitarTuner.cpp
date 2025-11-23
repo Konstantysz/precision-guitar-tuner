@@ -61,8 +61,13 @@ public:
         {
             PushLayer<TunerVisualizationLayer>(*audioLayer);
 
-            // Push settings layer (renders on top, provides device selection and settings UI)
-            PushLayer<SettingsLayer>(*audioLayer, config);
+            // Get tuner layer for settings visibility control
+            auto *tunerLayer = dynamic_cast<TunerVisualizationLayer *>(layers[1].get());
+            if (tunerLayer)
+            {
+                // Push settings layer (renders on top, provides device selection and settings UI)
+                PushLayer<SettingsLayer>(*audioLayer, *tunerLayer, config);
+            }
         }
 
         LOG_INFO("All layers initialized");

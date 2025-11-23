@@ -42,6 +42,18 @@ public:
      */
     void OnRender() override;
 
+    /**
+     * @brief Gets the settings visibility state
+     * @return true if settings should be shown
+     */
+    [[nodiscard]] bool IsSettingsVisible() const { return showSettingsPanel; }
+
+    /**
+     * @brief Sets the settings visibility state
+     * @param visible true to show settings, false to hide
+     */
+    void SetSettingsVisible(bool visible) { showSettingsPanel = visible; }
+
 private:
     /**
      * @brief Renders the cent deviation meter (-50 to +50 range)
@@ -66,6 +78,7 @@ private:
     GuitarDSP::NoteInfo currentNote;
     float updateTimer = 0.0f;
     bool hasPitchData = false;
+    bool showSettingsPanel = true; // Show settings panel by default
     static constexpr float UPDATE_INTERVAL = 0.1f; // Update UI every 100ms
 };
 

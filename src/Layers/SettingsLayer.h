@@ -5,6 +5,7 @@
 #include <vector>
 #include <AudioDeviceManager.h>
 #include <AudioProcessingLayer.h>
+#include <TunerVisualizationLayer.h>
 #include <Config.h>
 
 namespace PrecisionTuner::Layers
@@ -26,9 +27,10 @@ public:
     /**
      * @brief Constructs settings layer
      * @param audioLayer Reference to audio processing layer (for device switching)
+     * @param tunerLayer Reference to tuner visualization layer (for visibility control)
      * @param config Reference to application config (for persistence)
      */
-    SettingsLayer(AudioProcessingLayer &audioLayer, PrecisionTuner::Config &config);
+    SettingsLayer(AudioProcessingLayer &audioLayer, TunerVisualizationLayer &tunerLayer, PrecisionTuner::Config &config);
 
     /**
      * @brief Destructor - cleans up ImGui context
@@ -68,6 +70,7 @@ private:
     void RenderTuningModeSelector();
 
     AudioProcessingLayer &audioLayer;
+    TunerVisualizationLayer &tunerLayer;
     PrecisionTuner::Config &config;
 
     // UI state
