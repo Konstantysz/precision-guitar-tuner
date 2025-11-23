@@ -8,6 +8,9 @@
 #include <memory>
 #include <NoteConverter.h>
 
+namespace PrecisionTuner::Layers
+{
+
 /**
  * @brief Layer responsible for rendering the tuner UI
  *
@@ -77,3 +80,5 @@ private:
     static constexpr float METER_HEIGHT = 0.05f;     // 5% of screen height
     static constexpr float INDICATOR_RADIUS = 0.08f; // Circular indicator radius
 };
+
+} // namespace PrecisionTuner::Layers

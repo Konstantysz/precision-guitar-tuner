@@ -21,28 +21,29 @@ precision-guitar-tuner/
 ├── external/                       # Git submodules
 │   ├── kappa-core/                # OpenGL application framework (C++20)
 │   ├── lib-guitar-io/             # Audio I/O abstraction (RtAudio wrapper)
-│   └── lib-guitar-dsp/            # DSP algorithms (PFFFT, YIN, MPM)
+│   ├── lib-guitar-dsp/            # DSP algorithms (PFFFT, YIN, MPM)
+│   └── stb/                       # stb_truetype single-header library
 ├── src/
-│   ├── main.cpp                   # Application entry point
-│   ├── Application.cpp/.hpp       # kappa::Application subclass
-│   ├── layers/                    # kappa-core Layer implementations
-│   │   ├── AudioProcessingLayer   # Audio thread management
-│   │   ├── TunerVisualizationLayer # Strobe/needle rendering
-│   │   └── SettingsLayer          # UI controls
-│   ├── tuner/                     # Tuner-specific logic
-│   │   ├── StrobeTuner            # Strobe visualization
-│   │   ├── NeedleTuner            # Needle display
-│   │   └── SpectrumAnalyzer       # FFT visualization
-│   └── utils/
-│       ├── Config                 # Settings persistence
-│       └── NoteConverter          # Frequency ↔ note conversion
-├── include/tuner/                 # Public headers
-├── assets/                        # Shaders, fonts, icons
-├── tests/                         # Unit tests
+│   ├── PrecisionGuitarTuner.cpp   # Application entry point
+│   ├── Layers/                    # kappa-core Layer implementations (namespace: PrecisionTuner::Layers)
+│   │   ├── AudioProcessingLayer.h/.cpp      # Audio thread management
+│   │   └── TunerVisualizationLayer.h/.cpp   # Visual tuner rendering
+│   └── FontRenderer.h/.cpp        # TrueType font rendering (stb_truetype)
+├── assets/                        # Runtime assets
+│   └── shaders/                   # GLSL shader files
+│       ├── geometry.vert/.frag    # Shape rendering shaders
+│       └── text.vert/.frag        # Text rendering shaders
+├── tests/                         # Unit tests (TODO)
 ├── CMakeLists.txt                 # Root build configuration
 ├── vcpkg.json                     # Dependency manifest
 └── DEPENDENCIES.md                # Submodule version tracking
 ```
+
+**Key Directories:**
+
+- `src/Layers/`: All layer classes are in the `PrecisionTuner::Layers` namespace
+- `assets/shaders/`: External GLSL shader files (copied to build directory automatically)
+- `external/stb/`: Single-header libraries (stb_truetype for font rendering)
 
 ### Git Submodule Architecture
 

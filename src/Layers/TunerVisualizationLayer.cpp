@@ -4,72 +4,34 @@
 #include <algorithm>
 #include <cmath>
 #include <format>
+#include <fstream>
+#include <sstream>
 #include <vector>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
-// Geometry vertex shader (for shapes)
-static const char *geometryVertexShaderSource = R"(
-#version 330 core
-layout (location = 0) in vec2 aPos;
-layout (location = 1) in vec3 aColor;
-
-out vec3 fragColor;
-
-void main()
+namespace PrecisionTuner::Layers
 {
-    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
-    fragColor = aColor;
-}
-)";
 
-// Geometry fragment shader (for shapes)
-static const char *geometryFragmentShaderSource = R"(
-#version 330 core
-in vec3 fragColor;
-out vec4 FragColor;
-
-void main()
+namespace
 {
-    FragColor = vec4(fragColor, 1.0);
-}
-)";
+    // Helper function to load shader source from file
+    std::string LoadShaderFromFile(const std::string &filepath)
+    {
+        std::ifstream file(filepath);
+        if (!file.is_open())
+        {
+            LOG_ERROR("Failed to open shader file: {}", filepath);
+            return "";
+        }
 
-// Text vertex shader (with texture coordinates)
-static const char *textVertexShaderSource = R"(
-#version 330 core
-layout (location = 0) in vec2 aPos;
-layout (location = 1) in vec2 aTexCoord;
-layout (location = 2) in vec3 aColor;
-
-out vec2 texCoord;
-out vec3 fragColor;
-
-void main()
-{
-    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
-    texCoord = aTexCoord;
-    fragColor = aColor;
-}
-)";
-
-// Text fragment shader (with texture sampling)
-static const char *textFragmentShaderSource = R"(
-#version 330 core
-in vec2 texCoord;
-in vec3 fragColor;
-out vec4 FragColor;
-
-uniform sampler2D fontTexture;
-
-void main()
-{
-    float alpha = texture(fontTexture, texCoord).r;
-    FragColor = vec4(fragColor, alpha);
-}
-)";
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        return buffer.str();
+    }
+} // anonymous namespace
 
 TunerVisualizationLayer::TunerVisualizationLayer(AudioProcessingLayer &audioLayer) : audioLayer(audioLayer)
 {
@@ -165,6 +127,17 @@ void TunerVisualizationLayer::SetupShaders()
 {
     GLint success;
     GLchar infoLog[512];
+
+    // Load shader sources from files
+    std::string geometryVertSource = LoadShaderFromFile("assets/shaders/geometry.vert");
+    std::string geometryFragSource = LoadShaderFromFile("assets/shaders/geometry.frag");
+    std::string textVertSource = LoadShaderFromFile("assets/shaders/text.vert");
+    std::string textFragSource = LoadShaderFromFile("assets/shaders/text.frag");
+
+    const char *geometryVertexShaderSource = geometryVertSource.c_str();
+    const char *geometryFragmentShaderSource = geometryFragSource.c_str();
+    const char *textVertexShaderSource = textVertSource.c_str();
+    const char *textFragmentShaderSource = textFragSource.c_str();
 
     // === Geometry Shaders (for shapes) ===
     GLuint geometryVertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -566,3 +539,5 @@ void TunerVisualizationLayer::DrawCircle(float x, float y, float radius, const g
     }
 }
 
+
+} // namespace PrecisionTuner::Layers

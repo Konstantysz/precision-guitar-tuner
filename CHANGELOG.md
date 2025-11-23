@@ -10,7 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### TODO
 
 - Responsive window sizing and layout
-- Move shaders to external shader files
 - Strobe tuner visualization mode
 - Settings layer for audio device selection
 - Configuration persistence
@@ -85,6 +84,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Text shader program with texture sampling for fonts
   - Separate VAO/VBO for geometry and text rendering
   - Alpha blending for smooth text antialiasing
+  - External GLSL shader files (assets/shaders/)
+
+- **Code Organization**
+  - Namespace structure: `PrecisionTuner::Layers` for layer classes
+  - Organized src structure: `src/Layers/` for layer implementations
+  - Main entry point renamed to `PrecisionGuitarTuner.cpp`
+  - CMake automatic asset copying to build directory
 
 ### Technical Highlights
 - kappa-core v0.5.1 integration (OpenGL application framework)

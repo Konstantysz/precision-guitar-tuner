@@ -2,6 +2,9 @@
 #include <Logger.h>
 #include <AudioDeviceManager.h>
 
+namespace PrecisionTuner::Layers
+{
+
 AudioProcessingLayer::AudioProcessingLayer(const Config &config)
     : config(config), audioDevice(std::make_unique<GuitarIO::AudioDevice>()),
       pitchDetector(
@@ -13,6 +16,26 @@ AudioProcessingLayer::AudioProcessingLayer(const Config &config)
     processingBuffer.resize(config.bufferSize);
 
     LOG_INFO("AudioProcessingLayer - Initializing audio I/O");
+
+    // Enumerate and log all available input devices
+    auto &deviceManager = GuitarIO::AudioDeviceManager::Get();
+    auto inputDevices = deviceManager.EnumerateInputDevices();
+
+    LOG_INFO("Available input devices ({} found):", inputDevices.size());
+    for (const auto &device : inputDevices)
+    {
+        LOG_INFO("  [{}] {} - {} input channels, sample rates: {}-{} Hz",
+            device.id,
+            device.name,
+            device.maxInputChannels,
+            device.supportedSampleRates.empty() ? 0 : device.supportedSampleRates.front(),
+            device.supportedSampleRates.empty() ? 0 : device.supportedSampleRates.back());
+    }
+
+    // Log which device will be used as default
+    uint32_t defaultId = deviceManager.GetDefaultInputDevice();
+    auto defaultInfo = deviceManager.GetDeviceInfo(defaultId);
+    LOG_INFO("Using default input device: [{}] {}", defaultId, defaultInfo.name);
 
     // Configure audio stream
     GuitarIO::AudioStreamConfig streamConfig{
@@ -128,3 +151,5 @@ void AudioProcessingLayer::ProcessAudio(const float *inputBuffer, size_t frameCo
         pitchDetected.store(false, std::memory_order_relaxed);
     }
 }
+
+} // namespace PrecisionTuner::Layers

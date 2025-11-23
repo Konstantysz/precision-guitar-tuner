@@ -96,17 +96,24 @@ This project uses a modular architecture with git submodules for code reuse:
 
 ```
 precision-guitar-tuner/
-├── external/                    # Git submodules
-│   ├── kappa-core/             # Application framework (OpenGL, layers, events)
-│   ├── lib-guitar-io/          # Audio I/O abstraction (RtAudio wrapper)
-│   └── lib-guitar-dsp/         # DSP algorithms (PFFFT, YIN)
+├── external/                       # Git submodules
+│   ├── kappa-core/                # Application framework (OpenGL, layers, events)
+│   ├── lib-guitar-io/             # Audio I/O abstraction (RtAudio wrapper)
+│   ├── lib-guitar-dsp/            # DSP algorithms (PFFFT, YIN)
+│   └── stb/                       # stb_truetype single-header library
 ├── src/
-│   ├── AudioProcessingLayer.*  # Real-time audio I/O and pitch detection
-│   ├── TunerVisualizationLayer.* # UI rendering (OpenGL)
-│   └── main.cpp                # Application entry point
-└── .claude/                    # Development documentation
-    ├── DEVELOPMENT_PLAN.md     # 11-week roadmap
-    └── settings.json           # IDE configuration
+│   ├── PrecisionGuitarTuner.cpp   # Application entry point
+│   ├── Layers/                    # Layer implementations (PrecisionTuner::Layers namespace)
+│   │   ├── AudioProcessingLayer.h/.cpp      # Real-time audio I/O and pitch detection
+│   │   └── TunerVisualizationLayer.h/.cpp   # Visual tuner rendering (OpenGL)
+│   └── FontRenderer.h/.cpp        # TrueType font rendering (stb_truetype)
+├── assets/
+│   └── shaders/                   # GLSL shader files
+│       ├── geometry.vert/.frag    # Shape rendering
+│       └── text.vert/.frag        # Text rendering
+└── .claude/                       # Development documentation
+    ├── DEVELOPMENT_PLAN.md        # 11-week roadmap
+    └── settings.json              # IDE configuration
 ```
 
 ### Design Principles

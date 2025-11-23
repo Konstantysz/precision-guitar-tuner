@@ -67,15 +67,16 @@ endif()
 
 # Main application
 add_executable(precision-guitar-tuner
-    src/main.cpp
-    src/AudioProcessingLayer.cpp
-    src/TunerVisualizationLayer.cpp
+    src/PrecisionGuitarTuner.cpp
+    src/Layers/AudioProcessingLayer.cpp
+    src/Layers/TunerVisualizationLayer.cpp
     src/FontRenderer.cpp
 )
 
 target_include_directories(precision-guitar-tuner PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Layers
     ${CMAKE_CURRENT_SOURCE_DIR}/external/stb
 )
 
@@ -142,6 +143,14 @@ else()
         -Wno-unused-parameter -Werror
     )
 endif()
+
+# Copy assets to build directory
+add_custom_command(TARGET precision-guitar-tuner POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/assets
+        $<TARGET_FILE_DIR:precision-guitar-tuner>/assets
+    COMMENT "Copying assets to build directory"
+)
 
 # Installation
 install(TARGETS precision-guitar-tuner

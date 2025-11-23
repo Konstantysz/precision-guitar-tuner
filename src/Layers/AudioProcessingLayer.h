@@ -7,6 +7,9 @@
 #include <AudioDevice.h>
 #include <YinPitchDetector.h>
 
+namespace PrecisionTuner::Layers
+{
+
 /**
  * @brief Layer responsible for audio I/O and real-time pitch detection
  *
@@ -105,3 +108,5 @@ private:
     // Pre-allocated buffer for audio processing (to avoid allocations in callback)
     std::vector<float> processingBuffer;
 };
+
+} // namespace PrecisionTuner::Layers

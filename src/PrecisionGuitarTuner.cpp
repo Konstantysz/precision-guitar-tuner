@@ -12,6 +12,8 @@
 #include <Logger.h>
 #include <memory>
 
+using namespace PrecisionTuner::Layers;
+
 /**
  * Main application class for Precision Guitar Tuner
  * Extends Kappa::Application to provide the application lifecycle
