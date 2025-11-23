@@ -92,3 +92,6 @@ settings.json
 
 # Agent working directories
 .serena/
+
+# ImGui settings file
+imgui.ini
