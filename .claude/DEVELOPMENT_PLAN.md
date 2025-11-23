@@ -141,17 +141,17 @@ Dependencies (Git Submodules)
 
 ### Phase 3: Enhanced UI and Features (Weeks 4-5) ✅ PARTIALLY COMPLETE
 
-**Status:** 2 of 7 major features complete, 5 in progress
-**Completed:** External GLSL shaders ✅, TrueType font rendering ✅
-**In Progress:** Responsive layout, Settings layer, Config persistence, Tuning modes, Spectrum analyzer
+**Status:** 3 of 7 major features complete, 4 in progress (43%)
+**Completed:** External GLSL shaders ✅, TrueType font rendering ✅, Configuration persistence ✅
+**In Progress:** Responsive layout, Settings layer, Tuning modes, Spectrum analyzer
 
 **Goals:**
 
 - ✅ Externalize shaders to .glsl files (COMPLETE)
 - ✅ Implement TrueType font rendering (COMPLETE)
+- ✅ Configuration persistence (JSON save/load) (COMPLETE)
 - Responsive window sizing and layout
 - Settings layer with device selection
-- Configuration persistence (JSON save/load)
 - Multiple tuning modes (chromatic, standard, drop D, etc.)
 - Optional: Spectrum analyzer visualization
 
@@ -178,12 +178,16 @@ Dependencies (Git Submodules)
     - Antialiased text rendering
     - Text width calculation for centering
 
-#### Configuration System (NEW - High Priority)
-11. [ ] Create Config.h/.cpp class for application settings
-12. [ ] Implement JSON serialization with nlohmann-json (already in vcpkg)
-13. [ ] Save/load: audio device ID, reference pitch, tuning mode, window state
-14. [ ] Config file location: user directory (e.g., `~/.config/precision-tuner/config.json`)
-15. [ ] Integration in PrecisionGuitarTuner.cpp (load on startup, save on shutdown)
+#### Configuration System ✅ COMPLETE
+
+11. [x] Create Config.h/.cpp class for application settings
+12. [x] Implement JSON serialization with nlohmann-json (already in vcpkg)
+13. [x] Save/load: audio device ID, reference pitch, tuning mode, window state
+14. [x] Config file location: user directory (platform-specific paths)
+    - Windows: `%APPDATA%/PrecisionTuner/config.json`
+    - macOS: `~/Library/Application Support/PrecisionTuner/config.json`
+    - Linux: `~/.config/PrecisionTuner/config.json`
+15. [x] Integration in PrecisionGuitarTuner.cpp (load on startup, save on shutdown)
 
 #### Responsive Layout (Infrastructure Ready)
 16. [ ] Override OnEvent() in TunerVisualizationLayer to handle WindowResizeEvent
@@ -226,16 +230,16 @@ Dependencies (Git Submodules)
 - ✅ External GLSL shader files
 - ✅ TrueType font rendering for text display
 - ✅ 60 FPS rendering with color-coded tuning feedback
+- ✅ Configuration persistence (JSON save/load with platform paths)
 - [ ] Responsive window layout
 - [ ] Settings layer with device selection
-- [ ] Configuration persistence
 - [ ] Multiple tuning modes
 
 **Success Criteria:**
 - ✅ Needle responds in real-time (<50ms visual latency)
 - ✅ UI is clear and readable
 - ✅ No UI lag or stuttering at 60 FPS
-- [ ] Settings persist between sessions
+- ✅ Settings persist between sessions (config save/load working)
 - [ ] Window resize handled gracefully
 - [ ] Device switching works without restart
 
@@ -521,19 +525,20 @@ Dependencies (Git Submodules)
 
 ## Current Status
 
-**Phase:** Phase 2 Complete ✅ / Phase 3 In Progress (29% Complete)
-**Progress:** ~40% overall (Phases 0-2 complete, Phase 3 partially complete)
+**Phase:** Phase 2 Complete ✅ / Phase 3 In Progress (43% Complete)
+**Progress:** ~45% overall (Phases 0-2 complete, Phase 3 at 43%)
 **Completed Recently:**
 - ✅ External GLSL shader files (geometry.vert/frag, text.vert/frag)
 - ✅ TrueType font rendering with stb_truetype
+- ✅ Configuration persistence (JSON save/load, platform-specific paths)
 - ✅ Modern OpenGL rendering with color-coded tuning feedback
 - ✅ Real-time pitch detection with YIN algorithm
 
 **Next Priority Tasks (Phase 3):**
-1. Configuration persistence system (Config.h/.cpp with JSON save/load)
-2. Responsive window sizing and layout
-3. Settings layer with device selection UI
-4. Multiple tuning modes (chromatic, standard, drop D, etc.)
+1. Responsive window sizing and layout (infrastructure ready)
+2. Settings layer with device selection UI (requires ImGui decision)
+3. Multiple tuning modes (chromatic, standard, drop D, etc.)
+4. Optional: Spectrum analyzer visualization
 
 **Blockers:** None
 

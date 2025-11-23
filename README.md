@@ -188,13 +188,17 @@ Development roadmap is in [.claude/DEVELOPMENT_PLAN.md](.claude/DEVELOPMENT_PLAN
 - [x] Precise cent deviation display
 - [x] "IN TUNE" indicator with visual feedback
 
-### Phase 3: Enhanced UI & Features (In Progress - 29% Complete)
+### Phase 3: Enhanced UI & Features (In Progress - 43% Complete)
 
 - [x] **Move shaders to external .glsl files** ✅ COMPLETE
   - `assets/shaders/geometry.vert/.frag` - Shape rendering
   - `assets/shaders/text.vert/.frag` - Text rendering with stb_truetype
   - CMake auto-copy to build directory
-- [ ] Configuration persistence (JSON save/load with nlohmann-json)
+- [x] **Configuration persistence** ✅ COMPLETE
+  - JSON save/load with nlohmann-json
+  - Platform-specific config paths (Windows/macOS/Linux)
+  - Window size, audio device, tuning mode persistence
+  - Automatic save on shutdown, load on startup
 - [ ] Responsive window sizing and layout (infrastructure ready)
 - [ ] Settings layer (device selection UI)
 - [ ] Multiple tuning modes (chromatic, standard, drop D, DADGAD, etc.)
@@ -255,7 +259,7 @@ All dependencies are GPL-free and commercially compatible:
 
 ---
 
-**Status**: 🚧 In Development (Phase 3 In Progress - 29% Complete)
+**Status**: 🚧 In Development (Phase 3 In Progress - 43% Complete)
 
 **Latest Release**: v0.0.3-alpha (2025-11-23)
 
@@ -267,7 +271,8 @@ All dependencies are GPL-free and commercially compatible:
 - ✅ Color-coded tuning feedback (green/yellow/orange/red)
 - ✅ Horizontal cent deviation meter (±50 cents)
 - ✅ GPU-accelerated rendering at 60 FPS
-- 🔄 Configuration persistence (Phase 3 - next priority)
+- ✅ Configuration persistence (JSON save/load, platform-specific paths)
+- 🔄 Responsive window sizing (Phase 3 - next priority)
 - 🔄 Settings layer with device selection (Phase 3)
 - 🔄 Multiple tuning modes (Phase 3)
 
