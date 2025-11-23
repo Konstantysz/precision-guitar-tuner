@@ -7,67 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned
+### TODO
 
-- Text rendering for note names and frequency display
+- Responsive window sizing and layout
+- Move shaders to external shader files
 - Strobe tuner visualization mode
 - Settings layer for audio device selection
 - Configuration persistence
 - Alternative tuning support (Drop D, chromatic, etc.)
 
-## [0.0.2] - 2025-11-23
+## [0.0.1] - 2025-11-23 (Unreleased)
 
 ### Added
 
-- **Modern OpenGL Rendering System**
-  - GLSL 330 vertex/fragment shaders for 2D geometry
-  - Core Profile compatible (no deprecated immediate mode)
-  - GPU-accelerated rendering with VBOs and VAOs
-  - Real-time 60 FPS visualization
-
-- **Visual Tuner Display**
-  - Horizontal cent deviation meter (±50 cent range)
-  - Tick marks at ±10, ±20, ±30, ±40, ±50 cents
-  - Center line indicator for perfect tuning
-  - White outline border on meter
-  - Always-visible UI (meter displays even without audio input)
-
-- **Color-Coded Tuning Feedback**
-  - Dynamic color indicator bar on deviation meter
-  - Large circular tuning indicator above meter
-  - Smooth color transitions based on tuning accuracy:
-    - Green (±0-3 cents): In tune
-    - Yellow-Green (±3-10 cents): Close
-    - Orange (±10-25 cents): Adjust more
-    - Red (>±25 cents): Out of tune
-  - Uses GLM color mixing for smooth gradients
-
-- **Rendering Architecture**
-  - `DrawFilledRect()`: Efficient rectangle rendering with triangles
-  - `DrawOutlineRect()`: Line-based rectangle borders
-  - `DrawCircle()`: Triangle fan/line loop circle rendering
-  - Lazy OpenGL initialization on first render
-  - Proper resource management with VAO/VBO
-
-### Changed
-
-- **TunerVisualizationLayer** completely rewritten for modern OpenGL
-  - Removed console-only output
-  - Added full visual rendering pipeline
-  - Separated background, meter, and indicator rendering
-
-### Technical Highlights
-
-- Modern OpenGL 3.3+ with shaders (Core Profile)
-- Dynamic vertex data uploaded per frame
-- Efficient GPU-side geometry processing
-- Clean separation of concerns (rendering helpers)
-- Follows C++20 best practices
-- Code formatted with clang-format (Allman style, 120 char limit)
-
-## [0.0.1] - 2025-01-22
-
-### Added
 - **Project Infrastructure**
   - CMake build system with C++20 support
   - vcpkg dependency management
@@ -104,11 +56,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Configurable frequency range (80-1200 Hz)
   - 2048-frame buffer size for accuracy
 
-- **TunerVisualizationLayer**
-  - Pitch data reception from audio layer
-  - Frequency to note conversion with cent deviation
-  - Console logging of detected notes (temporary UI)
-  - 10Hz update rate with 70% confidence threshold
+- **TunerVisualizationLayer** - Modern OpenGL visual tuner
+  - GLSL 330 vertex/fragment shaders (Core Profile)
+  - GPU-accelerated rendering with VBOs and VAOs
+  - Real-time 60 FPS visualization
+  - Horizontal cent deviation meter (±50 cent range with tick marks)
+  - Large circular tuning indicator with color-coded feedback:
+    - Green (±0-3 cents): In tune
+    - Yellow-Green (±3-10 cents): Close
+    - Orange (±10-25 cents): Adjust more
+    - Red (>±25 cents): Out of tune
+  - "IN TUNE" indicator with pulsing green border (within ±3 cents)
+  - Smooth color transitions using GLM color mixing
+
+- **TrueType Font Rendering with stb_truetype**
+  - Professional text rendering using stb_truetype single-header library
+  - Font texture atlas generation (512x512) for ASCII characters
+  - Antialiased text with proper kerning
+  - Automatic system font loading (Arial, Consola, Helvetica, DejaVu Sans)
+  - FontRenderer class with OpenGL texture-based rendering
+  - Note name display with octave (e.g., "E4", "A2")
+  - Frequency display in Hz (e.g., "440.0 Hz")
+  - Precise cent deviation display (e.g., "+2.3", "-1.5")
+  - Text color-coded to match tuning indicator
+
+- **Dual Shader System**
+  - Geometry shader program for shapes (circles, rectangles)
+  - Text shader program with texture sampling for fonts
+  - Separate VAO/VBO for geometry and text rendering
+  - Alpha blending for smooth text antialiasing
 
 ### Technical Highlights
 - kappa-core v0.5.1 integration (OpenGL application framework)

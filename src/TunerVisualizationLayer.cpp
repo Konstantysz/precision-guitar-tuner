@@ -1,4 +1,5 @@
 #include "TunerVisualizationLayer.h"
+#include "FontRenderer.h"
 #include <Logger.h>
 #include <algorithm>
 #include <cmath>
@@ -9,8 +10,8 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-// Simple vertex shader
-static const char *vertexShaderSource = R"(
+// Geometry vertex shader (for shapes)
+static const char *geometryVertexShaderSource = R"(
 #version 330 core
 layout (location = 0) in vec2 aPos;
 layout (location = 1) in vec3 aColor;
@@ -24,8 +25,8 @@ void main()
 }
 )";
 
-// Simple fragment shader
-static const char *fragmentShaderSource = R"(
+// Geometry fragment shader (for shapes)
+static const char *geometryFragmentShaderSource = R"(
 #version 330 core
 in vec3 fragColor;
 out vec4 FragColor;
@@ -33,6 +34,40 @@ out vec4 FragColor;
 void main()
 {
     FragColor = vec4(fragColor, 1.0);
+}
+)";
+
+// Text vertex shader (with texture coordinates)
+static const char *textVertexShaderSource = R"(
+#version 330 core
+layout (location = 0) in vec2 aPos;
+layout (location = 1) in vec2 aTexCoord;
+layout (location = 2) in vec3 aColor;
+
+out vec2 texCoord;
+out vec3 fragColor;
+
+void main()
+{
+    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
+    texCoord = aTexCoord;
+    fragColor = aColor;
+}
+)";
+
+// Text fragment shader (with texture sampling)
+static const char *textFragmentShaderSource = R"(
+#version 330 core
+in vec2 texCoord;
+in vec3 fragColor;
+out vec4 FragColor;
+
+uniform sampler2D fontTexture;
+
+void main()
+{
+    float alpha = texture(fontTexture, texCoord).r;
+    FragColor = vec4(fragColor, alpha);
 }
 )";
 
@@ -48,7 +83,7 @@ void TunerVisualizationLayer::InitializeOpenGL()
     // Setup shaders
     SetupShaders();
 
-    // Create VAO and VBO
+    // Create VAO and VBO for geometry
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
@@ -65,62 +100,149 @@ void TunerVisualizationLayer::InitializeOpenGL()
 
     glBindVertexArray(0);
 
-    // Enable blending for smooth colors
+    // Create VAO and VBO for text (position + texcoord + color = 7 floats)
+    glGenVertexArrays(1, &textVAO);
+    glGenBuffers(1, &textVBO);
+
+    glBindVertexArray(textVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+
+    // Position attribute
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+
+    // Texture coordinate attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    // Color attribute
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *)(4 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    glBindVertexArray(0);
+
+    // Enable blending for smooth colors and text
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Disable depth test (2D rendering)
     glDisable(GL_DEPTH_TEST);
 
+    // Initialize font renderer - try Windows system fonts first
+    const char *fontPaths[] = {
+        "C:/Windows/Fonts/arial.ttf",
+        "C:/Windows/Fonts/consola.ttf",
+        "/System/Library/Fonts/Helvetica.ttc",  // macOS
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"  // Linux
+    };
+
+    for (const char *path : fontPaths)
+    {
+        try
+        {
+            fontRenderer = std::make_unique<FontRenderer>(path, 48.0f);
+            if (fontRenderer)
+            {
+                LOG_INFO("Loaded font: {}", path);
+                break;
+            }
+        }
+        catch (...)
+        {
+            // Try next font
+        }
+    }
+
+    if (!fontRenderer)
+    {
+        LOG_WARN("Failed to load any system font - text rendering disabled");
+    }
+
     initialized = true;
 }
 
 void TunerVisualizationLayer::SetupShaders()
 {
-    // Compile vertex shader
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
-    glCompileShader(vertexShader);
-
-    // Check for compile errors
     GLint success;
     GLchar infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+
+    // === Geometry Shaders (for shapes) ===
+    GLuint geometryVertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(geometryVertexShader, 1, &geometryVertexShaderSource, nullptr);
+    glCompileShader(geometryVertexShader);
+
+    glGetShaderiv(geometryVertexShader, GL_COMPILE_STATUS, &success);
     if (!success)
     {
-        glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-        LOG_ERROR("Vertex shader compilation failed: {}", infoLog);
+        glGetShaderInfoLog(geometryVertexShader, 512, nullptr, infoLog);
+        LOG_ERROR("Geometry vertex shader compilation failed: {}", infoLog);
     }
 
-    // Compile fragment shader
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
-    glCompileShader(fragmentShader);
+    GLuint geometryFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(geometryFragmentShader, 1, &geometryFragmentShaderSource, nullptr);
+    glCompileShader(geometryFragmentShader);
 
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    glGetShaderiv(geometryFragmentShader, GL_COMPILE_STATUS, &success);
     if (!success)
     {
-        glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
-        LOG_ERROR("Fragment shader compilation failed: {}", infoLog);
+        glGetShaderInfoLog(geometryFragmentShader, 512, nullptr, infoLog);
+        LOG_ERROR("Geometry fragment shader compilation failed: {}", infoLog);
     }
 
-    // Link shaders
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
+    geometryShaderProgram = glCreateProgram();
+    glAttachShader(geometryShaderProgram, geometryVertexShader);
+    glAttachShader(geometryShaderProgram, geometryFragmentShader);
+    glLinkProgram(geometryShaderProgram);
 
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    glGetProgramiv(geometryShaderProgram, GL_LINK_STATUS, &success);
     if (!success)
     {
-        glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
-        LOG_ERROR("Shader program linking failed: {}", infoLog);
+        glGetProgramInfoLog(geometryShaderProgram, 512, nullptr, infoLog);
+        LOG_ERROR("Geometry shader program linking failed: {}", infoLog);
     }
 
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    glDeleteShader(geometryVertexShader);
+    glDeleteShader(geometryFragmentShader);
 
-    LOG_INFO("Shaders compiled and linked successfully");
+    // === Text Shaders (for font rendering) ===
+    GLuint textVertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(textVertexShader, 1, &textVertexShaderSource, nullptr);
+    glCompileShader(textVertexShader);
+
+    glGetShaderiv(textVertexShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(textVertexShader, 512, nullptr, infoLog);
+        LOG_ERROR("Text vertex shader compilation failed: {}", infoLog);
+    }
+
+    GLuint textFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(textFragmentShader, 1, &textFragmentShaderSource, nullptr);
+    glCompileShader(textFragmentShader);
+
+    glGetShaderiv(textFragmentShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(textFragmentShader, 512, nullptr, infoLog);
+        LOG_ERROR("Text fragment shader compilation failed: {}", infoLog);
+    }
+
+    textShaderProgram = glCreateProgram();
+    glAttachShader(textShaderProgram, textVertexShader);
+    glAttachShader(textShaderProgram, textFragmentShader);
+    glLinkProgram(textShaderProgram);
+
+    glGetProgramiv(textShaderProgram, GL_LINK_STATUS, &success);
+    if (!success)
+    {
+        glGetProgramInfoLog(textShaderProgram, 512, nullptr, infoLog);
+        LOG_ERROR("Text shader program linking failed: {}", infoLog);
+    }
+
+    glDeleteShader(textVertexShader);
+    glDeleteShader(textFragmentShader);
+
+    LOG_INFO("Geometry and text shaders compiled and linked successfully");
 }
 
 void TunerVisualizationLayer::OnUpdate(float deltaTime)
@@ -167,9 +289,9 @@ void TunerVisualizationLayer::OnRender()
     RenderBackground();
 
     // Always render UI elements (even without pitch data for testing)
-    if (shaderProgram != 0)
+    if (geometryShaderProgram != 0)
     {
-        glUseProgram(shaderProgram);
+        glUseProgram(geometryShaderProgram);
         glBindVertexArray(VAO);
 
         RenderCentDeviationMeter();
@@ -244,6 +366,42 @@ void TunerVisualizationLayer::RenderTuningIndicator()
 
         // Draw outline
         DrawCircle(0.0f, indicatorY, INDICATOR_RADIUS, glm::vec3(1.0f, 1.0f, 1.0f), false);
+
+        // Draw "IN TUNE" indicator when within ±3 cents
+        if (std::abs(currentNote.cents) <= 3.0f)
+        {
+            // Draw pulsing border around the circle to indicate perfect tuning
+            const float pulseRadius = INDICATOR_RADIUS * 1.3f;
+            DrawCircle(0.0f, indicatorY, pulseRadius, glm::vec3(0.2f, 1.0f, 0.3f), false);
+
+            // Draw checkmark-like indicator bars below the circle
+            const float checkY = indicatorY - INDICATOR_RADIUS - 0.05f;
+            DrawFilledRect(-0.04f, checkY, 0.08f, 0.02f, glm::vec3(0.2f, 1.0f, 0.3f));
+        }
+
+        // Display text using FontRenderer if available
+        if (fontRenderer)
+        {
+            // Display note name above the indicator (e.g., "E4")
+            std::string noteText;
+            noteText += currentNote.name;
+            noteText += std::to_string(currentNote.octave);
+            const float noteTextSize = 0.15f;
+            const float noteTextWidth = fontRenderer->GetTextWidth(noteText, noteTextSize);
+            fontRenderer->RenderText(noteText, -noteTextWidth * 0.5f, indicatorY + INDICATOR_RADIUS + 0.15f, noteTextSize, glm::vec3(1.0f, 1.0f, 1.0f), textShaderProgram, textVAO, textVBO);
+
+            // Display frequency below the indicator (e.g., "440.0 Hz")
+            std::string freqText = std::format("{:.1f} Hz", currentNote.frequency);
+            const float freqTextSize = 0.08f;
+            const float freqTextWidth = fontRenderer->GetTextWidth(freqText, freqTextSize);
+            fontRenderer->RenderText(freqText, -freqTextWidth * 0.5f, indicatorY - INDICATOR_RADIUS - 0.25f, freqTextSize, glm::vec3(0.8f, 0.8f, 0.85f), textShaderProgram, textVAO, textVBO);
+
+            // Display cent deviation below frequency (e.g., "+2.3")
+            std::string centsText = std::format("{:+.1f}", currentNote.cents);
+            const float centsTextSize = 0.12f;
+            const float centsTextWidth = fontRenderer->GetTextWidth(centsText, centsTextSize);
+            fontRenderer->RenderText(centsText, -centsTextWidth * 0.5f, indicatorY - INDICATOR_RADIUS - 0.45f, centsTextSize, color, textShaderProgram, textVAO, textVBO);
+        }
     }
 }
 
@@ -407,3 +565,4 @@ void TunerVisualizationLayer::DrawCircle(float x, float y, float radius, const g
         glDrawArrays(GL_LINE_LOOP, 0, segments);
     }
 }
+

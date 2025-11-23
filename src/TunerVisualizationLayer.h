@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AudioProcessingLayer.h"
+#include "FontRenderer.h"
 #include <Layer.h>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -56,9 +57,14 @@ private:
 
     // OpenGL resources
     bool initialized = false;
-    GLuint shaderProgram = 0;
+    GLuint geometryShaderProgram = 0;  // For shapes (circles, rects)
+    GLuint textShaderProgram = 0;       // For text rendering
     GLuint VAO = 0;
     GLuint VBO = 0;
+    GLuint textVAO = 0;
+    GLuint textVBO = 0;
+
+    std::unique_ptr<FontRenderer> fontRenderer;
 
     // UI state
     GuitarDSP::NoteInfo currentNote;

@@ -176,11 +176,15 @@ Development roadmap is in [.claude/DEVELOPMENT_PLAN.md](.claude/DEVELOPMENT_PLAN
 - [x] Cent deviation meter (horizontal bar with ±50 cent range)
 - [x] Tuning accuracy indicator (color-coded: green/yellow/orange/red)
 - [x] Circular tuning indicator with smooth color transitions
-- [ ] Note name display (large text) - deferred to Phase 3
-- [ ] Frequency display - deferred to Phase 3
+- [x] Note name display with octave (TrueType fonts via stb_truetype)
+- [x] Frequency display in Hz
+- [x] Precise cent deviation display
+- [x] "IN TUNE" indicator with visual feedback
 
-### Phase 3: Advanced Features (Future)
+### Phase 3: Enhanced UI & Features (In Progress)
 
+- [ ] Responsive window sizing and layout
+- [ ] Move shaders to external .glsl files
 - [ ] Strobe tuner visualization
 - [ ] Multiple tuning modes (drop, chromatic)
 - [ ] Settings layer (device selection)

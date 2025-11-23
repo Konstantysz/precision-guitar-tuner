@@ -70,11 +70,13 @@ add_executable(precision-guitar-tuner
     src/main.cpp
     src/AudioProcessingLayer.cpp
     src/TunerVisualizationLayer.cpp
+    src/FontRenderer.cpp
 )
 
 target_include_directories(precision-guitar-tuner PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/stb
 )
 
 # Link kappa-core framework
