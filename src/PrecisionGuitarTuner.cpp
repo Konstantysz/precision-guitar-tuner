@@ -61,6 +61,9 @@ public:
         {
             PushLayer<TunerVisualizationLayer>(*audioLayer);
 
+            // Refresh layers span after pushing TunerVisualizationLayer
+            layers = GetLayers();
+
             // Get tuner layer for settings visibility control
             auto *tunerLayer = dynamic_cast<TunerVisualizationLayer *>(layers[1].get());
             if (tunerLayer)
