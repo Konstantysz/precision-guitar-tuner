@@ -15,7 +15,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Configuration persistence
 - Alternative tuning support (Drop D, chromatic, etc.)
 
+### Added
+
+- **Features** (2025-11-24)
+  - **Multiple Tuning Modes**: Added support for 7 tuning presets (Standard, Drop D, Drop C, DADGAD, Open G, Open D, Chromatic)
+  - **TuningPresets Class**: Implemented static class for managing tuning definitions and frequency calculations
+  - **Unit Tests**: Added comprehensive test suite for tuning presets covering all modes and edge cases
+
+- **Maintainability** (2025-11-23)
+  - Centralized window size constants in `Config.h` as `static constexpr` members of `WindowConfig`
+  - Added pre-allocation of `YinPitchDetector` buffers during initialization to ensure real-time safety
+  - Created basic test infrastructure with `tests/CMakeLists.txt` and `tests/ConfigTest.cpp`
+
 ### Changed
+
+- **Testing Infrastructure** (2025-11-24)
+  - **Google Test Integration**: Refactored all unit tests to use Google Test framework
+  - **Test Refactoring**: Converted `ConfigTest` and `TuningPresetsTest` from manual assertions to GTest macros
+  - **Build System**: Updated `tests/CMakeLists.txt` to link against `GTest::gtest` and use `gtest_discover_tests`
 
 - **C++20 Modernization** (2025-11-23)
   - Updated `lib-guitar-io` to use `std::span<const float>` and `std::span<float>` for audio buffers instead of raw pointers
@@ -26,15 +43,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Bug Fixes** (2025-11-24)
+  - Fixed crash in `TuningPresets::CalculatePreset` when accessing empty note names in Chromatic mode
+
 - **Security** (2025-11-23)
   - Added null check for `getpwuid` result in `Config.cpp` to prevent potential crash on Linux
-
-### Added
-
-- **Maintainability** (2025-11-23)
-  - Centralized window size constants in `Config.h` as `static constexpr` members of `WindowConfig`
-  - Added pre-allocation of `YinPitchDetector` buffers during initialization to ensure real-time safety
-  - Created basic test infrastructure with `tests/CMakeLists.txt` and `tests/ConfigTest.cpp`
 
 ### Removed
 

@@ -14,7 +14,8 @@
       "features": ["glfw-binding", "opengl3-binding"]
     },
     "nlohmann-json",
-    "spdlog"
+    "spdlog",
+    "gtest"
   ],
   "builtin-baseline": "a62ce77d56ee07513b4b67de1ec2daeaebfae51a"
 }

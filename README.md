@@ -47,52 +47,74 @@ Mobile apps are limited by:
 - **C++20 compiler**: MSVC 19.28+, GCC 10+, or Clang 11+
 - **CMake**: 3.20 or later
 - **Git**: For submodule management
-- **vcpkg**: C++ package manager ([Installation guide](https://vcpkg.io/en/getting-started.html))
+- **vcpkg**: C++ pack### Phase 3: Enhanced UI & Features (In Progress)
+- [x] External GLSL shaders
+- [x] TrueType font rendering
+- [x] Configuration persistence (JSON)
+- [x] Responsive window layout
+- [x] Settings layer (basic UI)
+- [x] Multiple tuning modes (Standard, Drop D, Open G, DADGAD, Chromatic)
+- [ ] Audio device selection
+- [ ] Spectrum analyzer (optional)
 
-### Platform-Specific Requirements
+### Phase 4: Advanced Tuning (Planned)
+- [ ] Audio feedback (reference tones)
+- [ ] Visual feedback improvements
+- [ ] Accuracy refinement
 
-**Windows:**
-- Visual Studio 2019 16.10+ or Visual Studio 2022
-- ASIO drivers recommended for best latency (optional)
+## 🛠️ Building from Source
 
-**macOS:**
-- macOS 10.15 (Catalina) or later
-- Xcode Command Line Tools
+### Prerequisites
+- **CMake** (3.21+)
+- **C++20 Compiler** (MSVC 19.30+, GCC 11+, Clang 13+)
+- **Vulkan SDK** (required for GLFW/OpenGL context creation on some systems)
 
-**Linux (Ubuntu/Debian):**
-```bash
-sudo apt install build-essential cmake git libasound2-dev
-```
-
-**Linux (Fedora):**
-```bash
-sudo dnf install gcc-c++ cmake git alsa-lib-devel
-```
-
-### Building from Source
+### Build Instructions
 
 ```bash
 # Clone the repository with submodules
 git clone --recursive https://github.com/Konstantysz/precision-guitar-tuner.git
 cd precision-guitar-tuner
 
-# Install vcpkg dependencies (automated via CMake)
-# vcpkg will automatically install: glfw3, glad, glm, nlohmann-json, spdlog
-
 # Configure with CMake
-cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=[path-to-vcpkg]/scripts/buildsystems/vcpkg.cmake
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
 
-# Build
+# Build the project
 cmake --build build --config Release
 
-# Run
-# Windows: .\build\bin\Release\precision-guitar-tuner.exe
-# macOS/Linux: ./build/bin/precision-guitar-tuner
+# Run the tuner
+./build/bin/Release/PrecisionGuitarTuner
 ```
 
-## Architecture
+### Running Tests
 
-This project uses a modular architecture with git submodules for code reuse:
+The project uses Google Test for unit testing.
+
+```bash
+# Run all tests
+ctest --test-dir build -C Release --output-on-failure
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **YIN Algorithm**: For robust pitch detection
+- **OpenGL**: For high-performance graphics
+- **ImGui**: For debug UI (if used)
+- **stb_truetype**: For font rendering
 
 ```
 precision-guitar-tuner/

@@ -33,7 +33,10 @@ precision-guitar-tuner/
 │   └── shaders/                   # GLSL shader files
 │       ├── geometry.vert/.frag    # Shape rendering shaders
 │       └── text.vert/.frag        # Text rendering shaders
-├── tests/                         # Unit tests (TODO)
+├── tests/                         # Unit tests
+│   ├── ConfigTest.cpp             # Configuration system tests
+│   ├── TestTuningPresets.cpp      # Tuning presets unit tests
+│   └── CMakeLists.txt             # Test build configuration
 ├── CMakeLists.txt                 # Root build configuration
 ├── vcpkg.json                     # Dependency manifest
 └── DEPENDENCIES.md                # Submodule version tracking
@@ -114,9 +117,22 @@ cmake --build build
 
 ### Running Tests
 
-```bash
-ctest --test-dir build --config Release --output-on-failure
-```
+Tests are built using Google Test.
+
+1.  **Build Tests**:
+    ```bash
+    cmake --build build --config Release
+    ```
+
+2.  **Run All Tests**:
+    ```bash
+    ctest --test-dir build -C Release --output-on-failure
+    ```
+
+3.  **Run Specific Test Executable**:
+    ```bash
+    .\build\bin\Release\tuning-presets-test.exe
+    ```
 
 ### Updating Submodules
 
