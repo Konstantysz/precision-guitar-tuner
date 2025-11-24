@@ -141,9 +141,10 @@ Dependencies (Git Submodules)
 
 ### Phase 3: Enhanced UI and Features (Weeks 4-5) ✅ PARTIALLY COMPLETE
 
-**Status:** 4 of 7 major features complete, 3 in progress (57%)
-**Completed:** External GLSL shaders ✅, TrueType font rendering ✅, Configuration persistence ✅, Responsive layout ✅
-**In Progress:** Settings layer, Tuning modes, Spectrum analyzer
+**Status:** 5 of 7 major features complete, 2 in progress (71%)
+**Completed:** External GLSL shaders ✅, TrueType font rendering ✅, Configuration persistence ✅, Responsive layout ✅, Settings layer (basic UI) ✅
+**In Progress:** Device selection controls, Tuning modes
+**Deferred:** Spectrum analyzer (optional)
 
 **Goals:**
 
@@ -526,9 +527,11 @@ Dependencies (Git Submodules)
 
 ## Current Status
 
-**Phase:** Phase 2 Complete ✅ / Phase 3 In Progress (57% Complete)
-**Progress:** ~50% overall (Phases 0-2 complete, Phase 3 at 57%)
+**Phase:** Phase 2 Complete ✅ / Phase 3 In Progress (71% Complete)
+**Progress:** ~55% overall (Phases 0-2 complete, Phase 3 at 71%)
 **Completed Recently:**
+- ✅ Settings layer basic UI (toggle button, visibility control)
+- ✅ Fixed span out-of-bounds crash in layer initialization
 - ✅ Responsive window sizing and layout (GLFW framebuffer queries, size constraints)
 - ✅ External GLSL shader files (geometry.vert/frag, text.vert/frag)
 - ✅ TrueType font rendering with stb_truetype
@@ -537,7 +540,7 @@ Dependencies (Git Submodules)
 - ✅ Real-time pitch detection with YIN algorithm
 
 **Next Priority Tasks (Phase 3):**
-1. Settings layer with device selection UI (requires ImGui decision)
+1. Device selection controls (populate settings UI with audio device dropdowns)
 2. Multiple tuning modes (chromatic, standard, drop D, etc.)
 3. Optional: Spectrum analyzer visualization
 

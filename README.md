@@ -188,7 +188,7 @@ Development roadmap is in [.claude/DEVELOPMENT_PLAN.md](.claude/DEVELOPMENT_PLAN
 - [x] Precise cent deviation display
 - [x] "IN TUNE" indicator with visual feedback
 
-### Phase 3: Enhanced UI & Features (In Progress - 57% Complete)
+### Phase 3: Enhanced UI & Features (In Progress - 71% Complete)
 
 - [x] **Move shaders to external .glsl files** ✅ COMPLETE
   - `assets/shaders/geometry.vert/.frag` - Shape rendering
@@ -201,7 +201,11 @@ Development roadmap is in [.claude/DEVELOPMENT_PLAN.md](.claude/DEVELOPMENT_PLAN
   - Dynamic viewport updates via GLFW framebuffer queries
   - Window size constraints (400×300 min, 3840×2160 max)
   - Config persistence for window dimensions
-- [ ] Settings layer (device selection UI)
+- [x] **Settings layer (basic UI)** ✅ COMPLETE
+  - Settings toggle button in tuner UI
+  - Layer visibility control system
+  - Ready for device selection controls
+- [ ] Device selection UI (in progress)
 - [ ] Multiple tuning modes (chromatic, standard, drop D, DADGAD, etc.)
 - [ ] Spectrum analyzer (optional - FFT visualization)
 
@@ -260,7 +264,7 @@ All dependencies are GPL-free and commercially compatible:
 
 ---
 
-**Status**: 🚧 In Development (Phase 3 In Progress - 43% Complete)
+**Status**: 🚧 In Development (Phase 3 In Progress - 71% Complete)
 
 **Latest Release**: v0.0.3-alpha (2025-11-23)
 
@@ -273,8 +277,9 @@ All dependencies are GPL-free and commercially compatible:
 - ✅ Horizontal cent deviation meter (±50 cents)
 - ✅ GPU-accelerated rendering at 60 FPS
 - ✅ Configuration persistence (JSON save/load, platform-specific paths)
-- 🔄 Responsive window sizing (Phase 3 - next priority)
-- 🔄 Settings layer with device selection (Phase 3)
+- ✅ Responsive window sizing (400×300 min, 3840×2160 max)
+- ✅ Settings layer with toggle button (basic UI structure)
+- 🔄 Device selection controls (Phase 3 - in progress)
 - 🔄 Multiple tuning modes (Phase 3)
 
 See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
