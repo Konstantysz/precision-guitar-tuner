@@ -240,7 +240,7 @@ void SettingsLayer::RenderTuningModeSelector()
 {
     ImGui::TextColored(ImVec4(0.8f, 0.9f, 1.0f, 1.0f), "Tuning Mode");
 
-    // Tuning mode dropdown (placeholder for now)
+    // Tuning mode dropdown
     const char *tuningModes[] = { "Chromatic", "Standard (EADGBE)", "Drop D", "Drop C", "DADGAD", "Open G", "Open D" };
     int currentMode = static_cast<int>(config.tuning.mode);
 
@@ -252,7 +252,15 @@ void SettingsLayer::RenderTuningModeSelector()
     }
     ImGui::PopItemWidth();
 
-    ImGui::TextDisabled("Note: Only Chromatic mode is currently implemented");
+    // Show helpful description based on selected mode
+    if (config.tuning.mode == TuningMode::Chromatic)
+    {
+        ImGui::TextDisabled("Detects any note");
+    }
+    else
+    {
+        ImGui::TextDisabled("Shows target string indicator");
+    }
 }
 
 } // namespace PrecisionTuner::Layers

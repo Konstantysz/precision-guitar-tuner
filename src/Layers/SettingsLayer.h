@@ -32,20 +32,9 @@ public:
      */
     SettingsLayer(AudioProcessingLayer &audioLayer, TunerVisualizationLayer &tunerLayer, PrecisionTuner::Config &config);
 
-    /**
-     * @brief Destructor - cleans up ImGui context
-     */
     ~SettingsLayer() override;
 
-    /**
-     * @brief Called every frame to update layer state
-     * @param deltaTime Time since last frame (seconds)
-     */
     void OnUpdate(float deltaTime) override;
-
-    /**
-     * @brief Called every frame to render UI
-     */
     void OnRender() override;
 
 private:
