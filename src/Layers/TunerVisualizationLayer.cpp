@@ -1,5 +1,6 @@
 #include <TunerVisualizationLayer.h>
 #include <AudioProcessingLayer.h>
+#include <TuningPresets.h>
 #include <Logger.h>
 #include <imgui.h>
 #include <algorithm>
@@ -9,9 +10,20 @@
 namespace PrecisionTuner::Layers
 {
 
-TunerVisualizationLayer::TunerVisualizationLayer(AudioProcessingLayer &audioLayer) : audioLayer(audioLayer)
+TunerVisualizationLayer::TunerVisualizationLayer(AudioProcessingLayer &audioLayer, PrecisionTuner::Config &config)
+    : audioLayer(audioLayer), config(config)
 {
     LOG_INFO("TunerVisualizationLayer - Initializing ImGui-based tuner UI");
+}
+
+bool TunerVisualizationLayer::IsSettingsVisible() const
+{
+    return showSettingsPanel;
+}
+
+void TunerVisualizationLayer::SetSettingsVisible(bool visible)
+{
+    showSettingsPanel = visible;
 }
 
 void TunerVisualizationLayer::OnUpdate(float deltaTime)
@@ -28,9 +40,17 @@ void TunerVisualizationLayer::OnUpdate(float deltaTime)
 
         if (pitchData.detected && pitchData.confidence > 0.7f)
         {
-            // Convert frequency to note
-            currentNote = GuitarDSP::NoteConverter::FrequencyToNote(pitchData.frequency);
+            // Convert frequency to note (using reference pitch from config)
+            currentNote = GuitarDSP::NoteConverter::FrequencyToNote(pitchData.frequency, config.tuning.referencePitch);
             hasPitchData = true;
+
+            // Find target string in non-chromatic modes
+            targetStringIndex = TuningPresets::FindClosestString(
+                config.tuning.mode,
+                pitchData.frequency,
+                config.tuning.referencePitch,
+                25.0f  // ±25 cents tolerance
+            );
 
             // Log detected pitch
             LOG_INFO("Detected: {}{} ({:.2f} Hz) | Deviation: {:+.1f} cents | Confidence: {:.0f}%",
@@ -43,6 +63,7 @@ void TunerVisualizationLayer::OnUpdate(float deltaTime)
         else
         {
             hasPitchData = false;
+            targetStringIndex = std::nullopt;
         }
     }
 }
@@ -84,6 +105,7 @@ void TunerVisualizationLayer::OnRender()
         // Render tuner UI elements
         RenderTuningIndicator();
         RenderCentDeviationMeter();
+        RenderTargetStringIndicator();
     }
     ImGui::End();
 
@@ -266,6 +288,62 @@ ImVec4 TunerVisualizationLayer::GetColorForCents(float cents)
     {
         // Very out of tune - red
         return ImVec4(0.9f, 0.2f, 0.2f, 1.0f);
+    }
+}
+
+void TunerVisualizationLayer::RenderTargetStringIndicator()
+{
+    // Only show in non-chromatic modes
+    if (config.tuning.mode == TuningMode::Chromatic || !hasPitchData || !targetStringIndex.has_value())
+    {
+        return;
+    }
+
+    ImVec2 windowSize = ImGui::GetWindowSize();
+    const float yPosition = windowSize.y * 0.8f;
+
+    // Get string name
+    std::string stringName = TuningPresets::GetStringName(
+        targetStringIndex.value(),
+        config.tuning.mode,
+        config.tuning.referencePitch
+    );
+
+    // Display string name
+    ImGui::SetCursorPos(ImVec2(windowSize.x * 0.5f - 100.0f, yPosition));
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.7f, 0.85f, 1.0f, 1.0f));
+    ImGui::SetWindowFontScale(1.3f);
+    ImGui::Text("%s", stringName.c_str());
+    ImGui::SetWindowFontScale(1.0f);
+    ImGui::PopStyleColor();
+
+    // Visual string position indicator (6 circles representing strings)
+    ImDrawList *drawList = ImGui::GetWindowDrawList();
+    const float stringSpacing = 30.0f;
+    const float stringRadius = 8.0f;
+    const float startX = windowSize.x * 0.5f - (5 * stringSpacing) * 0.5f;
+    const float circleY = yPosition + 40.0f;
+
+    for (int i = 0; i < 6; ++i)
+    {
+        float x = startX + i * stringSpacing;
+        ImVec2 center(x, circleY);
+
+        // Highlight the current target string
+        if (i == targetStringIndex.value())
+        {
+            // Active string - larger, colored circle
+            ImVec4 color = GetColorForCents(currentNote.cents);
+            ImU32 colorU32 = ImGui::ColorConvertFloat4ToU32(color);
+            drawList->AddCircleFilled(center, stringRadius * 1.5f, colorU32, 32);
+            drawList->AddCircle(center, stringRadius * 1.5f, IM_COL32(255, 255, 255, 255), 32, 2.0f);
+        }
+        else
+        {
+            // Inactive string - small, gray circle
+            drawList->AddCircleFilled(center, stringRadius, IM_COL32(80, 80, 90, 255), 32);
+            drawList->AddCircle(center, stringRadius, IM_COL32(120, 120, 130, 255), 32, 1.0f);
+        }
     }
 }
 

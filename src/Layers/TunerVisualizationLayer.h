@@ -1,9 +1,11 @@
 #pragma once
 
 #include <AudioProcessingLayer.h>
+#include <Config.h>
 #include <Layer.h>
 #include <NoteConverter.h>
 #include <imgui.h>
+#include <optional>
 
 namespace PrecisionTuner::Layers
 {
@@ -13,73 +15,68 @@ namespace PrecisionTuner::Layers
  *
  * Displays:
  * - Current detected note and frequency
- * - Cent deviation from target pitch (-50 to +50 range)
- * - Visual tuning indicator with color coding
+ * - Cent deviation from target pitch (±50 cent range)
+ * - Visual tuning indicator with color coding (green, yellow, orange, red)
  * - IN TUNE indicator when within ±3 cents
+ * - Target string indicator for non-chromatic tuning modes
  */
 class TunerVisualizationLayer : public Kappa::Layer
 {
 public:
     /**
-     * @brief Constructs tuner visualization layer
-     * @param audioLayer Reference to audio processing layer
+     * @brief Construct tuner visualization layer
+     * @param audioLayer Reference to audio processing layer for pitch data
+     * @param config Reference to application config for tuning mode
      */
-    explicit TunerVisualizationLayer(AudioProcessingLayer &audioLayer);
+    explicit TunerVisualizationLayer(AudioProcessingLayer &audioLayer, PrecisionTuner::Config &config);
 
-    /**
-     * @brief Destructor
-     */
     ~TunerVisualizationLayer() override = default;
 
-    /**
-     * @brief Called every frame to update layer state
-     * @param deltaTime Time since last frame (seconds)
-     */
     void OnUpdate(float deltaTime) override;
-
-    /**
-     * @brief Called every frame to render the tuner UI
-     */
     void OnRender() override;
 
     /**
      * @brief Gets the settings visibility state
      * @return true if settings should be shown
      */
-    [[nodiscard]] bool IsSettingsVisible() const { return showSettingsPanel; }
+    [[nodiscard]] bool IsSettingsVisible() const;
 
     /**
      * @brief Sets the settings visibility state
      * @param visible true to show settings, false to hide
      */
-    void SetSettingsVisible(bool visible) { showSettingsPanel = visible; }
+    void SetSettingsVisible(bool visible);
 
 private:
     /**
      * @brief Renders the cent deviation meter (-50 to +50 range)
      */
     void RenderCentDeviationMeter();
-
-    /**
-     * @brief Renders the tuning indicator (note name, frequency, cents)
-     */
     void RenderTuningIndicator();
+    
+    /**
+     * @brief Render target string indicator for non-chromatic modes
+     * Shows string name and visual position (e.g., "6th String (E2)")
+     */
+    void RenderTargetStringIndicator();
 
     /**
-     * @brief Gets color for given cent deviation
-     * @param cents Cent deviation from target
-     * @return RGB color (green = in-tune, yellow = close, red = far)
+     * @brief Get color based on cent deviation
+     * @param cents Deviation from target in cents
+     * @return Color (green=in-tune, yellow=close, orange/red=far)
      */
     ImVec4 GetColorForCents(float cents);
 
     AudioProcessingLayer &audioLayer;
+    PrecisionTuner::Config &config;
 
-    // UI state
     GuitarDSP::NoteInfo currentNote;
     float updateTimer = 0.0f;
     bool hasPitchData = false;
-    bool showSettingsPanel = true; // Show settings panel by default
-    static constexpr float UPDATE_INTERVAL = 0.1f; // Update UI every 100ms
+    bool showSettingsPanel = true;
+    std::optional<int> targetStringIndex;  ///< Active string index (0=6th, 5=1st)
+    
+    static constexpr float UPDATE_INTERVAL = 0.1f; ///< UI update rate (100ms)
 };
 
 } // namespace PrecisionTuner::Layers
