@@ -24,6 +24,7 @@
 ### Why Desktop Over Mobile?
 
 Mobile apps are limited by:
+
 - ❌ Consumer-grade microphones (ambient noise interference)
 - ❌ No professional audio interface support
 - ❌ Limited accuracy (typically ±1-3 cents)
@@ -60,6 +61,7 @@ Mobile apps are limited by:
 - [ ] Spectrum analyzer (optional)
 
 ### Phase 4: Advanced Tuning (Planned)
+
 - [ ] Strobe tuner visualization mode
 - [ ] Visual feedback improvements
 - [ ] Accuracy refinement
@@ -67,6 +69,7 @@ Mobile apps are limited by:
 ## 🛠️ Building from Source
 
 ### Prerequisites
+
 - **CMake** (3.21+)
 - **C++20 Compiler** (MSVC 19.30+, GCC 11+, Clang 13+)
 - **Vulkan SDK** (required for GLFW/OpenGL context creation on some systems)
@@ -159,6 +162,7 @@ See [CLAUDE.md](CLAUDE.md) for comprehensive development guidelines.
 ### Project Structure
 
 This is part of a planned 4-application guitar software suite:
+
 1. **Precision Tuner** (this project)
 2. Precision Metronome (future)
 3. Chord Library & Trainer (future)
@@ -248,8 +252,9 @@ Development roadmap is in [.claude/DEVELOPMENT_PLAN.md](.claude/DEVELOPMENT_PLAN
 
 ## Performance Targets
 
-- **Accuracy**: ±0.1 cent (verified with oscilloscope)
-- **Latency**: <10ms end-to-end (input → detection → display)
+- **Professional Accuracy**: ±0.1 cent accuracy using YIN algorithm (comparable to strobe tuners)
+- **Pitch Stabilization**: Advanced smoothing algorithms (Hybrid EMA/Median) for jitter-free readings
+- **Real-time Visualization**: Smooth, high-framerate needle and strobe displays
 - **Update Rate**: 60 Hz UI refresh
 - **CPU Usage**: <5% on modern hardware
 - **Memory**: <50 MB resident
@@ -271,6 +276,7 @@ Development roadmap is in [.claude/DEVELOPMENT_PLAN.md](.claude/DEVELOPMENT_PLAN
 This project is licensed under the **MIT License** - see [LICENSE](LICENSE) for details.
 
 All dependencies are GPL-free and commercially compatible:
+
 - **kappa-core**: MIT License
 - **RtAudio**: MIT-like permissive license
 - **PFFFT**: BSD License

@@ -75,3 +75,23 @@ target_sources(test-tuning-presets PRIVATE
 # Register tests with CTest using GoogleTest module
 gtest_discover_tests(test-config)
 gtest_discover_tests(test-tuning-presets)
+
+# Pitch Stabilizer Test executable
+add_executable(test-pitch-stabilizer
+    TestPitchStabilizer.cpp
+)
+
+# Include directories for pitch stabilizer test
+target_include_directories(test-pitch-stabilizer PRIVATE
+    ${CMAKE_SOURCE_DIR}/external/lib-guitar-dsp/include
+)
+
+# Link libraries for pitch stabilizer test
+target_link_libraries(test-pitch-stabilizer PRIVATE
+    guitar-dsp
+    GTest::gtest
+    GTest::gtest_main
+)
+
+# Register pitch stabilizer tests
+gtest_discover_tests(test-pitch-stabilizer)

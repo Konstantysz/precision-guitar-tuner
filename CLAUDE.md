@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Precision Tuner** is a professional-grade desktop guitar tuner application built with modern C++20. It delivers studio-quality ±0.1 cent accuracy with native audio interface support, targeting professional musicians, home recording enthusiasts, and guitar technicians.
 
 **Technology Stack:**
+
 - **Language:** C++20
 - **UI Framework:** kappa-core (OpenGL-based application framework)
 - **Audio I/O:** RtAudio (via lib-guitar-io submodule)
@@ -86,6 +87,7 @@ vcpkg install glfw3 glad glm spdlog
 ### Building
 
 **Windows:**
+
 ```bash
 cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=[vcpkg-root]/scripts/buildsystems/vcpkg.cmake
 cmake --build build --config Release
@@ -95,6 +97,7 @@ cmake --build build --config Debug
 ```
 
 **macOS/Linux:**
+
 ```bash
 # Release build
 cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
@@ -119,17 +122,20 @@ cmake --build build
 
 Tests are built using Google Test.
 
-1.  **Build Tests**:
+1. **Build Tests**:
+
     ```bash
     cmake --build build --config Release
     ```
 
-2.  **Run All Tests**:
+2. **Run All Tests**:
+
     ```bash
     ctest --test-dir build -C Release --output-on-failure
     ```
 
-3.  **Run Specific Test Executable**:
+3. **Run Specific Test Executable**:
+
     ```bash
     .\build\bin\Release\tuning-presets-test.exe
     ```
@@ -164,6 +170,7 @@ pushLayer(new SettingsLayer());             // Top: UI controls
 ```
 
 **Key Concepts:**
+
 - Each layer has `onUpdate()` (logic) and `onRender()` (OpenGL drawing)
 - Layers communicate via kappa-core's event bus (decoupled, type-safe)
 - Audio processing runs on dedicated thread, publishes events to UI layers
@@ -187,6 +194,7 @@ TunerVisualizationLayer: Update strobe/needle display
 ### Thread Model
 
 **CRITICAL:** Audio processing must be real-time safe:
+
 - Audio callback runs on high-priority thread
 - **NO allocations** in audio callback (no `new`, `std::vector::push_back`, etc.)
 - **NO locks** in audio callback (use lock-free structures)
@@ -194,6 +202,7 @@ TunerVisualizationLayer: Update strobe/needle display
 - Use pre-allocated circular buffers for audio → UI communication
 
 **Pattern:**
+
 ```cpp
 // GOOD: Lock-free circular buffer
 class AudioProcessingLayer : public kappa::Layer {
@@ -226,6 +235,7 @@ The application automatically selects the best audio API per platform:
 | Linux    | ALSA        | -        | 1-5ms latency (RT kernel recommended) |
 
 **Platform Macros:**
+
 - `PLATFORM_WINDOWS`: Windows-specific code
 - `PLATFORM_MACOS`: macOS-specific code
 - `PLATFORM_LINUX`: Linux-specific code
@@ -235,6 +245,7 @@ The application automatically selects the best audio API per platform:
 ### Coding Standards
 
 **Naming Conventions:**
+
 - **PascalCase** for classes, structs, and functions
   - Examples: `AudioProcessingLayer`, `GetLatestPitch()`, `OnUpdate()`
 - **camelCase** for ALL variables (including class member variables)
@@ -243,6 +254,7 @@ The application automatically selects the best audio API per platform:
   - Local variables: `pitchData`, `sampleRate`, `bufferSize`
 
 **Code Formatting:**
+
 - **Line limit:** 120 characters
 - **Indentation:** 4 spaces (no tabs)
 - **Brace style:** Allman (opening braces on new lines)
@@ -250,6 +262,7 @@ The application automatically selects the best audio API per platform:
 - **Include ordering:** Automatically sorted by clang-format with priority system
 
 **Formatting Tools:**
+
 - `.clang-format` - C++20 code formatting (120 char limit, Allman braces)
 - `.clang-tidy` - Static analysis with C++20 modernize checks
 - `.cmake-format` - CMake file formatting
@@ -270,12 +283,14 @@ Run `clang-format -i <file>` to format individual files, or let pre-commit hooks
 When working in audio callback context:
 
 **✅ SAFE:**
+
 - Reading/writing pre-allocated buffers
 - Simple arithmetic operations
 - Lock-free atomic operations (`std::atomic`)
 - Stack-allocated variables
 
 **❌ UNSAFE (will cause audio glitches):**
+
 - `new` / `delete` / `malloc` / `free`
 - `std::vector::push_back()`, `std::string` concatenation
 - `std::mutex`, `std::lock_guard` (use lock-free structures)
@@ -319,12 +334,14 @@ void loadSettings() {
 This codebase follows core software engineering principles:
 
 ### KISS (Keep It Simple, Stupid)
+
 - Prefer straightforward implementations over clever solutions
 - Each class has a single, clear responsibility (e.g., `AudioProcessingLayer` manages audio thread, `TunerVisualizationLayer` renders display)
 - Avoid unnecessary abstractions - only abstract when multiple implementations exist or are anticipated
 - Example: `NoteConverter` is a simple utility with static functions, not an elaborate type system
 
 ### YAGNI (You Aren't Gonna Need It)
+
 - Don't implement features or abstractions until they're actually needed
 - Avoid speculative generalization - extend when requirements emerge
 - Example: Audio system started with basic chromatic tuning and expands only when new use cases appear (alternate tunings, polyphonic, etc.)
@@ -333,35 +350,41 @@ This codebase follows core software engineering principles:
 ### SOLID Principles
 
 **Single Responsibility Principle (SRP)**:
+
 - Each class has one reason to change
 - `AudioProcessingLayer` manages audio I/O and pitch detection, not rendering
 - `TunerVisualizationLayer` handles OpenGL rendering, not audio processing
 - `Config` manages settings persistence, not application logic
 
 **Open/Closed Principle (OCP)**:
+
 - Open for extension, closed for modification
 - Add new tuning modes without modifying core tuner logic
 - Add new visualization types via layer inheritance without changing base rendering
 - Add new DSP algorithms in lib-guitar-dsp submodule without touching application code
 
 **Liskov Substitution Principle (LSP)**:
+
 - Derived classes are substitutable for base classes
 - All `kappa::Layer` subclasses honor the lifecycle contract (`onAttach()`, `onUpdate()`, `onRender()`, `onDetach()`)
 - All DSP algorithm implementations in lib-guitar-dsp follow the same interface contract (input buffer → output pitch/frequency)
 
 **Interface Segregation Principle (ISP)**:
+
 - Clients shouldn't depend on interfaces they don't use
 - Layers only receive relevant events via `onEvent()`, not entire application state
 - DSP algorithms expose minimal interface - just `detect()` or `process()`, not entire internal state
 - Audio device interface exposes only necessary operations (start/stop/getDevices), not internal RtAudio complexity
 
 **Dependency Inversion Principle (DIP)**:
+
 - Depend on abstractions, not concretions
 - Application depends on lib-guitar-io interface, not directly on RtAudio
 - Layers depend on kappa::Event abstractions, not concrete event implementations
 - DSP processing depends on abstract buffer interfaces, not specific audio formats
 
 ### DRY (Don't Repeat Yourself)
+
 - Extract common logic into reusable functions/classes
 - Audio buffer management utilities eliminate per-layer boilerplate
 - Frequency/note conversion functions centralized in `NoteConverter`
@@ -369,6 +392,7 @@ This codebase follows core software engineering principles:
 - When you find yourself copying code, extract it into a shared utility or base class
 
 **Anti-patterns to avoid**:
+
 - Copy-pasting layer implementations - extract common base or helper functions
 - Duplicating audio processing logic - centralize in lib-guitar-dsp submodule
 - Repeating rendering code - use helper functions or rendering strategies
@@ -377,6 +401,7 @@ This codebase follows core software engineering principles:
 ### Applying These Principles
 
 When adding new features:
+
 1. **Start simple** (KISS) - implement the minimum that works
 2. **Don't anticipate** (YAGNI) - extend when you have concrete requirements
 3. **Check responsibilities** (SRP) - if a class does multiple things, split it into layers
@@ -384,6 +409,7 @@ When adding new features:
 5. **Look for duplication** (DRY) - extract common patterns before they spread
 
 When reviewing code:
+
 - Can this be simpler? (KISS)
 - Is this solving a current problem or a hypothetical one? (YAGNI)
 - Does this class have multiple reasons to change? (SRP)
@@ -421,12 +447,14 @@ When reviewing code:
 ### YIN vs MPM Pitch Detection
 
 **Use YIN (primary algorithm):**
+
 - Standard tuning scenarios
 - Best overall accuracy (0.78% error rate)
 - Fast (optimized FastYIN with FFT)
 - Robust to noise
 
 **Use MPM (fallback):**
+
 - Vibrato detection (better dynamic pitch tracking)
 - Smaller analysis windows (better for changing pitch)
 - When YIN confidence is low (<0.8)
@@ -443,15 +471,49 @@ if (confidence < 0.8f) {
 }
 ```
 
+### Pitch Stabilization
+
+**Stabilization Algorithms:**
+
+**Hybrid (recommended for guitar):**
+
+- Combines median filter (spike rejection) + confidence-weighted EMA
+- High confidence → faster convergence (less smoothing)
+- Low confidence → more smoothing (reject noise)
+- Best for handling vibrato and transients
+
+**EMA (simple):**
+
+- Exponential moving average: `smoothed = alpha * new + (1-alpha) * prev`
+- Lower alpha = more smoothing, slower response
+- Best for steady tuning with minimal vibrato
+
+**Median Filter:**
+
+- Sliding window median (default 5 samples)
+- Excellent spike rejection
+- Can introduce delay
+
+**Configuration:**
+
+```cpp
+AudioProcessingLayer::Config config;
+config.stabilizerType = AudioProcessingLayer::Config::StabilizerType::Hybrid;
+config.emaAlpha = 0.3f;          // Higher = more responsive
+config.medianWindowSize = 5;      // Larger = more smoothing
+```
+
 ### Achieving ±0.1 Cent Accuracy
 
 **Requirements:**
+
 1. **48kHz sample rate** (interface native rate, better than 44.1kHz)
 2. **YIN interpolation** (sub-sample accuracy)
 3. **Interface clock sync** (use audio interface crystal, not OS clock)
 4. **Calibrated reference** (user-adjustable A=430-450Hz)
 
 **Accuracy calculation:**
+
 - At A4 (440 Hz): 1 cent = 0.254 Hz, 0.1 cent = 0.0254 Hz
 - YIN interpolation achieves <0.01 Hz accuracy
 - Display precision: Show to 0.1 cent (e.g., "+2.3 cents")
@@ -459,6 +521,7 @@ if (confidence < 0.8f) {
 ### Rocksmith Realtone Cable Support
 
 **Auto-detection pattern:**
+
 ```cpp
 bool isRocksmithCable(const RtAudio::DeviceInfo& info) {
     return info.name.find("Rocksmith") != std::string::npos ||
@@ -477,6 +540,7 @@ int selectDefaultDevice() {
 ```
 
 **Known issues:**
+
 - Rocksmith cable is USB 2.0 only (may fail on USB 3.0 ports)
 - Recommend USB 2.0 hub if detection fails
 - 16-bit ADC (vs 24-bit pro interfaces), but sufficient for tuning
@@ -486,6 +550,7 @@ int selectDefaultDevice() {
 ### Adding a New Tuning Mode
 
 1. Add tuning to `src/tuner/TuningPresets.cpp`:
+
 ```cpp
 TuningPreset TuningPresets::DropD = {
     .name = "Drop D",
@@ -522,6 +587,7 @@ public:
 ### Integrating a New DSP Algorithm
 
 1. Add algorithm to **lib-guitar-dsp** submodule (shared across apps):
+
 ```cpp
 // external/lib-guitar-dsp/include/guitar-dsp/MyAlgorithm.hpp
 namespace GuitarDSP {
@@ -533,6 +599,7 @@ namespace GuitarDSP {
 ```
 
 2. Use in application:
+
 ```cpp
 #include <guitar-dsp/MyAlgorithm.hpp>
 
@@ -570,6 +637,7 @@ TEST(YINTest, DetectsA440) {
 ### Debugging Audio Issues
 
 **Enable verbose audio logging:**
+
 ```cpp
 // main.cpp
 #define RTAUDIO_DEBUG  // Before including RtAudio
@@ -577,12 +645,14 @@ TEST(YINTest, DetectsA440) {
 ```
 
 **Common issues:**
+
 - **Crackling/dropouts**: Buffer size too small, increase to 128-256 samples
 - **High latency**: Check if ASIO drivers installed (Windows)
 - **No input detected**: Check device permissions (macOS/Linux)
 - **Wrong device selected**: Verify with `RtAudio::getDeviceInfo()`
 
 **Profiling audio callback:**
+
 ```cpp
 void audioCallback(float* input, int frames) {
     auto start = std::chrono::high_resolution_clock::now();

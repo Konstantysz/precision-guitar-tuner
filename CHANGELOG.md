@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Pitch Stabilization**: Three stabilization algorithms (EMA, Median, Hybrid) to reduce jittery pitch readings
+  - Exponential Moving Average for general smoothing
+  - Median Filter for spike rejection
+  - Hybrid (recommended) combines both with confidence weighting
+  - Configurable via AudioProcessingLayer::Config
+  - All implementations are real-time safe (no allocations)
+
+### Added
+
 - **Audio Feedback Features** (2025-11-24)
   - **Separate Input/Output Devices**: Independent audio device selection for input (guitar) and output (monitoring/feedback)
   - **Reference Tone Generator**: Adjustable sine wave reference tone (100-1000 Hz) with volume control
@@ -80,7 +89,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Linux: ALSA
   - Clean C++20 PIMPL interface
   - MIT License (GPL-free)
-  - Repository: https://github.com/Konstantysz/lib-guitar-io
+  - Repository: <https://github.com/Konstantysz/lib-guitar-io>
 
 - **lib-guitar-dsp (v0.0.1)** - Digital signal processing library
   - YIN pitch detection algorithm implementation
@@ -88,7 +97,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - PFFFT integration (BSD-licensed FFT)
   - Real-time optimized algorithms
   - BSD License (GPL-free)
-  - Repository: https://github.com/Konstantysz/lib-guitar-dsp
+  - Repository: <https://github.com/Konstantysz/lib-guitar-dsp>
 
 - **AudioProcessingLayer**
   - Real-time audio capture at 48kHz
@@ -136,6 +145,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - CMake automatic asset copying to build directory
 
 ### Technical Highlights
+
 - kappa-core v0.5.1 integration (OpenGL application framework)
 - Layer-based architecture (SRP: Separation of audio/DSP/UI)
 - Real-time audio constraints followed:
@@ -147,6 +157,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GPL-free dependency chain (all MIT/BSD licensed)
 
 ### Build
+
 - Executable size: 289KB (Release build)
 - Build time: ~18 seconds (CMake configure + build)
 - Compiler warnings as errors enabled (/WX on MSVC)
@@ -154,6 +165,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.0.0] - 2025-01-22
 
 ### Initial
+
 - Project inception
 - Market analysis and strategic foundation
 - Technical architecture design
@@ -169,6 +181,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Migration Notes
 
 ### From 0.0.0 to 0.0.1
+
 - Added lib-guitar-io and lib-guitar-dsp as git submodules
 - Updated CMakeLists.txt to link new libraries
 - Created AudioProcessingLayer and TunerVisualizationLayer

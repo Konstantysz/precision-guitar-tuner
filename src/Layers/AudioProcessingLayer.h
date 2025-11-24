@@ -10,6 +10,7 @@
 #include <AudioDevice.h>
 #include <AudioDeviceManager.h>
 #include <Config.h>
+#include <PitchStabilizer.h>
 #include <YinPitchDetector.h>
 
 namespace PrecisionTuner::Layers
@@ -27,6 +28,15 @@ namespace PrecisionTuner::Layers
     class AudioProcessingLayer : public Kappa::Layer
     {
     public:
+        /** Pitch stabilization algorithm types */
+        enum class StabilizerType
+        {
+            None,   ///< No stabilization (raw YIN output)
+            EMA,    ///< Exponential Moving Average
+            Median, ///< Median filter
+            Hybrid  ///< Hybrid (median + confidence-weighted EMA) - recommended
+        };
+
         /** Configuration for the audio processing layer */
         struct Config
         {
@@ -34,6 +44,11 @@ namespace PrecisionTuner::Layers
             uint32_t bufferSize = 2048;   ///< Buffer size (frames) – larger for better pitch accuracy
             float minFrequency = 80.0f;   ///< Minimum detectable frequency (E2)
             float maxFrequency = 1200.0f; ///< Maximum detectable frequency (D6)
+
+            // Pitch stabilization configuration
+            StabilizerType stabilizerType = StabilizerType::Hybrid; ///< Stabilization algorithm
+            float emaAlpha = 0.3f;                                  ///< EMA smoothing factor [0.0, 1.0]
+            uint32_t medianWindowSize = 5;                          ///< Median filter window size
         };
 
         /** Result of pitch detection (lock‑free) */
@@ -75,6 +90,7 @@ namespace PrecisionTuner::Layers
         std::unique_ptr<GuitarIO::AudioDevice> inputDevice;
         std::unique_ptr<GuitarIO::AudioDevice> outputDevice;
         std::unique_ptr<GuitarDSP::YinPitchDetector> pitchDetector;
+        std::unique_ptr<GuitarDSP::PitchStabilizer> pitchStabilizer;
 
         // Lock‑free communication
         std::atomic<float> latestFrequency{ 0.0f };

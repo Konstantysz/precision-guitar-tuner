@@ -6,9 +6,9 @@ This file tracks all external dependencies and their pinned versions for reprodu
 
 | Component | Repository | Version/Commit | Date Pinned | Status |
 |-----------|------------|----------------|-------------|---------|
-| kappa-core | https://github.com/Konstantysz/kappa-core | v0.5.1 (66c2fc4) | 2025-11-22 | ✅ Active |
+| kappa-core | <https://github.com/Konstantysz/kappa-core> | v0.5.1 (66c2fc4) | 2025-11-22 | ✅ Active |
 | lib-guitar-io | TBD (to be created) | TBD | TBD | 📝 Not Created |
-| lib-guitar-dsp | TBD (to be created) | TBD | TBD | 📝 Not Created |
+| lib-guitar-dsp | <https://github.com/Konstantysz/lib-guitar-dsp> | v0.0.1 (65c93ae) | 2025-11-24 | ✅ Active |
 
 ## vcpkg Dependencies (kappa-core requirements)
 
@@ -23,12 +23,13 @@ This file tracks all external dependencies and their pinned versions for reprodu
 
 | Component | Repository | Version/Commit | Purpose | License |
 |-----------|------------|----------------|---------|---------|
-| RtAudio | https://github.com/thestk/rtaudio | TBD | Cross-platform audio I/O | MIT-like |
-| PFFFT | https://github.com/marton78/pffft | TBD | Fast FFT library (GPL-free) | BSD |
+| RtAudio | <https://github.com/thestk/rtaudio> | TBD | Cross-platform audio I/O | MIT-like |
+| PFFFT | <https://github.com/marton78/pffft> | TBD | Fast FFT library (GPL-free) | BSD |
 
 ## System Dependencies
 
 ### Windows
+
 - **ASIO SDK** (optional): For ultra-low latency audio on Windows
   - Included via RtAudio build
   - Required for <10ms latency
@@ -36,11 +37,13 @@ This file tracks all external dependencies and their pinned versions for reprodu
 - **WASAPI**: Built into Windows 10/11 (fallback audio API)
 
 ### macOS
+
 - **CoreAudio**: Built into macOS 10.15+ (native audio API)
 - **AudioToolbox**: Built into macOS (audio processing utilities)
 - **CoreFoundation**: Built into macOS (system framework)
 
 ### Linux
+
 - **ALSA**: Advanced Linux Sound Architecture
   - Ubuntu/Debian: `sudo apt install libasound2-dev`
   - Fedora: `sudo dnf install alsa-lib-devel`
@@ -103,6 +106,7 @@ vcpkg upgrade --no-dry-run
 All dependencies must be compatible with commercial distribution:
 
 ✅ **Allowed Licenses**:
+
 - MIT
 - BSD (2-clause, 3-clause)
 - Apache 2.0
@@ -110,6 +114,7 @@ All dependencies must be compatible with commercial distribution:
 - Public Domain
 
 ❌ **Prohibited Licenses**:
+
 - GPL (any version) - viral copyleft
 - LGPL (if statically linked)
 - AGPL (any version)
@@ -141,5 +146,5 @@ precision-guitar-tuner
 
 ---
 
-**Last Updated**: 2025-01-22
+**Last Updated**: 2025-11-24
 **Next Review**: Before each release

@@ -148,6 +148,34 @@ namespace PrecisionTuner::Layers
         std::vector<float> dummyBuffer(config.bufferSize, 0.0f);
         (void)pitchDetector->Detect(dummyBuffer, static_cast<float>(config.sampleRate));
         LOG_INFO("YinPitchDetector initialized and pre-allocated");
+
+        // Initialize pitch stabilizer based on configuration
+        switch (config.stabilizerType)
+        {
+        case Config::StabilizerType::EMA:
+            pitchStabilizer = std::make_unique<GuitarDSP::ExponentialMovingAverage>(
+                GuitarDSP::ExponentialMovingAverage::Config{ .alpha = config.emaAlpha });
+            LOG_INFO("Pitch stabilization: EMA (alpha={})", config.emaAlpha);
+            break;
+
+        case Config::StabilizerType::Median:
+            pitchStabilizer = std::make_unique<GuitarDSP::MedianFilter>(
+                GuitarDSP::MedianFilter::Config{ .windowSize = config.medianWindowSize });
+            LOG_INFO("Pitch stabilization: Median Filter (window={})", config.medianWindowSize);
+            break;
+
+        case Config::StabilizerType::Hybrid:
+            pitchStabilizer = std::make_unique<GuitarDSP::HybridStabilizer>(
+                GuitarDSP::HybridStabilizer::Config{ .baseAlpha = config.emaAlpha, .windowSize = config.medianWindowSize });
+            LOG_INFO("Pitch stabilization: Hybrid (alpha={}, window={})", config.emaAlpha, config.medianWindowSize);
+            break;
+
+        case Config::StabilizerType::None:
+        default:
+            pitchStabilizer = nullptr;
+            LOG_INFO("Pitch stabilization: Disabled");
+            break;
+        }
     }
 
     AudioProcessingLayer::~AudioProcessingLayer()
@@ -310,8 +338,17 @@ namespace PrecisionTuner::Layers
 
         if (result.has_value())
         {
-            latestFrequency.store(result->frequency, std::memory_order_relaxed);
-            latestConfidence.store(result->confidence, std::memory_order_relaxed);
+            GuitarDSP::PitchResult stabilized = result.value();
+
+            // Apply stabilization if enabled
+            if (pitchStabilizer)
+            {
+                pitchStabilizer->Update(result.value());
+                stabilized = pitchStabilizer->GetStabilized();
+            }
+
+            latestFrequency.store(stabilized.frequency, std::memory_order_relaxed);
+            latestConfidence.store(stabilized.confidence, std::memory_order_relaxed);
             pitchDetected.store(true, std::memory_order_relaxed);
         }
         else
