@@ -75,4 +75,3 @@ target_sources(test-tuning-presets PRIVATE
 # Register tests with CTest using GoogleTest module
 gtest_discover_tests(test-config)
 gtest_discover_tests(test-tuning-presets)
-

@@ -24,8 +24,7 @@ using namespace PrecisionTuner::Layers;
 class PrecisionTunerApp : public Kappa::Application
 {
 public:
-    PrecisionTunerApp()
-        : Application(CreateApplicationSpec())
+    PrecisionTunerApp() : Application(CreateApplicationSpec())
     {
         LOG_INFO("Precision Tuner initialized");
 
@@ -33,15 +32,15 @@ public:
         GLFWwindow *window = glfwGetCurrentContext();
         if (window)
         {
-            glfwSetWindowSizeLimits(window, 
-                WindowConfig::MIN_WIDTH, 
-                WindowConfig::MIN_HEIGHT, 
-                WindowConfig::MAX_WIDTH, 
+            glfwSetWindowSizeLimits(window,
+                WindowConfig::MIN_WIDTH,
+                WindowConfig::MIN_HEIGHT,
+                WindowConfig::MAX_WIDTH,
                 WindowConfig::MAX_HEIGHT);
-            LOG_INFO("Window size limits set: {}x{} to {}x{}", 
-                WindowConfig::MIN_WIDTH, 
-                WindowConfig::MIN_HEIGHT, 
-                WindowConfig::MAX_WIDTH, 
+            LOG_INFO("Window size limits set: {}x{} to {}x{}",
+                WindowConfig::MIN_WIDTH,
+                WindowConfig::MIN_HEIGHT,
+                WindowConfig::MAX_WIDTH,
                 WindowConfig::MAX_HEIGHT);
         }
 
@@ -92,12 +91,8 @@ public:
             glfwGetWindowSize(window, &width, &height);
 
             // Apply minimum and maximum constraints
-            config.window.width = std::clamp(width, 
-                WindowConfig::MIN_WIDTH, 
-                WindowConfig::MAX_WIDTH);
-            config.window.height = std::clamp(height, 
-                WindowConfig::MIN_HEIGHT, 
-                WindowConfig::MAX_HEIGHT);
+            config.window.width = std::clamp(width, WindowConfig::MIN_WIDTH, WindowConfig::MAX_WIDTH);
+            config.window.height = std::clamp(height, WindowConfig::MIN_HEIGHT, WindowConfig::MAX_HEIGHT);
         }
 
         // Save configuration
@@ -123,14 +118,13 @@ private:
         // Load config to get window settings
         Config loadedConfig = Config::Load();
 
-        return Kappa::ApplicationSpecification{
-            .name = "Precision Guitar Tuner",
-            .windowSpecification = { .title = "Precision Guitar Tuner v0.0.3-alpha",
+        return Kappa::ApplicationSpecification{ .name = "Precision Guitar Tuner",
+            .windowSpecification = {
+                .title = "Precision Guitar Tuner v0.0.3-alpha",
                 .width = static_cast<unsigned int>(loadedConfig.window.width),
                 .height = static_cast<unsigned int>(loadedConfig.window.height),
-                .isResizable = true  // Enable resizing for Phase 3 responsive layout
-            }
-        };
+                .isResizable = true // Enable resizing for Phase 3 responsive layout
+            } };
     }
 };
 

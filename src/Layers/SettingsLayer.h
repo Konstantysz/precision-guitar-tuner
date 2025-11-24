@@ -5,85 +5,87 @@
 #include <vector>
 #include <AudioDeviceManager.h>
 #include <AudioProcessingLayer.h>
-#include <TunerVisualizationLayer.h>
 #include <Config.h>
+#include <TunerVisualizationLayer.h>
 
 namespace PrecisionTuner::Layers
 {
 
-/**
- * @brief Layer responsible for application settings UI
- *
- * Provides ImGui-based settings interface for:
- * - Audio device selection
- * - Reference pitch adjustment (A=430-450 Hz)
- * - Tuning mode selection (future)
- *
- * Settings are persisted via Config system and saved on application shutdown.
- */
-class SettingsLayer : public Kappa::Layer
-{
-public:
     /**
-     * @brief Constructs settings layer
-     * @param audioLayer Reference to audio processing layer (for device switching)
-     * @param tunerLayer Reference to tuner visualization layer (for visibility control)
-     * @param config Reference to application config (for persistence)
+     * @brief Layer responsible for application settings UI
+     *
+     * Provides ImGui-based settings interface for:
+     * - Audio device selection
+     * - Reference pitch adjustment (A=430-450 Hz)
+     * - Tuning mode selection (future)
+     *
+     * Settings are persisted via Config system and saved on application shutdown.
      */
-    SettingsLayer(AudioProcessingLayer &audioLayer, TunerVisualizationLayer &tunerLayer, PrecisionTuner::Config &config);
+    class SettingsLayer : public Kappa::Layer
+    {
+    public:
+        /**
+         * @brief Constructs settings layer
+         * @param audioLayer Reference to audio processing layer (for device switching)
+         * @param tunerLayer Reference to tuner visualization layer (for visibility control)
+         * @param config Reference to application config (for persistence)
+         */
+        SettingsLayer(AudioProcessingLayer &audioLayer,
+            TunerVisualizationLayer &tunerLayer,
+            PrecisionTuner::Config &config);
 
-    ~SettingsLayer() override;
+        ~SettingsLayer() override;
 
-    void OnUpdate(float deltaTime) override;
-    void OnRender() override;
+        void OnUpdate(float deltaTime) override;
+        void OnRender() override;
 
-private:
-    /**
-     * @brief Initializes ImGui context and backends
-     */
-    void InitializeImGui();
+    private:
+        /**
+         * @brief Initializes ImGui context and backends
+         */
+        void InitializeImGui();
 
-    /**
-     * @brief Renders input audio device selection dropdown
-     */
-    void RenderInputDeviceSelector();
+        /**
+         * @brief Renders input audio device selection dropdown
+         */
+        void RenderInputDeviceSelector();
 
-    /**
-     * @brief Renders output audio device selection dropdown
-     */
-    void RenderOutputDeviceSelector();
+        /**
+         * @brief Renders output audio device selection dropdown
+         */
+        void RenderOutputDeviceSelector();
 
-    /**
-     * @brief Renders reference pitch adjustment slider (A=430-450 Hz)
-     */
-    void RenderReferencePitchSlider();
+        /**
+         * @brief Renders reference pitch adjustment slider (A=430-450 Hz)
+         */
+        void RenderReferencePitchSlider();
 
-    /**
-     * @brief Renders tuning mode selector
-     */
-    void RenderTuningModeSelector();
+        /**
+         * @brief Renders tuning mode selector
+         */
+        void RenderTuningModeSelector();
 
-    /**
-     * @brief Renders audio feedback controls (beep, reference tone, monitoring)
-     */
-    void RenderAudioFeedbackControls();
+        /**
+         * @brief Renders audio feedback controls (beep, reference tone, monitoring)
+         */
+        void RenderAudioFeedbackControls();
 
-    AudioProcessingLayer &audioLayer;
-    TunerVisualizationLayer &tunerLayer;
-    PrecisionTuner::Config &config;
+        AudioProcessingLayer &audioLayer;
+        TunerVisualizationLayer &tunerLayer;
+        PrecisionTuner::Config &config;
 
-    // UI state
-    bool showSettings = true;
-    
-    // Input device selection
-    int selectedInputDeviceIndex = 0;
-    std::vector<GuitarIO::AudioDeviceInfo> availableInputDevices;
-    
-    // Output device selection
-    int selectedOutputDeviceIndex = 0;
-    std::vector<GuitarIO::AudioDeviceInfo> availableOutputDevices;
-    
-    bool imguiInitialized = false;
-};
+        // UI state
+        bool showSettings = true;
+
+        // Input device selection
+        int selectedInputDeviceIndex = 0;
+        std::vector<GuitarIO::AudioDeviceInfo> availableInputDevices;
+
+        // Output device selection
+        int selectedOutputDeviceIndex = 0;
+        std::vector<GuitarIO::AudioDeviceInfo> availableOutputDevices;
+
+        bool imguiInitialized = false;
+    };
 
 } // namespace PrecisionTuner::Layers
