@@ -30,6 +30,7 @@ endif()
 # We need to compile the source files again for the test executable
 target_sources(precision-tuner-tests PRIVATE
     ${CMAKE_SOURCE_DIR}/src/Config.cpp
+    ${CMAKE_SOURCE_DIR}/src/TuningPresets.cpp
     ${CMAKE_SOURCE_DIR}/src/Layers/AudioProcessingLayer.cpp
     ${CMAKE_SOURCE_DIR}/src/Layers/TunerVisualizationLayer.cpp
     ${CMAKE_SOURCE_DIR}/src/Layers/SettingsLayer.cpp

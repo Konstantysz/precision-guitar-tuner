@@ -72,6 +72,7 @@ find_package(imgui CONFIG REQUIRED)
 add_executable(precision-guitar-tuner
     src/PrecisionGuitarTuner.cpp
     src/Config.cpp
+    src/TuningPresets.cpp
     src/Layers/AudioProcessingLayer.cpp
     src/Layers/TunerVisualizationLayer.cpp
     src/Layers/SettingsLayer.cpp

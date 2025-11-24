@@ -53,13 +53,13 @@ public:
         PushLayer<AudioProcessingLayer>();
 
         // Push visualization layer (renders tuner display)
-        // Note: TunerVisualizationLayer needs reference to AudioProcessingLayer
+        // Note: TunerVisualizationLayer needs reference to AudioProcessingLayer and Config
         // We'll use GetLayers() to access the audio layer
         auto layers = GetLayers();
         auto *audioLayer = dynamic_cast<AudioProcessingLayer *>(layers[0].get());
         if (audioLayer)
         {
-            PushLayer<TunerVisualizationLayer>(*audioLayer);
+            PushLayer<TunerVisualizationLayer>(*audioLayer, config);
 
             // Refresh layers span after pushing TunerVisualizationLayer
             layers = GetLayers();
