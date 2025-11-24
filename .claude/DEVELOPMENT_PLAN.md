@@ -557,9 +557,11 @@ Dependencies (Git Submodules)
 - ✅ Project Infrastructure (CMake, vcpkg, Git submodules)
 - ✅ lib-guitar-io (Audio I/O library)
 
-**Next Priority Tasks (Phase 3):**
-1. Device selection controls (populate settings UI with audio device dropdowns)
-2. Optional: Spectrum analyzer visualization
+- ✅ Device selection controls (populate settings UI with audio device dropdowns)
+
+**Next Priority Tasks (Phase 4):**
+1. Audio Feedback (in-tune beep, reference pitch playback)
+2. Spectrum analyzer visualization (Optional)
 
 **Blockers:** None
 

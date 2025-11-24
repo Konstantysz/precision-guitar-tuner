@@ -99,8 +99,18 @@ void SettingsLayer::OnRender()
             ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "Precision Guitar Tuner");
             ImGui::Separator();
 
-            // Audio device selection
-            RenderDeviceSelector();
+            //Input device selection
+            RenderInputDeviceSelector();
+
+            ImGui::Separator();
+
+            // Output device selection
+            RenderOutputDeviceSelector();
+
+            ImGui::Separator();
+
+            // Audio feedback controls
+            RenderAudioFeedbackControls();
 
             ImGui::Separator();
 
@@ -109,7 +119,7 @@ void SettingsLayer::OnRender()
 
             ImGui::Separator();
 
-            // Tuning mode selection (placeholder for future)
+            // Tuning mode selection
             RenderTuningModeSelector();
         }
         ImGui::End();
@@ -122,79 +132,73 @@ void SettingsLayer::OnRender()
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void SettingsLayer::RenderDeviceSelector()
+void SettingsLayer::RenderInputDeviceSelector()
 {
     ImGui::TextColored(ImVec4(0.8f, 0.9f, 1.0f, 1.0f), "Audio Input Device");
 
-    // Refresh device list on first render or on button click
+    // Refresh device list on first render
     static bool firstTime = true;
     if (firstTime)
     {
-        availableDevices = audioLayer.GetAvailableDeviceInfo();
+        availableInputDevices = audioLayer.GetAvailableInputDeviceInfo();
         firstTime = false;
 
         // Find current device in list
-        uint32_t currentDeviceId = audioLayer.GetCurrentDeviceId();
-        auto it = std::ranges::find_if(availableDevices,
+        uint32_t currentDeviceId = audioLayer.GetCurrentInputDeviceId();
+        auto it = std::ranges::find_if(availableInputDevices,
             [currentDeviceId](const auto &device) { return device.id == currentDeviceId; });
 
-        if (it != availableDevices.end())
+        if (it != availableInputDevices.end())
         {
-            selectedDeviceIndex = static_cast<int>(std::distance(availableDevices.begin(), it));
+            selectedInputDeviceIndex = static_cast<int>(std::distance(availableInputDevices.begin(), it));
         }
     }
 
-    if (ImGui::Button("Refresh Devices"))
+    if (ImGui::Button("Refresh Input Devices"))
     {
-        availableDevices = audioLayer.GetAvailableDeviceInfo();
-        LOG_INFO("Device list refreshed - {} devices found", availableDevices.size());
+        availableInputDevices = audioLayer.GetAvailableInputDeviceInfo();
+        LOG_INFO("Input device list refreshed - {} devices found", availableInputDevices.size());
     }
 
-    ImGui::SameLine();
-    ImGui::TextDisabled("(Click to rescan)");
-
     // Device dropdown
-    if (availableDevices.empty())
+    if (availableInputDevices.empty())
     {
-        ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "No audio devices found!");
+        ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "No audio input devices found!");
         return;
     }
 
     // Create preview string for current selection
-    const char *previewValue = selectedDeviceIndex >= 0 && selectedDeviceIndex < static_cast<int>(availableDevices.size())
-                                    ? availableDevices[selectedDeviceIndex].name.c_str()
+    const char *previewValue = selectedInputDeviceIndex >= 0 && selectedInputDeviceIndex < static_cast<int>(availableInputDevices.size())
+                                    ? availableInputDevices[selectedInputDeviceIndex].name.c_str()
                                     : "Select device...";
 
-    if (ImGui::BeginCombo("##DeviceCombo", previewValue))
+    if (ImGui::BeginCombo("##InputDeviceCombo", previewValue))
     {
-        for (int i = 0; i < static_cast<int>(availableDevices.size()); ++i)
+        for (int i = 0; i < static_cast<int>(availableInputDevices.size()); ++i)
         {
-            const bool isSelected = (selectedDeviceIndex == i);
-            if (ImGui::Selectable(availableDevices[i].name.c_str(), isSelected))
+            const bool isSelected = (selectedInputDeviceIndex == i);
+            if (ImGui::Selectable(availableInputDevices[i].name.c_str(), isSelected))
             {
-                if (selectedDeviceIndex != i)
+                if (selectedInputDeviceIndex != i)
                 {
-                    selectedDeviceIndex = i;
-                    uint32_t deviceId = availableDevices[i].id;
+                    selectedInputDeviceIndex = i;
+                    uint32_t deviceId = availableInputDevices[i].id;
 
-                    LOG_INFO("User selected device: {}", availableDevices[i].name);
+                    LOG_INFO("User selected input device: {}", availableInputDevices[i].name);
 
-                    // Switch to new device
-                    if (audioLayer.SwitchDevice(deviceId))
+                    if (audioLayer.SwitchInputDevice(deviceId))
                     {
-                        // Update config for persistence
                         config.audio.deviceId = static_cast<int>(deviceId);
-                        config.audio.deviceName = availableDevices[i].name;
-                        LOG_INFO("Device switched successfully and config updated");
+                        config.audio.deviceName = availableInputDevices[i].name;
+                        LOG_INFO("Input device switched successfully");
                     }
                     else
                     {
-                        LOG_ERROR("Failed to switch device");
+                        LOG_ERROR("Failed to switch input device");
                     }
                 }
             }
 
-            // Set the initial focus when opening the combo
             if (isSelected)
             {
                 ImGui::SetItemDefaultFocus();
@@ -204,9 +208,9 @@ void SettingsLayer::RenderDeviceSelector()
     }
 
     // Show device details
-    if (selectedDeviceIndex >= 0 && selectedDeviceIndex < static_cast<int>(availableDevices.size()))
+    if (selectedInputDeviceIndex >= 0 && selectedInputDeviceIndex < static_cast<int>(availableInputDevices.size()))
     {
-        const auto &device = availableDevices[selectedDeviceIndex];
+        const auto &device = availableInputDevices[selectedInputDeviceIndex];
         ImGui::TextDisabled("Channels: %u | ID: %u", device.maxInputChannels, device.id);
     }
 }
@@ -260,6 +264,182 @@ void SettingsLayer::RenderTuningModeSelector()
     else
     {
         ImGui::TextDisabled("Shows target string indicator");
+    }
+}
+
+void SettingsLayer::RenderOutputDeviceSelector()
+{
+    ImGui::TextColored(ImVec4(0.8f, 0.9f, 1.0f, 1.0f), "Audio Output Device");
+
+    // Refresh device list on first render
+    static bool firstTimeOutput = true;
+    if (firstTimeOutput)
+    {
+        availableOutputDevices = audioLayer.GetAvailableOutputDeviceInfo();
+        firstTimeOutput = false;
+
+        // Find current device in list
+        uint32_t currentDeviceId = audioLayer.GetCurrentOutputDeviceId();
+        auto it = std::ranges::find_if(availableOutputDevices,
+            [currentDeviceId](const auto &device) { return device.id == currentDeviceId; });
+
+        if (it != availableOutputDevices.end())
+        {
+            selectedOutputDeviceIndex = static_cast<int>(std::distance(availableOutputDevices.begin(), it));
+        }
+    }
+
+    if (ImGui::Button("Refresh Output Devices"))
+    {
+        availableOutputDevices = audioLayer.GetAvailableOutputDeviceInfo();
+        LOG_INFO("Output device list refreshed - {} devices found", availableOutputDevices.size());
+    }
+
+    // Device dropdown
+    if (availableOutputDevices.empty())
+    {
+        ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "No audio output devices found!");
+        return;
+    }
+
+    const char *previewValue = selectedOutputDeviceIndex >= 0 && selectedOutputDeviceIndex < static_cast<int>(availableOutputDevices.size())
+                                    ? availableOutputDevices[selectedOutputDeviceIndex].name.c_str()
+                                    : "Select device...";
+
+    if (ImGui::BeginCombo("##OutputDeviceCombo", previewValue))
+    {
+        for (int i = 0; i < static_cast<int>(availableOutputDevices.size()); ++i)
+        {
+            const bool isSelected = (selectedOutputDeviceIndex == i);
+            if (ImGui::Selectable(availableOutputDevices[i].name.c_str(), isSelected))
+            {
+                if (selectedOutputDeviceIndex != i)
+                {
+                    selectedOutputDeviceIndex = i;
+                    uint32_t deviceId = availableOutputDevices[i].id;
+
+                    LOG_INFO("User selected output device: {}", availableOutputDevices[i].name);
+
+                    if (audioLayer.SwitchOutputDevice(deviceId))
+                    {
+                        config.audio.outputDeviceId = static_cast<int>(deviceId);
+                        config.audio.outputDeviceName = availableOutputDevices[i].name;
+                        LOG_INFO("Output device switched successfully");
+                    }
+                    else
+                    {
+                        LOG_ERROR("Failed to switch output device");
+                    }
+                }
+            }
+
+            if (isSelected)
+            {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
+    }
+
+    // Show device details
+    if (selectedOutputDeviceIndex >= 0 && selectedOutputDeviceIndex < static_cast<int>(availableOutputDevices.size()))
+    {
+        const auto &device = availableOutputDevices[selectedOutputDeviceIndex];
+        ImGui::TextDisabled("Channels: %u | ID: %u", device.maxOutputChannels, device.id);
+    }
+}
+
+void SettingsLayer::RenderAudioFeedbackControls()
+{
+    ImGui::TextColored(ImVec4(0.8f, 0.9f, 1.0f, 1.0f), "Audio Feedback");
+
+    // Reference Tone
+    bool enableReference = config.audio.enableReference;
+    if (ImGui::Checkbox("Reference Tone", &enableReference))
+    {
+        config.audio.enableReference = enableReference;
+        audioLayer.UpdateAudioFeedback(config.audio);
+        LOG_INFO("Reference tone {}", enableReference ? "enabled" : "disabled");
+    }
+
+    if (config.audio.enableReference)
+    {
+        ImGui::Indent();
+        
+        // Reference frequency slider
+        float referenceFrequency = config.audio.referenceFrequency;
+        ImGui::PushItemWidth(150.0f);
+        if (ImGui::SliderFloat("Frequency (Hz)", &referenceFrequency, 100.0f, 1000.0f, "%.1f Hz"))
+        {
+            config.audio.referenceFrequency = referenceFrequency;
+            audioLayer.UpdateAudioFeedback(config.audio);
+        }
+        
+        // Reference volume slider
+        float referenceVolume = config.audio.referenceVolume;
+        if (ImGui::SliderFloat("Volume##RefVol", &referenceVolume, 0.0f, 1.0f, "%.2f"))
+        {
+            config.audio.referenceVolume = referenceVolume;
+            audioLayer.UpdateAudioFeedback(config.audio);
+        }
+        ImGui::PopItemWidth();
+        ImGui::Unindent();
+    }
+
+    // Input Monitoring (Digital Amp)
+    bool enableInputMonitoring = config.audio.enableInputMonitoring;
+    if (ImGui::Checkbox("Input Monitoring (Digital Amp)", &enableInputMonitoring))
+    {
+        config.audio.enableInputMonitoring = enableInputMonitoring;
+        audioLayer.UpdateAudioFeedback(config.audio);
+        LOG_INFO("Input monitoring {}", enableInputMonitoring ? "enabled" : "disabled");
+    }
+
+    if (config.audio.enableInputMonitoring)
+    {
+        ImGui::Indent();
+        float monitoringVolume = config.audio.monitoringVolume;
+        ImGui::PushItemWidth(150.0f);
+        if (ImGui::SliderFloat("Volume##MonVol", &monitoringVolume, 0.0f, 5.0f, "%.2f"))
+        {
+            config.audio.monitoringVolume = monitoringVolume;
+            audioLayer.UpdateAudioFeedback(config.audio);
+        }
+        
+        // Input gain slider
+        float inputGain = config.audio.inputGain;
+        if (ImGui::SliderFloat("Input Gain##InputGain", &inputGain, 0.0f, 5.0f, "%.2f"))
+        {
+            config.audio.inputGain = inputGain;
+            audioLayer.UpdateAudioFeedback(config.audio);
+        }
+        
+        ImGui::PopItemWidth();
+        ImGui::Unindent();
+    }
+
+    // In-Tune Beep
+    bool beepEnabled = config.audio.enableBeep;
+    if (ImGui::Checkbox("In-Tune Beep", &beepEnabled))
+    {
+        config.audio.enableBeep = beepEnabled;
+        audioLayer.UpdateAudioFeedback(config.audio);
+        LOG_INFO("In-tune beep {}", beepEnabled ? "enabled" : "disabled");
+    }
+
+    if (config.audio.enableBeep)
+    {
+        ImGui::Indent();
+        float beepVolume = config.audio.beepVolume;
+        ImGui::PushItemWidth(150.0f);
+        if (ImGui::SliderFloat("Volume##BeepVol", &beepVolume, 0.0f, 1.0f, "%.2f"))
+        {
+            config.audio.beepVolume = beepVolume;
+            audioLayer.UpdateAudioFeedback(config.audio);
+        }
+        ImGui::PopItemWidth();
+        ImGui::TextDisabled("(Triggers when in-tune)");
+        ImGui::Unindent();
     }
 }
 

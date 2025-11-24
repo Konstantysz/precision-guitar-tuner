@@ -44,9 +44,14 @@ private:
     void InitializeImGui();
 
     /**
-     * @brief Renders audio device selection dropdown
+     * @brief Renders input audio device selection dropdown
      */
-    void RenderDeviceSelector();
+    void RenderInputDeviceSelector();
+
+    /**
+     * @brief Renders output audio device selection dropdown
+     */
+    void RenderOutputDeviceSelector();
 
     /**
      * @brief Renders reference pitch adjustment slider (A=430-450 Hz)
@@ -54,9 +59,14 @@ private:
     void RenderReferencePitchSlider();
 
     /**
-     * @brief Renders tuning mode selector (placeholder for Phase 3)
+     * @brief Renders tuning mode selector
      */
     void RenderTuningModeSelector();
+
+    /**
+     * @brief Renders audio feedback controls (beep, reference tone, monitoring)
+     */
+    void RenderAudioFeedbackControls();
 
     AudioProcessingLayer &audioLayer;
     TunerVisualizationLayer &tunerLayer;
@@ -64,8 +74,15 @@ private:
 
     // UI state
     bool showSettings = true;
-    int selectedDeviceIndex = 0;
-    std::vector<GuitarIO::AudioDeviceInfo> availableDevices;
+    
+    // Input device selection
+    int selectedInputDeviceIndex = 0;
+    std::vector<GuitarIO::AudioDeviceInfo> availableInputDevices;
+    
+    // Output device selection
+    int selectedOutputDeviceIndex = 0;
+    std::vector<GuitarIO::AudioDeviceInfo> availableOutputDevices;
+    
     bool imguiInitialized = false;
 };
 

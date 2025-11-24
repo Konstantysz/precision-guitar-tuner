@@ -54,11 +54,13 @@ Mobile apps are limited by:
 - [x] Responsive window layout
 - [x] Settings layer (basic UI)
 - [x] Multiple tuning modes (Standard, Drop D, Open G, DADGAD, Chromatic)
-- [ ] Audio device selection
+- [x] Audio device selection (separate input/output)
+- [x] Audio feedback (reference tones, input monitoring)
+- [x] Input gain control
 - [ ] Spectrum analyzer (optional)
 
 ### Phase 4: Advanced Tuning (Planned)
-- [ ] Audio feedback (reference tones)
+- [ ] Strobe tuner visualization mode
 - [ ] Visual feedback improvements
 - [ ] Accuracy refinement
 
@@ -76,8 +78,12 @@ Mobile apps are limited by:
 git clone --recursive https://github.com/Konstantysz/precision-guitar-tuner.git
 cd precision-guitar-tuner
 
-# Configure with CMake
-cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+# Configure with CMake (using vcpkg toolchain)
+# Windows PowerShell:
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+
+# Linux/macOS:
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
 
 # Build the project
 cmake --build build --config Release

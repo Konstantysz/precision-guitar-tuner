@@ -59,6 +59,9 @@ public:
         auto *audioLayer = dynamic_cast<AudioProcessingLayer *>(layers[0].get());
         if (audioLayer)
         {
+            // Initialize audio feedback settings from config
+            audioLayer->UpdateAudioFeedback(config.audio);
+
             PushLayer<TunerVisualizationLayer>(*audioLayer, config);
 
             // Refresh layers span after pushing TunerVisualizationLayer

@@ -7,15 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### TODO
-
-- Responsive window sizing and layout
-- Strobe tuner visualization mode
-- Settings layer for audio device selection
-- Configuration persistence
-- Alternative tuning support (Drop D, chromatic, etc.)
-
 ### Added
+
+- **Audio Feedback Features** (2025-11-24)
+  - **Separate Input/Output Devices**: Independent audio device selection for input (guitar) and output (monitoring/feedback)
+  - **Reference Tone Generator**: Adjustable sine wave reference tone (100-1000 Hz) with volume control
+  - **Input Monitoring (Digital Amp)**: Real-time audio monitoring with adjustable volume (0-500%) and input gain (0-500%)
+  - **Stereo Output Support**: Automatic detection and configuration of stereo output devices
+  - **Thread-Safe Audio Processing**: All audio feedback settings use atomic operations for safe real-time updates
+  - **UI Controls**: Integrated settings panel with device selectors and audio feedback controls
+  
+- **Configuration** (2025-11-24)
+  - Added `AudioConfig` fields: `outputDeviceId`, `outputDeviceName`, `enableReference`, `referenceVolume`, `referenceFrequency`, `enableInputMonitoring`, `monitoringVolume`, `inputGain`
+  - Configuration persistence for all audio feedback settings
 
 - **Features** (2025-11-24)
   - **Multiple Tuning Modes**: Added support for 7 tuning presets (Standard, Drop D, Drop C, DADGAD, Open G, Open D, Chromatic)
