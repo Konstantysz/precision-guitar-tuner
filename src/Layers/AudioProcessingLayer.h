@@ -51,15 +51,8 @@ public:
      */
     explicit AudioProcessingLayer(const Config &config = Config{});
 
-    /**
-     * @brief Destructor
-     */
     ~AudioProcessingLayer() override;
 
-    /**
-     * @brief Called every frame to update layer state
-     * @param deltaTime Time since last frame (seconds)
-     */
     void OnUpdate(float deltaTime) override;
 
     /**
