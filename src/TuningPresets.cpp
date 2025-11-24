@@ -34,7 +34,7 @@ TuningPreset TuningPresets::CalculatePreset(const PresetDefinition &definition, 
     // Calculate frequencies for each string
     for (size_t i = 0; i < 6; ++i)
     {
-        if (!definition.noteNames.empty())
+        if (!definition.noteNames[i].empty())
         {
             preset.targetFrequencies[i] =
                 GuitarDSP::NoteConverter::NoteToFrequency(definition.noteNames[i], definition.octaves[i], referencePitch);
