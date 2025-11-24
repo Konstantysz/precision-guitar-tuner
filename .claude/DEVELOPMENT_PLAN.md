@@ -252,6 +252,7 @@ Dependencies (Git Submodules)
 **Goals:**
 - Multiple tuning modes (standard, drop, alternate)
 - Chromatic mode
+- Audio feedback (in-tune tone, reference pitch playback)
 - Visual feedback improvements
 - Accuracy refinement
 
@@ -266,27 +267,39 @@ Dependencies (Git Submodules)
 6. [ ] Create tuning preset selector UI
 7. [ ] Implement "closest string" indicator (for standard tuning)
 
+#### Audio Feedback (NEW)
+8. [ ] Implement tone generator in lib-guitar-io (sine wave synthesis)
+9. [ ] Add "in-tune beep" feature (configurable on/off)
+10. [ ] Implement reference pitch playback (play target note)
+11. [ ] Add tone volume control in settings
+12. [ ] Create audio mixing (input + tone output)
+13. [ ] Add "drone mode" (continuous reference tone while tuning)
+14. [ ] Implement polyphonic tone generation (play full chord for checking tuning)
+
 #### Visualization Enhancements
-8. [ ] Add frequency spectrum display
-9. [ ] Improve needle smoothing (exponential moving average)
-10. [ ] Add color coding (red far, yellow close, green in-tune)
-11. [ ] Implement cents history graph (optional)
-12. [ ] Add audio level meter (input gain indicator)
+15. [ ] Add frequency spectrum display
+16. [ ] Improve needle smoothing (exponential moving average)
+17. [ ] Add color coding (red far, yellow close, green in-tune)
+18. [ ] Implement cents history graph (optional)
+19. [ ] Add audio level meter (input gain indicator)
 
 #### Accuracy Improvements
-13. [ ] Fine-tune YIN parameters for guitar frequencies
-14. [ ] Implement hybrid YIN/MPM approach (use MPM when YIN confidence < 0.8)
-15. [ ] Add harmonic rejection (ignore overtones)
-16. [ ] Calibrate for different string gauges
+20. [ ] Fine-tune YIN parameters for guitar frequencies
+21. [ ] Implement hybrid YIN/MPM approach (use MPM when YIN confidence < 0.8)
+22. [ ] Add harmonic rejection (ignore overtones)
+23. [ ] Calibrate for different string gauges
 
 **Deliverables:**
 - 10+ tuning presets available
 - Chromatic mode working
+- Audio feedback (beep on in-tune, reference tone playback)
 - Enhanced visual feedback
 - ±0.1 cent accuracy achieved
 
 **Success Criteria:**
 - All tuning modes detect correctly
+- Audio feedback is clear and non-intrusive
+- Reference tones are accurate to detected reference pitch
 - Visual feedback is intuitive
 - Accuracy verified with oscilloscope
 - Low E string (82.4 Hz) detects reliably
