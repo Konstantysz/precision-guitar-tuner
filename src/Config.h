@@ -65,6 +65,10 @@ namespace PrecisionTuner
         float monitoringVolume = 0.5f;      // Volume for monitoring output
         float inputGain = 1.0f;             // Gain for input signal (1.0 = no change)
 
+        // Advanced feedback modes
+        bool enableDroneMode = false;      // Enable continuous reference tone (drone)
+        bool enablePolyphonicMode = false; // Enable polyphonic chord playback
+
         // JSON serialization
         NLOHMANN_DEFINE_TYPE_INTRUSIVE(AudioConfig,
             deviceId,
@@ -82,7 +86,9 @@ namespace PrecisionTuner
             referenceFrequency,
             enableInputMonitoring,
             monitoringVolume,
-            inputGain)
+            inputGain,
+            enableDroneMode,
+            enablePolyphonicMode)
     };
 
     /**
