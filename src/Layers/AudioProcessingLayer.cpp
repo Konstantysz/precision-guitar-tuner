@@ -9,10 +9,16 @@ namespace PrecisionTuner::Layers
     AudioProcessingLayer::AudioProcessingLayer(const Config &config)
         : config(config), inputDevice(std::make_unique<GuitarIO::AudioDevice>()),
           outputDevice(std::make_unique<GuitarIO::AudioDevice>()),
-          pitchDetector(
-              std::make_unique<GuitarDSP::YinPitchDetector>(GuitarDSP::YinPitchDetector::Config{ .threshold = 0.15f,
-                  .minFrequency = config.minFrequency,
-                  .maxFrequency = config.maxFrequency }))
+          pitchDetector(std::make_unique<GuitarDSP::HybridPitchDetector>(
+              GuitarDSP::HybridPitchDetector::Config{ .yinConfidenceThreshold = 0.8f,
+                  .enableHarmonicRejection = true,
+                  .harmonicTolerance = 0.05f,
+                  .yinConfig = { .threshold = 0.10f,
+                      .minFrequency = config.minFrequency,
+                      .maxFrequency = config.maxFrequency },
+                  .mpmConfig = { .threshold = 0.93f,
+                      .minFrequency = config.minFrequency,
+                      .maxFrequency = config.maxFrequency } }))
     {
         // Pre-allocate processing buffer (avoid allocations in audio callback)
         processingBuffer.resize(config.bufferSize);
@@ -144,33 +150,33 @@ namespace PrecisionTuner::Layers
         LOG_INFO("  Buffer Size: {} frames", config.bufferSize);
         LOG_INFO("  Frequency Range: {:.1f} - {:.1f} Hz", config.minFrequency, config.maxFrequency);
 
-        // Pre-allocate YinPitchDetector internal buffer
+        // Pre-allocate HybridPitchDetector internal buffer
         std::vector<float> dummyBuffer(config.bufferSize, 0.0f);
         (void)pitchDetector->Detect(dummyBuffer, static_cast<float>(config.sampleRate));
-        LOG_INFO("YinPitchDetector initialized and pre-allocated");
+        LOG_INFO("HybridPitchDetector initialized with YIN+MPM and harmonic rejection");
 
         // Initialize pitch stabilizer based on configuration
         switch (config.stabilizerType)
         {
-        case Config::StabilizerType::EMA:
+        case StabilizerType::EMA:
             pitchStabilizer = std::make_unique<GuitarDSP::ExponentialMovingAverage>(
                 GuitarDSP::ExponentialMovingAverage::Config{ .alpha = config.emaAlpha });
             LOG_INFO("Pitch stabilization: EMA (alpha={})", config.emaAlpha);
             break;
 
-        case Config::StabilizerType::Median:
+        case StabilizerType::Median:
             pitchStabilizer = std::make_unique<GuitarDSP::MedianFilter>(
                 GuitarDSP::MedianFilter::Config{ .windowSize = config.medianWindowSize });
             LOG_INFO("Pitch stabilization: Median Filter (window={})", config.medianWindowSize);
             break;
 
-        case Config::StabilizerType::Hybrid:
-            pitchStabilizer = std::make_unique<GuitarDSP::HybridStabilizer>(
-                GuitarDSP::HybridStabilizer::Config{ .baseAlpha = config.emaAlpha, .windowSize = config.medianWindowSize });
+        case StabilizerType::Hybrid:
+            pitchStabilizer = std::make_unique<GuitarDSP::HybridStabilizer>(GuitarDSP::HybridStabilizer::Config{
+                .baseAlpha = config.emaAlpha, .windowSize = config.medianWindowSize });
             LOG_INFO("Pitch stabilization: Hybrid (alpha={}, window={})", config.emaAlpha, config.medianWindowSize);
             break;
 
-        case Config::StabilizerType::None:
+        case StabilizerType::None:
         default:
             pitchStabilizer = nullptr;
             LOG_INFO("Pitch stabilization: Disabled");
@@ -312,6 +318,18 @@ namespace PrecisionTuner::Layers
             layer->monitoringWritePos.store(writePos, std::memory_order_release);
         }
 
+        // Calculate peak level for metering
+        float maxVal = 0.0f;
+        for (float sample : gainedBuffer)
+        {
+            float absVal = std::abs(sample);
+            if (absVal > maxVal)
+            {
+                maxVal = absVal;
+            }
+        }
+        layer->currentInputLevel.store(maxVal, std::memory_order_relaxed);
+
         return 0; // Continue stream
     }
 
@@ -408,8 +426,53 @@ namespace PrecisionTuner::Layers
             monitoringReadPos.store(readPos, std::memory_order_release);
         }
 
-        // Mix reference tone
-        if (referenceEnabled.load(std::memory_order_relaxed))
+        // Mix drone mode (continuous reference tone) - takes priority over single reference
+        bool droneMode = droneEnabled.load(std::memory_order_relaxed);
+        if (droneMode)
+        {
+            referenceGenerator.SetAmplitude(static_cast<double>(referenceVolume.load(std::memory_order_relaxed)));
+
+            if (outputChannels == 1)
+            {
+                referenceGenerator.Generate(outputBuffer, true);
+            }
+            else
+            {
+                std::span<float> scratchSpan(outputScratchBuffer.data(), frames);
+                referenceGenerator.Generate(scratchSpan, false);
+
+                for (size_t i = 0; i < frames; ++i)
+                {
+                    float sample = outputScratchBuffer[i];
+                    outputBuffer[i * 2] += sample;
+                    outputBuffer[i * 2 + 1] += sample;
+                }
+            }
+        }
+        // Mix polyphonic mode (chord playback) - takes priority over single reference
+        else if (polyphonicEnabled.load(std::memory_order_relaxed))
+        {
+            polyphonicGenerator.SetGlobalVolume(referenceVolume.load(std::memory_order_relaxed));
+
+            if (outputChannels == 1)
+            {
+                polyphonicGenerator.Generate(outputBuffer, true);
+            }
+            else
+            {
+                std::span<float> scratchSpan(outputScratchBuffer.data(), frames);
+                polyphonicGenerator.Generate(scratchSpan, false);
+
+                for (size_t i = 0; i < frames; ++i)
+                {
+                    float sample = outputScratchBuffer[i];
+                    outputBuffer[i * 2] += sample;
+                    outputBuffer[i * 2 + 1] += sample;
+                }
+            }
+        }
+        // Mix reference tone (normal single-shot mode)
+        else if (referenceEnabled.load(std::memory_order_relaxed))
         {
             referenceGenerator.SetAmplitude(static_cast<double>(referenceVolume.load(std::memory_order_relaxed)));
 
@@ -462,6 +525,12 @@ namespace PrecisionTuner::Layers
     bool AudioProcessingLayer::SwitchInputDevice(uint32_t deviceId)
     {
         LOG_INFO("Switching to input device ID: {}", deviceId);
+
+        if (deviceId == currentInputDeviceId && inputDevice->IsRunning())
+        {
+            LOG_INFO("Input device {} is already active", deviceId);
+            return true;
+        }
 
         if (inputDevice->IsRunning())
         {
@@ -528,6 +597,12 @@ namespace PrecisionTuner::Layers
     bool AudioProcessingLayer::SwitchOutputDevice(uint32_t deviceId)
     {
         LOG_INFO("Switching to output device ID: {}", deviceId);
+
+        if (deviceId == currentOutputDeviceId && outputDevice->IsRunning())
+        {
+            LOG_INFO("Output device {} is already active", deviceId);
+            return true;
+        }
 
         if (outputDevice->IsRunning())
         {
@@ -615,9 +690,26 @@ namespace PrecisionTuner::Layers
         monitoringVolume.store(audioCfg.monitoringVolume, std::memory_order_relaxed);
         inputGain.store(audioCfg.inputGain, std::memory_order_relaxed);
 
+        // Advanced modes
+        droneEnabled.store(audioCfg.enableDroneMode, std::memory_order_relaxed);
+        polyphonicEnabled.store(audioCfg.enablePolyphonicMode, std::memory_order_relaxed);
+
         // Update generator frequencies
         beepGenerator.SetFrequency(880.0); // A5 for beep
         referenceGenerator.SetFrequency(static_cast<double>(audioCfg.referenceFrequency));
+
+        // Note: Polyphonic frequencies are set by SetPolyphonicFrequencies() called from SettingsLayer
+    }
+
+    float AudioProcessingLayer::GetInputLevel() const
+    {
+        return currentInputLevel.load(std::memory_order_relaxed);
+    }
+
+    void AudioProcessingLayer::SetPolyphonicFrequencies(const std::array<float, 6> &frequencies)
+    {
+        polyphonicGenerator.SetVoiceFrequencies(frequencies);
+        polyphonicGenerator.SetGlobalVolume(referenceVolume.load(std::memory_order_relaxed));
     }
 
 } // namespace PrecisionTuner::Layers

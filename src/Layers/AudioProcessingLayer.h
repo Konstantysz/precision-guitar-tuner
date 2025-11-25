@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../external/lib-guitar-io/include/AudioMixer.h"
+#include "../external/lib-guitar-io/include/PolyphonicGenerator.h"
 #include "../external/lib-guitar-io/include/SineWaveGenerator.h"
 #include <Layer.h>
 #include <atomic>
@@ -10,8 +11,8 @@
 #include <AudioDevice.h>
 #include <AudioDeviceManager.h>
 #include <Config.h>
+#include <HybridPitchDetector.h>
 #include <PitchStabilizer.h>
-#include <YinPitchDetector.h>
 
 namespace PrecisionTuner::Layers
 {
@@ -80,6 +81,14 @@ namespace PrecisionTuner::Layers
 
         void UpdateAudioFeedback(const PrecisionTuner::AudioConfig &audioCfg);
 
+        /**
+         * @brief Sets frequencies for polyphonic chord playback
+         * @param frequencies Array of 6 frequencies (Hz), 0 = disabled voice
+         */
+        void SetPolyphonicFrequencies(const std::array<float, 6> &frequencies);
+
+        [[nodiscard]] float GetInputLevel() const;
+
     private:
         static int InputCallback(std::span<const float> inputBuffer, std::span<float> outputBuffer, void *userData);
         static int OutputCallback(std::span<const float> inputBuffer, std::span<float> outputBuffer, void *userData);
@@ -89,7 +98,7 @@ namespace PrecisionTuner::Layers
         Config config;
         std::unique_ptr<GuitarIO::AudioDevice> inputDevice;
         std::unique_ptr<GuitarIO::AudioDevice> outputDevice;
-        std::unique_ptr<GuitarDSP::YinPitchDetector> pitchDetector;
+        std::unique_ptr<GuitarDSP::HybridPitchDetector> pitchDetector;
         std::unique_ptr<GuitarDSP::PitchStabilizer> pitchStabilizer;
 
         // Lock‑free communication
@@ -114,16 +123,20 @@ namespace PrecisionTuner::Layers
         // Audio feedback generators and state
         GuitarIO::SineWaveGenerator beepGenerator{ static_cast<double>(config.sampleRate) };
         GuitarIO::SineWaveGenerator referenceGenerator{ static_cast<double>(config.sampleRate) };
+        GuitarIO::PolyphonicGenerator polyphonicGenerator{ static_cast<double>(config.sampleRate) };
 
         std::atomic<bool> beepEnabled{ false };
         std::atomic<bool> referenceEnabled{ false };
         std::atomic<bool> inputMonitoringEnabled{ false };
+        std::atomic<bool> droneEnabled{ false };
+        std::atomic<bool> polyphonicEnabled{ false };
 
         std::atomic<float> beepVolume{ 0.5f };
         std::atomic<float> referenceVolume{ 0.5f };
         std::atomic<float> monitoringVolume{ 0.5f };
         std::atomic<float> inputGain{ 1.0f };
         std::atomic<float> referenceFrequency{ 440.0f };
+        std::atomic<float> currentInputLevel{ 0.0f };
     };
 
 } // namespace PrecisionTuner::Layers
