@@ -7,6 +7,7 @@
 #include <AudioProcessingLayer.h>
 #include <Config.h>
 #include <SettingsLayer.h>
+#include <TuningPresets.h>
 
 namespace PrecisionTuner::Layers
 {
@@ -258,6 +259,13 @@ namespace PrecisionTuner::Layers
         {
             config.tuning.mode = static_cast<TuningMode>(currentMode);
             LOG_INFO("Tuning mode changed to: {}", tuningModes[currentMode]);
+
+            // Update polyphonic frequencies if polyphonic mode is active
+            if (config.audio.enablePolyphonicMode)
+            {
+                auto preset = TuningPresets::GetPreset(config.tuning.mode, config.tuning.referencePitch);
+                audioLayer.SetPolyphonicFrequencies(preset.targetFrequencies);
+            }
         }
         ImGui::PopItemWidth();
 
@@ -422,6 +430,23 @@ namespace PrecisionTuner::Layers
                 audioLayer.UpdateAudioFeedback(config.audio);
             }
 
+            // Input Level Meter
+            float inputLevel = audioLayer.GetInputLevel();
+            inputLevel = std::clamp(inputLevel, 0.0f, 1.0f);
+
+            // Color based on level
+            ImVec4 meterColor = ImVec4(0.2f, 0.9f, 0.3f, 1.0f); // Green
+            if (inputLevel > 0.95f)
+                meterColor = ImVec4(0.9f, 0.2f, 0.2f, 1.0f); // Red (Clipping)
+            else if (inputLevel > 0.75f)
+                meterColor = ImVec4(0.9f, 0.8f, 0.2f, 1.0f); // Yellow
+
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, meterColor);
+            ImGui::ProgressBar(inputLevel, ImVec2(0.0f, 0.0f), "");
+            ImGui::PopStyleColor();
+            ImGui::SameLine();
+            ImGui::TextDisabled("Level");
+
             ImGui::PopItemWidth();
             ImGui::Unindent();
         }
@@ -448,6 +473,48 @@ namespace PrecisionTuner::Layers
             ImGui::PopItemWidth();
             ImGui::TextDisabled("(Triggers when in-tune)");
             ImGui::Unindent();
+        }
+
+        ImGui::Separator();
+
+        // Drone Mode - Continuous reference tone
+        bool enableDroneMode = config.audio.enableDroneMode;
+        if (ImGui::Checkbox("Drone Mode (Continuous Reference)", &enableDroneMode))
+        {
+            config.audio.enableDroneMode = enableDroneMode;
+            // Disable polyphonic if drone is enabled
+            if (enableDroneMode)
+            {
+                config.audio.enablePolyphonicMode = false;
+            }
+            audioLayer.UpdateAudioFeedback(config.audio);
+            LOG_INFO("Drone mode {}", enableDroneMode ? "enabled" : "disabled");
+        }
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("Plays a continuous reference tone while tuning");
+        }
+
+        // Polyphonic Mode - Play full chord
+        bool enablePolyphonicMode = config.audio.enablePolyphonicMode;
+        if (ImGui::Checkbox("Polyphonic Mode (Play Chord)", &enablePolyphonicMode))
+        {
+            config.audio.enablePolyphonicMode = enablePolyphonicMode;
+            // Disable drone if polyphonic is enabled
+            if (enablePolyphonicMode)
+            {
+                config.audio.enableDroneMode = false;
+
+                // Set chord frequencies based on current tuning mode
+                auto preset = TuningPresets::GetPreset(config.tuning.mode, config.tuning.referencePitch);
+                audioLayer.SetPolyphonicFrequencies(preset.targetFrequencies);
+            }
+            audioLayer.UpdateAudioFeedback(config.audio);
+            LOG_INFO("Polyphonic mode {}", enablePolyphonicMode ? "enabled" : "disabled");
+        }
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("Plays all 6 string frequencies simultaneously for checking overall tuning");
         }
     }
 
