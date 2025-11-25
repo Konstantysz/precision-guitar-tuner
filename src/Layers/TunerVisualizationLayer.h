@@ -76,6 +76,8 @@ namespace PrecisionTuner::Layers
         bool showSettingsPanel = true;
         std::optional<int> targetStringIndex; ///< Active string index (0=6th, 5=1st)
 
+        float smoothedCents = 0.0f;
+        static constexpr float SMOOTHING_FACTOR = 10.0f;
         static constexpr float UPDATE_INTERVAL = 0.1f; ///< UI update rate (100ms)
     };
 

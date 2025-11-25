@@ -66,6 +66,11 @@ namespace PrecisionTuner::Layers
                 targetStringIndex = std::nullopt;
             }
         }
+
+        // Smooth the cents value for display
+        float targetCents = hasPitchData ? currentNote.cents : 0.0f;
+        // Use a simple lerp for smoothing
+        smoothedCents += (targetCents - smoothedCents) * deltaTime * SMOOTHING_FACTOR;
     }
 
     void TunerVisualizationLayer::OnRender()
@@ -128,7 +133,7 @@ namespace PrecisionTuner::Layers
         ImVec2 center(windowSize.x * 0.5f, windowSize.y * 0.3f);
 
         // Get color based on cent deviation
-        ImVec4 color = GetColorForCents(currentNote.cents);
+        ImVec4 color = GetColorForCents(smoothedCents);
         ImU32 colorU32 = ImGui::ColorConvertFloat4ToU32(color);
 
         // Draw circular indicator
@@ -137,7 +142,7 @@ namespace PrecisionTuner::Layers
         drawList->AddCircle(center, indicatorRadius, IM_COL32(255, 255, 255, 255), 64, 3.0f);
 
         // Draw "IN TUNE" indicator when within ±3 cents
-        if (std::abs(currentNote.cents) <= 3.0f)
+        if (std::abs(smoothedCents) <= 3.0f && hasPitchData)
         {
             // Pulsing border
             const float pulseRadius = indicatorRadius * 1.3f;
@@ -179,7 +184,7 @@ namespace PrecisionTuner::Layers
         ImGui::PopStyleColor();
 
         // Display cent deviation below frequency (e.g., "+2.3")
-        std::string centsText = std::format("{:+.1f} cents", currentNote.cents);
+        std::string centsText = std::format("{:+.1f} cents", smoothedCents);
         ImVec2 centsTextSize = ImGui::CalcTextSize(centsText.c_str());
 
         ImGui::SetCursorPos(ImVec2(center.x - centsTextSize.x * 0.8f, center.y + indicatorRadius + 90.0f));
@@ -226,10 +231,10 @@ namespace PrecisionTuner::Layers
         if (hasPitchData)
         {
             // Clamp cents to ±50 range for display
-            float clampedCents = std::clamp(currentNote.cents, -50.0f, 50.0f);
+            float clampedCents = std::clamp(smoothedCents, -50.0f, 50.0f);
             float indicatorX = centerX + (clampedCents / 50.0f) * (meterWidth * 0.5f);
 
-            ImVec4 color = GetColorForCents(currentNote.cents);
+            ImVec4 color = GetColorForCents(smoothedCents);
             ImU32 colorU32 = ImGui::ColorConvertFloat4ToU32(color);
 
             drawList->AddRectFilled(ImVec2(indicatorX - 8.0f, meterY - 10.0f),
@@ -315,7 +320,7 @@ namespace PrecisionTuner::Layers
             if (i == targetStringIndex.value())
             {
                 // Active string - larger, colored circle
-                ImVec4 color = GetColorForCents(currentNote.cents);
+                ImVec4 color = GetColorForCents(smoothedCents);
                 ImU32 colorU32 = ImGui::ColorConvertFloat4ToU32(color);
                 drawList->AddCircleFilled(center, stringRadius * 1.5f, colorU32, 32);
                 drawList->AddCircle(center, stringRadius * 1.5f, IM_COL32(255, 255, 255, 255), 32, 2.0f);
