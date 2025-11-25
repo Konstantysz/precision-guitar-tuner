@@ -9,14 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Pitch Stabilization**: Three stabilization algorithms (EMA, Median, Hybrid) to reduce jittery pitch readings
-  - Exponential Moving Average for general smoothing
-  - Median Filter for spike rejection
-  - Hybrid (recommended) combines both with confidence weighting
-  - Configurable via AudioProcessingLayer::Config
-  - All implementations are real-time safe (no allocations)
+- **Advanced Tuning Features** (2025-11-26)
+  - **Hybrid Pitch Detection**: Implemented YIN/MPM hybrid detector with automatic fallback when YIN confidence < 0.8
+  - **MPM Pitch Detector**: Added McLeod Pitch Method (MPM) for improved vibrato detection using NSDF algorithm
+  - **Harmonic Rejection**: Automatic detection and correction of octave errors (2x, 3x, 4x harmonics) with 5% tolerance
+  - **Fine-Tuned YIN Parameters**: Optimized for guitar frequency range (80-1200 Hz) with threshold 0.10 for better low-E detection
+  - **Drone Mode**: Continuous reference tone playback for hands-free tuning
+  - **Polyphonic Mode**: Simultaneous playback of all 6 string frequencies with automatic gain compensation (1/sqrt(N))
+  - **UI Controls**: Added checkboxes for Drone and Polyphonic modes with mutually exclusive behavior
 
-### Added
+- **Visual Improvements** (2025-11-25)
+  - **Needle Smoothing**: Implemented exponential moving average (EMA) for the tuner needle to reduce jitter and provide fluid visual feedback (smoothing factor: 10.0)
+  - **Audio Level Meter**: Added real-time input level indicator in Settings > Audio Feedback with color-coded status (Green/Yellow/Red)
+
+- **Reliability** (2025-11-25)
+  - **Device Switching**: Improved robustness of audio device switching logic to prevent re-initialization of active devices and handle errors gracefully without requiring application restart
 
 - **Audio Feedback Features** (2025-11-24)
   - **Separate Input/Output Devices**: Independent audio device selection for input (guitar) and output (monitoring/feedback)

@@ -60,11 +60,16 @@ Mobile apps are limited by:
 - [x] Input gain control
 - [ ] Spectrum analyzer (optional)
 
-### Phase 4: Advanced Tuning (Planned)
+### Phase 4: Advanced Tuning (In Progress)
 
+- [x] Hybrid pitch detection (YIN/MPM)
+- [x] MPM pitch detector implementation
+- [x] Harmonic rejection (octave error correction)
+- [x] Fine-tuned YIN parameters for guitar
+- [x] Drone mode (continuous reference tone)
+- [x] Polyphonic mode (chord playback)
 - [ ] Strobe tuner visualization mode
 - [ ] Visual feedback improvements
-- [ ] Accuracy refinement
 
 ## 🛠️ Building from Source
 
@@ -214,6 +219,7 @@ Development roadmap is in [.claude/DEVELOPMENT_PLAN.md](.claude/DEVELOPMENT_PLAN
 - [x] OpenGL rendering in TunerVisualizationLayer (modern OpenGL 3.3+ with shaders)
 - [x] Cent deviation meter (horizontal bar with ±50 cent range)
 - [x] Tuning accuracy indicator (color-coded: green/yellow/orange/red)
+- [x] Add audio level meter (input gain indicator) with smooth color transitions
 - [x] Circular tuning indicator with smooth color transitions
 - [x] Note name display with octave (TrueType fonts via stb_truetype)
 - [x] Frequency display in Hz
@@ -237,6 +243,7 @@ Development roadmap is in [.claude/DEVELOPMENT_PLAN.md](.claude/DEVELOPMENT_PLAN
   - Settings toggle button in tuner UI
   - Layer visibility control system
   - Ready for device selection controls
+- [x] Device switching works without restarts
 - [ ] Device selection UI (in progress)
 - [ ] Multiple tuning modes (chromatic, standard, drop D, DADGAD, etc.)
 - [ ] Spectrum analyzer (optional - FFT visualization)

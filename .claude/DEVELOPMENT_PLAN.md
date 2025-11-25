@@ -253,7 +253,7 @@ Dependencies (Git Submodules)
 - ✅ 60 FPS rendering with color-coded tuning feedback
 - ✅ Configuration persistence (JSON save/load with platform paths)
 - ✅ Responsive window layout with size constraints
-- [x] Settings layer with device selection
+- ✅ Settings layer with device selection
 - ✅ Multiple tuning modes
 
 **Success Criteria:**
@@ -263,7 +263,7 @@ Dependencies (Git Submodules)
 - ✅ No UI lag or stuttering at 60 FPS
 - ✅ Settings persist between sessions (config save/load working)
 - ✅ Window resize handled gracefully (400×300 min, 3840×2160 max)
-- [ ] Device switching works without restart
+- [x] Device switching works without restart
 
 ---
 
@@ -296,22 +296,22 @@ Dependencies (Git Submodules)
 10. [x] Implement reference pitch playback (play target note)
 11. [x] Add tone volume control in settings
 12. [x] Create audio mixing (input + tone output)
-13. [ ] Add "drone mode" (continuous reference tone while tuning)
-14. [ ] Implement polyphonic tone generation (play full chord for checking tuning)
+13. [x] Add "drone mode" (continuous reference tone while tuning)
+14. [x] Implement polyphonic tone generation (play full chord for checking tuning)
 
 #### Visualization Enhancements
 
-15. [ ] Add frequency spectrum display
-16. [ ] Improve needle smoothing (exponential moving average)
+15. [ ] Add frequency spectrum display (optional)
+16. [x] Improve needle smoothing (exponential moving average)
 17. [x] Add color coding (red far, yellow close, green in-tune)
 18. [ ] Implement cents history graph (optional)
-19. [ ] Add audio level meter (input gain indicator)
+19. [x] Add audio level meter (input gain indicator)
 
 #### Accuracy Improvements
 
-20. [ ] Fine-tune YIN parameters for guitar frequencies
-21. [ ] Implement hybrid YIN/MPM approach (use MPM when YIN confidence < 0.8)
-22. [ ] Add harmonic rejection (ignore overtones)
+20. [x] Fine-tune YIN parameters for guitar frequencies
+21. [x] Implement hybrid YIN/MPM approach (use MPM when YIN confidence < 0.8)
+22. [x] Add harmonic rejection (ignore overtones)
 23. [ ] Calibrate for different string gauges
 
 **Deliverables:**

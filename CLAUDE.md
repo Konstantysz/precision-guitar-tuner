@@ -446,30 +446,81 @@ When reviewing code:
 
 ### YIN vs MPM Pitch Detection
 
-**Use YIN (primary algorithm):**
+This application uses a **HybridPitchDetector** that combines both algorithms for optimal accuracy.
+
+**YIN (primary algorithm):**
 
 - Standard tuning scenarios
 - Best overall accuracy (0.78% error rate)
 - Fast (optimized FastYIN with FFT)
 - Robust to noise
+- Fine-tuned parameters for guitar: threshold=0.10, range=80-1200 Hz
 
-**Use MPM (fallback):**
+**MPM (fallback algorithm):**
 
-- Vibrato detection (better dynamic pitch tracking)
+- Vibrato detection (better dynamic pitch tracking using NSDF)
 - Smaller analysis windows (better for changing pitch)
-- When YIN confidence is low (<0.8)
+- Activated when YIN confidence < 0.8
+- Higher threshold (0.93) for precise detection
+
+**Hybrid Implementation:**
 
 ```cpp
-// Hybrid approach
-float pitch = yinDetector.detect(buffer, size);
-float confidence = yinDetector.getConfidence();
-
-if (confidence < 0.8f) {
-    // Low confidence, try MPM
-    float mpmPitch = mpmDetector.detect(buffer, size);
-    pitch = weightedAverage(pitch, mpmPitch, confidence);
+// lib-guitar-dsp/HybridPitchDetector.cpp
+GuitarDSP::PitchResult HybridPitchDetector::Detect(std::span<const float> buffer) {
+    // Try YIN first (faster)
+    auto yinResult = yinDetector.Detect(buffer);
+    
+    if (yinResult.confidence >= 0.8f) {
+        // High confidence - use YIN result, but check for harmonics
+        float corrected = RejectHarmonics(yinResult.frequency);
+        return {corrected, yinResult.confidence};
+    }
+    
+    // Low YIN confidence - try MPM
+    auto mpmResult = mpmDetector.Detect(buffer);
+    float corrected = RejectHarmonics(mpmResult.frequency);
+    return {corrected, mpmResult.confidence};
 }
 ```
+
+**Harmonic Rejection:**
+
+Guitar overtones can cause octave errors. The hybrid detector includes harmonic rejection:
+
+- Detects 2x, 3x, 4x harmonics within 5% tolerance
+- Plausible guitar fundamental range: 80-400 Hz
+- Automatically corrects to fundamental frequency
+- Example: 164.8 Hz (2x error) → 82.4 Hz (Low E)
+
+### Drone Mode and Polyphonic Audio Feedback
+
+**Drone Mode:**
+
+Continuous reference tone playback for hands-free tuning:
+
+```cpp
+// Enable drone mode
+config.audio.enableDroneMode = true;
+// Drone plays the target frequency continuously while tuning
+```
+
+**Polyphonic Mode:**
+
+Simultaneous playback of all 6 string frequencies:
+
+```cpp
+// PolyphonicGenerator with automatic gain compensation
+std::array<float, 6> stringFreqs = TuningPresets::GetPreset(mode);
+polyphonicGenerator.SetVoiceFrequencies(stringFreqs);
+
+// Gain compensation prevents clipping: gain = 1/sqrt(N)
+// For 6 voices: gain ≈ 0.408 per voice
+```
+
+- Plays full chord for tuning verification
+- Mutually exclusive with drone mode
+- Uses 1/sqrt(N) gain compensation to prevent clipping
 
 ### Pitch Stabilization
 
@@ -501,6 +552,18 @@ AudioProcessingLayer::Config config;
 config.stabilizerType = AudioProcessingLayer::Config::StabilizerType::Hybrid;
 config.emaAlpha = 0.3f;          // Higher = more responsive
 config.medianWindowSize = 5;      // Larger = more smoothing
+```
+
+### Visual Smoothing
+
+For UI elements like the tuner needle, use **Exponential Moving Average (EMA)** in the visualization layer to decouple visual fluidity from pitch detection latency.
+
+```cpp
+// TunerVisualizationLayer.cpp
+void OnUpdate(float deltaTime) {
+    // Smooth the visual indicator (independent of pitch detection rate)
+    smoothedCents += (targetCents - smoothedCents) * deltaTime * smoothingFactor;
+}
 ```
 
 ### Achieving ±0.1 Cent Accuracy
