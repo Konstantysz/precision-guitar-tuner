@@ -261,6 +261,14 @@ The application automatically selects the best audio API per platform:
 - **Pointer alignment:** Right-aligned (`Type *ptr`, not `Type* ptr`)
 - **Include ordering:** Automatically sorted by clang-format with priority system
 
+**Code Organization:**
+
+- **Function ordering:** Function definitions in `.cpp` files should match the declaration order in corresponding `.h` files
+  - Makes navigation between header/source easier
+  - Improves code review experience
+  - Keeps diffs cleaner
+  - Exception: Private helper functions can be grouped logically if needed
+
 **Formatting Tools:**
 
 - `.clang-format` - C++20 code formatting (120 char limit, Allman braces)

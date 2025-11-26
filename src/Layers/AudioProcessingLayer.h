@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../external/lib-guitar-io/include/AudioMixer.h"
-#include "../external/lib-guitar-io/include/PolyphonicGenerator.h"
-#include "../external/lib-guitar-io/include/SineWaveGenerator.h"
+#include "AudioMixer.h"
+#include "PolyphonicGenerator.h"
+#include "SineWaveGenerator.h"
 #include <Layer.h>
 #include <atomic>
 #include <cstdint>

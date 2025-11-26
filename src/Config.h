@@ -70,28 +70,44 @@ namespace PrecisionTuner
         // Advanced feedback modes
         bool enableDroneMode = false;      ///< Enable continuous reference tone (drone)
         bool enablePolyphonicMode = false; ///< Enable polyphonic chord playback
-
-        // JSON serialization
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(AudioConfig,
-            deviceId,
-            deviceName,
-            sampleRate,
-            bufferSize,
-            inputChannel,
-            autoSelectInput,
-            outputDeviceId,
-            outputDeviceName,
-            enableBeep,
-            beepVolume,
-            enableReference,
-            referenceVolume,
-            referenceFrequency,
-            enableInputMonitoring,
-            monitoringVolume,
-            inputGain,
-            enableDroneMode,
-            enablePolyphonicMode)
     };
+
+    // Custom JSON serialization for AudioConfig to handle missing keys gracefully
+    inline void to_json(nlohmann::json &j, const AudioConfig &config)
+    {
+        j = nlohmann::json{ { "deviceId", config.deviceId },
+            { "deviceName", config.deviceName },
+            { "outputDeviceId", config.outputDeviceId },
+            { "outputDeviceName", config.outputDeviceName },
+            { "enableBeep", config.enableBeep },
+            { "beepVolume", config.beepVolume },
+            { "enableReference", config.enableReference },
+            { "referenceVolume", config.referenceVolume },
+            { "referenceFrequency", config.referenceFrequency },
+            { "enableInputMonitoring", config.enableInputMonitoring },
+            { "monitoringVolume", config.monitoringVolume },
+            { "inputGain", config.inputGain },
+            { "enableDroneMode", config.enableDroneMode },
+            { "enablePolyphonicMode", config.enablePolyphonicMode } };
+    }
+
+    inline void from_json(const nlohmann::json &j, AudioConfig &config)
+    {
+        config.deviceId = j.value("deviceId", AudioConfig{}.deviceId);
+        config.deviceName = j.value("deviceName", AudioConfig{}.deviceName);
+        config.outputDeviceId = j.value("outputDeviceId", AudioConfig{}.outputDeviceId);
+        config.outputDeviceName = j.value("outputDeviceName", AudioConfig{}.outputDeviceName);
+        config.enableBeep = j.value("enableBeep", AudioConfig{}.enableBeep);
+        config.beepVolume = j.value("beepVolume", AudioConfig{}.beepVolume);
+        config.enableReference = j.value("enableReference", AudioConfig{}.enableReference);
+        config.referenceVolume = j.value("referenceVolume", AudioConfig{}.referenceVolume);
+        config.referenceFrequency = j.value("referenceFrequency", AudioConfig{}.referenceFrequency);
+        config.enableInputMonitoring = j.value("enableInputMonitoring", AudioConfig{}.enableInputMonitoring);
+        config.monitoringVolume = j.value("monitoringVolume", AudioConfig{}.monitoringVolume);
+        config.inputGain = j.value("inputGain", AudioConfig{}.inputGain);
+        config.enableDroneMode = j.value("enableDroneMode", AudioConfig{}.enableDroneMode);
+        config.enablePolyphonicMode = j.value("enablePolyphonicMode", AudioConfig{}.enablePolyphonicMode);
+    }
 
     /**
      * Tuning configuration
