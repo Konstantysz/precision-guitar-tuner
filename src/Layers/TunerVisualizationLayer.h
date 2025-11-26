@@ -30,9 +30,13 @@ namespace PrecisionTuner::Layers
          */
         explicit TunerVisualizationLayer(AudioProcessingLayer &audioLayer, PrecisionTuner::Config &config);
 
+        /**
+         * @brief Destructor
+         */
         ~TunerVisualizationLayer() override = default;
 
         void OnUpdate(float deltaTime) override;
+
         void OnRender() override;
 
         /**
@@ -52,6 +56,10 @@ namespace PrecisionTuner::Layers
          * @brief Renders the cent deviation meter (-50 to +50 range)
          */
         void RenderCentDeviationMeter();
+
+        /**
+         * @brief Renders the main tuning indicator (note name and status)
+         */
         void RenderTuningIndicator();
 
         /**
@@ -67,18 +75,18 @@ namespace PrecisionTuner::Layers
          */
         ImVec4 GetColorForCents(float cents);
 
-        AudioProcessingLayer &audioLayer;
-        PrecisionTuner::Config &config;
+        AudioProcessingLayer &audioLayer; ///< Reference to audio processing layer
+        PrecisionTuner::Config &config;   ///< Reference to application configuration
 
-        GuitarDSP::NoteInfo currentNote;
-        float updateTimer = 0.0f;
-        bool hasPitchData = false;
-        bool showSettingsPanel = true;
+        GuitarDSP::NoteInfo currentNote;      ///< Currently detected note information
+        float updateTimer = 0.0f;             ///< Timer for UI updates
+        bool hasPitchData = false;            ///< Flag indicating if valid pitch data is available
+        bool showSettingsPanel = true;        ///< Visibility state of settings panel
         std::optional<int> targetStringIndex; ///< Active string index (0=6th, 5=1st)
 
-        float smoothedCents = 0.0f;
-        static constexpr float SMOOTHING_FACTOR = 10.0f;
-        static constexpr float UPDATE_INTERVAL = 0.1f; ///< UI update rate (100ms)
+        float smoothedCents = 0.0f;                      ///< Smoothed cent deviation for display
+        static constexpr float SMOOTHING_FACTOR = 10.0f; ///< Smoothing factor for cent display
+        static constexpr float UPDATE_INTERVAL = 0.1f;   ///< UI update rate (100ms)
     };
 
 } // namespace PrecisionTuner::Layers

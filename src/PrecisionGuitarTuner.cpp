@@ -24,6 +24,10 @@ using namespace PrecisionTuner::Layers;
 class PrecisionTunerApp : public Kappa::Application
 {
 public:
+    /**
+     * @brief Constructs the application
+     * Initializes window limits, loads config, and sets up layers.
+     */
     PrecisionTunerApp() : Application(CreateApplicationSpec())
     {
         LOG_INFO("Precision Tuner initialized");
@@ -78,6 +82,10 @@ public:
         LOG_INFO("All layers initialized");
     }
 
+    /**
+     * @brief Destructor
+     * Saves configuration and cleans up resources.
+     */
     ~PrecisionTunerApp() override
     {
         LOG_INFO("Precision Tuner shutting down");
@@ -107,7 +115,7 @@ public:
     }
 
 private:
-    Config config;
+    Config config; ///< Application configuration
 
     /**
      * Create application specification from loaded config

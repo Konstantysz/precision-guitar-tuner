@@ -14,7 +14,7 @@ namespace PrecisionTuner
      */
     struct TuningPreset
     {
-        std::string name;
+        std::string name;                       ///< Preset name (e.g., "Standard E")
         std::array<float, 6> targetFrequencies; ///< Low E (6th) to High E (1st)
         std::array<std::string, 6> noteNames;   ///< Display names (e.g., "E2", "A2")
     };
@@ -77,12 +77,10 @@ namespace PrecisionTuner
          */
         struct PresetDefinition
         {
-            std::string name;
+            std::string name;                     ///< Preset name
             std::array<std::string, 6> noteNames; ///< Note names without octave
             std::array<int, 6> octaves;           ///< Octave numbers
         };
-
-        static const std::array<PresetDefinition, 7> presetDefinitions;
 
         /**
          * @brief Calculate frequencies for a preset definition
@@ -91,6 +89,8 @@ namespace PrecisionTuner
          * @return Tuning preset with calculated frequencies
          */
         [[nodiscard]] static TuningPreset CalculatePreset(const PresetDefinition &definition, float referencePitch);
+
+        static const std::array<PresetDefinition, 7> presetDefinitions; ///< Array of preset definitions
     };
 
 } // namespace PrecisionTuner

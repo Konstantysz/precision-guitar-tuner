@@ -42,12 +42,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **TuningPresets Class**: Implemented static class for managing tuning definitions and frequency calculations
   - **Unit Tests**: Added comprehensive test suite for tuning presets covering all modes and edge cases
 
+- **Documentation** (2025-11-26)
+  - **Doxygen Support**: Added comprehensive Doxygen documentation to all public APIs in main repository and external libraries
+  - **Private Implementation**: Documented private members and PIMPL classes (`AudioDevice::Impl`, `PrecisionTunerApp`) for complete code coverage
+  - **Refactoring**: Moved `AudioMixer` implementation from header to source file to comply with coding standards
+
 - **Maintainability** (2025-11-23)
   - Centralized window size constants in `Config.h` as `static constexpr` members of `WindowConfig`
   - Added pre-allocation of `YinPitchDetector` buffers during initialization to ensure real-time safety
   - Created basic test infrastructure with `tests/CMakeLists.txt` and `tests/ConfigTest.cpp`
 
 ### Changed
+
+- **Code Structure** (2025-11-26)
+  - **AudioMixer**: Refactored `AudioMixer` to separate declaration and implementation, improving compilation times and code organization
 
 - **Testing Infrastructure** (2025-11-24)
   - **Google Test Integration**: Refactored all unit tests to use Google Test framework

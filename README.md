@@ -159,6 +159,7 @@ precision-guitar-tuner/
 - **SOLID**: Single responsibility, open/closed principle
 - **DRY**: Extract common patterns into reusable components
 - **Real-time safety**: No allocations or locks in audio callback
+- **Documentation**: Comprehensive Doxygen documentation for all APIs
 
 See [CLAUDE.md](CLAUDE.md) for comprehensive development guidelines.
 
