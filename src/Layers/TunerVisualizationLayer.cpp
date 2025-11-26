@@ -60,10 +60,10 @@ namespace PrecisionTuner::Layers
 
                 // Log detected pitch
                 LOG_INFO("Detected: {}{} ({:.2f} Hz) | Deviation: {:+.1f} cents | Confidence: {:.0f}%",
-                    currentNote.name,
-                    currentNote.octave,
+                    currentNote.value().name,
+                    currentNote.value().octave,
                     pitchData.frequency,
-                    currentNote.cents,
+                    currentNote.value().cents,
                     pitchData.confidence * 100.0f);
             }
             else
@@ -74,7 +74,7 @@ namespace PrecisionTuner::Layers
         }
 
         // Smooth the cents value for display
-        float targetCents = hasPitchData ? currentNote.cents : 0.0f;
+        float targetCents = hasPitchData ? currentNote.value().cents : 0.0f;
         // Use a simple lerp for smoothing
         smoothedCents += (targetCents - smoothedCents) * deltaTime * SMOOTHING_FACTOR;
     }
@@ -162,8 +162,8 @@ namespace PrecisionTuner::Layers
 
         // Display note name above indicator (e.g., "E4")
         std::string noteText;
-        noteText += currentNote.name;
-        noteText += std::to_string(currentNote.octave);
+        noteText += currentNote.value().name;
+        noteText += std::to_string(currentNote.value().octave);
 
         ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[0]); // Use default font
         ImVec2 noteTextSize = ImGui::CalcTextSize(noteText.c_str());
@@ -179,7 +179,7 @@ namespace PrecisionTuner::Layers
         ImGui::PopFont();
 
         // Display frequency below indicator (e.g., "440.0 Hz")
-        std::string freqText = std::format("{:.1f} Hz", currentNote.frequency);
+        std::string freqText = std::format("{:.1f} Hz", currentNote.value().frequency);
         ImVec2 freqTextSize = ImGui::CalcTextSize(freqText.c_str());
 
         ImGui::SetCursorPos(ImVec2(center.x - freqTextSize.x * 0.6f, center.y + indicatorRadius + 60.0f));
