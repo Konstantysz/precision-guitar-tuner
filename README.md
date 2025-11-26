@@ -1,5 +1,10 @@
 # Precision Guitar Tuner
 
+[![Build Status](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/build.yml/badge.svg)](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/build.yml)
+[![Tests](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/tests.yml/badge.svg)](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/tests.yml)
+[![Static Analysis](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/static-analysis.yml)
+[![Documentation](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/docs.yml/badge.svg)](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/docs.yml)
+
 > Professional-grade desktop guitar tuner with ±0.1 cent accuracy and native audio interface support
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
