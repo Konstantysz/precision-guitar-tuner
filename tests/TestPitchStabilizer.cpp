@@ -14,7 +14,7 @@ PitchResult MakePitch(float frequency, float confidence = 0.9f)
 
 TEST(ExponentialMovingAverage, InitialValueIsFirstSample)
 {
-    ExponentialMovingAverage ema(ExponentialMovingAverageConfig{ .alpha = 0.3f });
+    ExponentialMovingAverage ema(EMAConfig{ .alpha = 0.3f });
 
     PitchResult input = MakePitch(440.0f, 0.9f);
     ema.Update(input);
@@ -26,7 +26,7 @@ TEST(ExponentialMovingAverage, InitialValueIsFirstSample)
 
 TEST(ExponentialMovingAverage, ConvergesToStableValue)
 {
-    ExponentialMovingAverage ema(ExponentialMovingAverageConfig{ .alpha = 0.3f });
+    ExponentialMovingAverage ema(EMAConfig{ .alpha = 0.3f });
 
     // Feed constant value multiple times
     for (int i = 0; i < 20; ++i)
@@ -41,7 +41,7 @@ TEST(ExponentialMovingAverage, ConvergesToStableValue)
 
 TEST(ExponentialMovingAverage, RespondsToStepChange)
 {
-    ExponentialMovingAverage ema(ExponentialMovingAverageConfig{ .alpha = 0.5f }); // Higher alpha for faster response
+    ExponentialMovingAverage ema(EMAConfig{ .alpha = 0.5f }); // Higher alpha for faster response
 
     // Initialize with one value
     ema.Update(MakePitch(440.0f, 0.9f));
@@ -58,8 +58,8 @@ TEST(ExponentialMovingAverage, RespondsToStepChange)
 
 TEST(ExponentialMovingAverage, AlphaAffectsConvergenceRate)
 {
-    ExponentialMovingAverage fastEMA(ExponentialMovingAverageConfig{ .alpha = 0.9f }); // Fast
-    ExponentialMovingAverage slowEMA(ExponentialMovingAverageConfig{ .alpha = 0.1f }); // Slow
+    ExponentialMovingAverage fastEMA(EMAConfig{ .alpha = 0.9f }); // Fast
+    ExponentialMovingAverage slowEMA(EMAConfig{ .alpha = 0.1f }); // Slow
 
     // Initialize both
     fastEMA.Update(MakePitch(440.0f, 0.9f));
@@ -78,7 +78,7 @@ TEST(ExponentialMovingAverage, AlphaAffectsConvergenceRate)
 
 TEST(ExponentialMovingAverage, ResetClearsState)
 {
-    ExponentialMovingAverage ema(ExponentialMovingAverageConfig{ .alpha = 0.3f });
+    ExponentialMovingAverage ema(EMAConfig{ .alpha = 0.3f });
 
     ema.Update(MakePitch(440.0f, 0.9f));
     ema.Reset();

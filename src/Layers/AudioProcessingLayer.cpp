@@ -167,8 +167,8 @@ namespace PrecisionTuner::Layers
         switch (config.stabilizerType)
         {
         case StabilizerType::EMA:
-            pitchStabilizer = std::make_unique<GuitarDSP::ExponentialMovingAverage>(
-                GuitarDSP::ExponentialMovingAverageConfig{ .alpha = config.emaAlpha });
+            pitchStabilizer =
+                std::make_unique<GuitarDSP::ExponentialMovingAverage>(GuitarDSP::EMAConfig{ .alpha = config.emaAlpha });
             LOG_INFO("Pitch stabilization: EMA (alpha={})", config.emaAlpha);
             break;
 
