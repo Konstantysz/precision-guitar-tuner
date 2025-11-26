@@ -28,6 +28,7 @@ jobs:
             ninja-build \
             libxrandr-dev \
             libxinerama-dev \
+            libasound2-dev \
             libxcursor-dev \
             libxi-dev \
             libgl1-mesa-dev
