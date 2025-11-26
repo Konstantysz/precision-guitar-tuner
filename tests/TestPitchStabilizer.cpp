@@ -14,7 +14,7 @@ PitchResult MakePitch(float frequency, float confidence = 0.9f)
 
 TEST(ExponentialMovingAverage, InitialValueIsFirstSample)
 {
-    ExponentialMovingAverage ema(ExponentialMovingAverage::Config{ .alpha = 0.3f });
+    ExponentialMovingAverage ema(ExponentialMovingAverageConfig{ .alpha = 0.3f });
 
     PitchResult input = MakePitch(440.0f, 0.9f);
     ema.Update(input);
@@ -26,7 +26,7 @@ TEST(ExponentialMovingAverage, InitialValueIsFirstSample)
 
 TEST(ExponentialMovingAverage, ConvergesToStableValue)
 {
-    ExponentialMovingAverage ema(ExponentialMovingAverage::Config{ .alpha = 0.3f });
+    ExponentialMovingAverage ema(ExponentialMovingAverageConfig{ .alpha = 0.3f });
 
     // Feed constant value multiple times
     for (int i = 0; i < 20; ++i)
@@ -41,7 +41,7 @@ TEST(ExponentialMovingAverage, ConvergesToStableValue)
 
 TEST(ExponentialMovingAverage, RespondsToStepChange)
 {
-    ExponentialMovingAverage ema(ExponentialMovingAverage::Config{ .alpha = 0.5f }); // Higher alpha for faster response
+    ExponentialMovingAverage ema(ExponentialMovingAverageConfig{ .alpha = 0.5f }); // Higher alpha for faster response
 
     // Initialize with one value
     ema.Update(MakePitch(440.0f, 0.9f));
@@ -58,8 +58,8 @@ TEST(ExponentialMovingAverage, RespondsToStepChange)
 
 TEST(ExponentialMovingAverage, AlphaAffectsConvergenceRate)
 {
-    ExponentialMovingAverage fastEMA(ExponentialMovingAverage::Config{ .alpha = 0.9f }); // Fast
-    ExponentialMovingAverage slowEMA(ExponentialMovingAverage::Config{ .alpha = 0.1f }); // Slow
+    ExponentialMovingAverage fastEMA(ExponentialMovingAverageConfig{ .alpha = 0.9f }); // Fast
+    ExponentialMovingAverage slowEMA(ExponentialMovingAverageConfig{ .alpha = 0.1f }); // Slow
 
     // Initialize both
     fastEMA.Update(MakePitch(440.0f, 0.9f));
@@ -78,7 +78,7 @@ TEST(ExponentialMovingAverage, AlphaAffectsConvergenceRate)
 
 TEST(ExponentialMovingAverage, ResetClearsState)
 {
-    ExponentialMovingAverage ema(ExponentialMovingAverage::Config{ .alpha = 0.3f });
+    ExponentialMovingAverage ema(ExponentialMovingAverageConfig{ .alpha = 0.3f });
 
     ema.Update(MakePitch(440.0f, 0.9f));
     ema.Reset();
@@ -92,7 +92,7 @@ TEST(ExponentialMovingAverage, ResetClearsState)
 
 TEST(MedianFilter, InitialValueIsFirstSample)
 {
-    MedianFilter filter(MedianFilter::Config{ .windowSize = 5 });
+    MedianFilter filter(MedianFilterConfig{ .windowSize = 5 });
 
     PitchResult input = MakePitch(440.0f, 0.9f);
     filter.Update(input);
@@ -104,7 +104,7 @@ TEST(MedianFilter, InitialValueIsFirstSample)
 
 TEST(MedianFilter, RejectsSingleSpike)
 {
-    MedianFilter filter(MedianFilter::Config{ .windowSize = 5 });
+    MedianFilter filter(MedianFilterConfig{ .windowSize = 5 });
 
     // Feed normal values
     filter.Update(MakePitch(440.0f, 0.9f));
@@ -125,7 +125,7 @@ TEST(MedianFilter, RejectsSingleSpike)
 
 TEST(MedianFilter, HandlesOddWindowSize)
 {
-    MedianFilter filter(MedianFilter::Config{ .windowSize = 5 });
+    MedianFilter filter(MedianFilterConfig{ .windowSize = 5 });
 
     // Fill window: [100, 200, 300, 400, 500]
     filter.Update(MakePitch(100.0f));
@@ -140,7 +140,7 @@ TEST(MedianFilter, HandlesOddWindowSize)
 
 TEST(MedianFilter, HandlesEvenWindowSize)
 {
-    MedianFilter filter(MedianFilter::Config{ .windowSize = 4 });
+    MedianFilter filter(MedianFilterConfig{ .windowSize = 4 });
 
     // Fill window: [100, 200, 300, 400]
     filter.Update(MakePitch(100.0f));
@@ -154,7 +154,7 @@ TEST(MedianFilter, HandlesEvenWindowSize)
 
 TEST(MedianFilter, ResetClearsWindow)
 {
-    MedianFilter filter(MedianFilter::Config{ .windowSize = 5 });
+    MedianFilter filter(MedianFilterConfig{ .windowSize = 5 });
 
     filter.Update(MakePitch(440.0f, 0.9f));
     filter.Update(MakePitch(441.0f, 0.9f));
@@ -170,7 +170,7 @@ TEST(MedianFilter, ResetClearsWindow)
 
 TEST(HybridStabilizer, InitialValueIsFirstSample)
 {
-    HybridStabilizer hybrid(HybridStabilizer::Config{ .baseAlpha = 0.3f, .windowSize = 5 });
+    HybridStabilizer hybrid(HybridStabilizerConfig{ .baseAlpha = 0.3f, .windowSize = 5 });
 
     PitchResult input = MakePitch(440.0f, 0.9f);
     hybrid.Update(input);
@@ -181,7 +181,7 @@ TEST(HybridStabilizer, InitialValueIsFirstSample)
 
 TEST(HybridStabilizer, HighConfidenceFasterConvergence)
 {
-    HybridStabilizer hybrid(HybridStabilizer::Config{ .baseAlpha = 0.3f, .windowSize = 3 });
+    HybridStabilizer hybrid(HybridStabilizerConfig{ .baseAlpha = 0.3f, .windowSize = 3 });
 
     // Initialize
     hybrid.Update(MakePitch(440.0f, 0.9f));
@@ -204,7 +204,7 @@ TEST(HybridStabilizer, HighConfidenceFasterConvergence)
 
 TEST(HybridStabilizer, RejectsSpikesLikeMedianFilter)
 {
-    HybridStabilizer hybrid(HybridStabilizer::Config{ .baseAlpha = 0.3f, .windowSize = 5 });
+    HybridStabilizer hybrid(HybridStabilizerConfig{ .baseAlpha = 0.3f, .windowSize = 5 });
 
     // Normal values
     hybrid.Update(MakePitch(440.0f, 0.9f));
@@ -225,7 +225,7 @@ TEST(HybridStabilizer, RejectsSpikesLikeMedianFilter)
 
 TEST(HybridStabilizer, CombinesMedianAndEMA)
 {
-    HybridStabilizer hybrid(HybridStabilizer::Config{ .baseAlpha = 0.5f, .windowSize = 3 });
+    HybridStabilizer hybrid(HybridStabilizerConfig{ .baseAlpha = 0.5f, .windowSize = 3 });
 
     // Feed gradual change
     hybrid.Update(MakePitch(440.0f, 0.9f));
@@ -242,7 +242,7 @@ TEST(HybridStabilizer, CombinesMedianAndEMA)
 
 TEST(HybridStabilizer, ResetClearsAllState)
 {
-    HybridStabilizer hybrid(HybridStabilizer::Config{ .baseAlpha = 0.3f, .windowSize = 5 });
+    HybridStabilizer hybrid(HybridStabilizerConfig{ .baseAlpha = 0.3f, .windowSize = 5 });
 
     hybrid.Update(MakePitch(440.0f, 0.9f));
     hybrid.Update(MakePitch(441.0f, 0.9f));
@@ -259,7 +259,7 @@ TEST(HybridStabilizer, ResetClearsAllState)
 TEST(PitchStabilizer, JitteryInputSmoothing)
 {
     // Simulate jittery guitar input (±2 Hz oscillation around 82.41 Hz - low E string)
-    HybridStabilizer hybrid(HybridStabilizer::Config{ .baseAlpha = 0.3f, .windowSize = 5 });
+    HybridStabilizer hybrid(HybridStabilizerConfig{ .baseAlpha = 0.3f, .windowSize = 5 });
 
     float baseFreq = 82.41f;
     float jitter[] = { 0.0f, 1.5f, -1.2f, 0.8f, -1.8f, 1.0f, -0.5f, 1.3f, -1.4f, 0.6f };
@@ -278,7 +278,7 @@ TEST(PitchStabilizer, JitteryInputSmoothing)
 TEST(PitchStabilizer, StepChangeConvergence)
 {
     // Test transition from E2 (82.41 Hz) to A2 (110.0 Hz)
-    HybridStabilizer hybrid(HybridStabilizer::Config{ .baseAlpha = 0.4f, .windowSize = 5 });
+    HybridStabilizer hybrid(HybridStabilizerConfig{ .baseAlpha = 0.4f, .windowSize = 5 });
 
     // Start at E2
     for (int i = 0; i < 10; ++i)
@@ -301,7 +301,7 @@ TEST(PitchStabilizer, StepChangeConvergence)
 TEST(PitchStabilizer, TransientSpikeRejection)
 {
     // Test rejection of brief anomaly in sustained note
-    HybridStabilizer hybrid(HybridStabilizer::Config{ .baseAlpha = 0.3f, .windowSize = 5 });
+    HybridStabilizer hybrid(HybridStabilizerConfig{ .baseAlpha = 0.3f, .windowSize = 5 });
 
     // Sustained E2
     for (int i = 0; i < 5; ++i)
