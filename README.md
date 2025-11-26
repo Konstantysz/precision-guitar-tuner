@@ -250,8 +250,8 @@ Development roadmap is in [.claude/DEVELOPMENT_PLAN.md](.claude/DEVELOPMENT_PLAN
   - Layer visibility control system
   - Ready for device selection controls
 - [x] Device switching works without restarts
-- [ ] Device selection UI (in progress)
-- [ ] Multiple tuning modes (chromatic, standard, drop D, DADGAD, etc.)
+- [x] Device selection UI (in progress)
+- [x] Multiple tuning modes (chromatic, standard, drop D, DADGAD, etc.)
 - [ ] Spectrum analyzer (optional - FFT visualization)
 
 **Note:** Strobe tuner deferred to Phase 5 per development plan

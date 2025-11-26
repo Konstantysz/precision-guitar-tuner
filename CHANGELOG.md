@@ -71,6 +71,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Crash Fixes** (2025-11-26)
+  - **MPM Pitch Detector**: Fixed critical runtime crash caused by unsigned integer underflow in `FindPeaks` when no zero crossings are detected
+  - **Build System**: Fixed GitHub Actions build failure on Linux/macOS by correctly handling `vcpkg` triplets (preventing forced `x64-windows` on non-Windows platforms)
+  - **Linker Errors**: Fixed unresolved external symbol errors for `AudioMixer` by ensuring `src/AudioMixer.cpp` is correctly compiled in `lib-guitar-io`
+
 - **Bug Fixes** (2025-11-24)
   - Fixed crash in `TuningPresets::CalculatePreset` when accessing empty note names in Chromatic mode
 

@@ -84,11 +84,11 @@ Dependencies (Git Submodules)
 
 #### Application Integration
 
-9. [x] Create AudioProcessingLayer (kappa-core layer)
-10. [x] Integrate lib-guitar-io into application
-11. [x] Implement Rocksmith cable auto-detection
-12. [x] Add device selection persistence (Config class)
-13. [x] Test audio input on Windows (ASIO/WASAPI)
+1. [x] Create AudioProcessingLayer (kappa-core layer)
+2. [x] Integrate lib-guitar-io into application
+3. [x] Implement Rocksmith cable auto-detection
+4. [x] Add device selection persistence (Config class)
+5. [x] Test audio input on Windows (ASIO/WASAPI)
 
 **Deliverables:**
 
@@ -592,10 +592,14 @@ Dependencies (Git Submodules)
 
 ## Current Status
 
-**Phase:** Phase 3 In Progress (85% Complete)
-**Progress:** ~65% overall (Phases 0-2 complete, Phase 3 at 85%)
+**Phase:** Phase 4 In Progress (Accuracy & Feedback)
+**Progress:** ~75% overall
 **Completed Recently:**
 
+- ✅ Fixed critical crash in MPM pitch detector (unsigned underflow)
+- ✅ Fixed CI/CD build pipeline for Linux and macOS
+- ✅ Audio Feedback (in-tune beep, reference pitch playback)
+- ✅ Hybrid Pitch Detection (YIN/MPM) with harmonic rejection
 - ✅ Settings layer basic UI (toggle button, visibility control)
 - ✅ Fixed span out-of-bounds crash in layer initialization
 - ✅ Responsive window sizing and layout (GLFW framebuffer queries, size constraints)
@@ -609,14 +613,13 @@ Dependencies (Git Submodules)
 - ✅ Refactored Tests to use Google Test
 - ✅ Project Infrastructure (CMake, vcpkg, Git submodules)
 - ✅ lib-guitar-io (Audio I/O library)
-
 - ✅ Device selection controls (populate settings UI with audio device dropdowns)
 
-**Next Priority Tasks (Phase 4):**
+**Next Priority Tasks (Phase 5):**
 
-1. Audio Feedback (in-tune beep, reference pitch playback)
+1. Strobe Tuner visualization
 2. Spectrum analyzer visualization (Optional)
 
 **Blockers:** None
 
-**Last Updated:** 2025-11-24
+**Last Updated:** 2025-11-26

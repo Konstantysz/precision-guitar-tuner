@@ -173,7 +173,6 @@ pushLayer(new SettingsLayer());             // Top: UI controls
 
 - Each layer has `onUpdate()` (logic) and `onRender()` (OpenGL drawing)
 - Layers communicate via kappa-core's event bus (decoupled, type-safe)
-- Audio processing runs on dedicated thread, publishes events to UI layers
 
 ### Audio Processing Pipeline
 
