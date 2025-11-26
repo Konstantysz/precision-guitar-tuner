@@ -220,7 +220,7 @@ namespace PrecisionTuner::Layers
         // UI thread update
     }
 
-    AudioProcessingLayer::PitchData AudioProcessingLayer::GetLatestPitch() const
+    PitchData AudioProcessingLayer::GetLatestPitch() const
     {
         PitchData data;
         data.detected = pitchDetected.load(std::memory_order_relaxed);
