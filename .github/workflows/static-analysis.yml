@@ -49,7 +49,7 @@ jobs:
       - name: Run clang-tidy
         continue-on-error: true
         run: |
-          clang-tidy-14 -p build -header-filter='.*precision-guitar-tuner/(include|src)/.*' \
+          clang-tidy-14 -p build -header-filter='.*precision-guitar-tuner/src/.*' \
             $(find src -type f -name '*.cpp' 2>/dev/null || true)
 
   cppcheck:
