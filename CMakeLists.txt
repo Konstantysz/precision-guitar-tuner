@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 # Set vcpkg triplet before project()
-if(NOT DEFINED VCPKG_TARGET_TRIPLET)
+if(NOT DEFINED VCPKG_TARGET_TRIPLET AND WIN32)
     set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "")
 endif()
 
