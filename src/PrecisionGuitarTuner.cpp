@@ -142,6 +142,9 @@ private:
  */
 int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
 {
+    // Set logger name before any logging
+    Kappa::Logger::SetLoggerName("PrecisionGuitarTuner");
+
     LOG_INFO("====================================");
     LOG_INFO("  Precision Guitar Tuner v0.0.3-alpha");
     LOG_INFO("  Audio Engine: YIN Pitch Detection");

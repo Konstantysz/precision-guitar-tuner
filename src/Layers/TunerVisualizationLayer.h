@@ -78,15 +78,13 @@ namespace PrecisionTuner::Layers
         AudioProcessingLayer &audioLayer; ///< Reference to audio processing layer
         PrecisionTuner::Config &config;   ///< Reference to application configuration
 
-        GuitarDSP::NoteInfo currentNote;      ///< Currently detected note information
-        float updateTimer = 0.0f;             ///< Timer for UI updates
-        bool hasPitchData = false;            ///< Flag indicating if valid pitch data is available
-        bool showSettingsPanel = true;        ///< Visibility state of settings panel
-        std::optional<int> targetStringIndex; ///< Active string index (0=6th, 5=1st)
+        std::optional<GuitarDSP::NoteInfo> currentNote; ///< Currently detected note information
+        float updateTimer;                              ///< Timer for UI updates
+        bool hasPitchData;                              ///< Flag indicating if valid pitch data is available
+        bool showSettingsPanel;                         ///< Visibility state of settings panel
+        std::optional<int> targetStringIndex;           ///< Active string index (0=6th, 5=1st)
 
-        float smoothedCents = 0.0f;                      ///< Smoothed cent deviation for display
-        static constexpr float SMOOTHING_FACTOR = 10.0f; ///< Smoothing factor for cent display
-        static constexpr float UPDATE_INTERVAL = 0.1f;   ///< UI update rate (100ms)
+        float smoothedCents; ///< Smoothed cent deviation for display
     };
 
 } // namespace PrecisionTuner::Layers

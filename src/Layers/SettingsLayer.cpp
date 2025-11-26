@@ -11,11 +11,12 @@
 
 namespace PrecisionTuner::Layers
 {
-
     SettingsLayer::SettingsLayer(AudioProcessingLayer &audioLayer,
         TunerVisualizationLayer &tunerLayer,
         PrecisionTuner::Config &config)
-        : audioLayer(audioLayer), tunerLayer(tunerLayer), config(config)
+        : audioLayer(audioLayer), tunerLayer(tunerLayer), config(config), showSettings(true),
+          selectedInputDeviceIndex(0), availableInputDevices({}), selectedOutputDeviceIndex(0),
+          availableOutputDevices({}), imguiInitialized(false)
     {
         LOG_INFO("SettingsLayer - Initializing");
         InitializeImGui();

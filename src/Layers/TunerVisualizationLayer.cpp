@@ -7,11 +7,17 @@
 #include <TunerVisualizationLayer.h>
 #include <TuningPresets.h>
 
+namespace
+{
+    static constexpr float SMOOTHING_FACTOR = 10.0f; ///< Smoothing factor for cent display
+    static constexpr float UPDATE_INTERVAL = 0.1f;   ///< UI update rate (100ms)
+} // namespace
+
 namespace PrecisionTuner::Layers
 {
-
     TunerVisualizationLayer::TunerVisualizationLayer(AudioProcessingLayer &audioLayer, PrecisionTuner::Config &config)
-        : audioLayer(audioLayer), config(config)
+        : audioLayer(audioLayer), config(config), currentNote(std::nullopt), updateTimer(0.0f), hasPitchData(false),
+          showSettingsPanel(true), targetStringIndex(std::nullopt), smoothedCents(0.0f)
     {
         LOG_INFO("TunerVisualizationLayer - Initializing ImGui-based tuner UI");
     }

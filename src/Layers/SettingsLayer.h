@@ -76,17 +76,17 @@ namespace PrecisionTuner::Layers
         PrecisionTuner::Config &config;      ///< Reference to application configuration
 
         // UI state
-        bool showSettings = true; ///< Visibility state of settings window
+        bool showSettings; ///< Visibility state of settings window
 
         // Input device selection
-        int selectedInputDeviceIndex = 0;                             ///< Currently selected input device index
+        int selectedInputDeviceIndex;                                 ///< Currently selected input device index
         std::vector<GuitarIO::AudioDeviceInfo> availableInputDevices; ///< List of available input devices
 
         // Output device selection
-        int selectedOutputDeviceIndex = 0;                             ///< Currently selected output device index
+        int selectedOutputDeviceIndex;                                 ///< Currently selected output device index
         std::vector<GuitarIO::AudioDeviceInfo> availableOutputDevices; ///< List of available output devices
 
-        bool imguiInitialized = false; ///< Flag indicating if ImGui has been initialized
+        bool imguiInitialized; ///< Flag indicating if ImGui has been initialized
     };
 
 } // namespace PrecisionTuner::Layers

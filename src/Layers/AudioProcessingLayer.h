@@ -5,6 +5,7 @@
 #include "../external/lib-guitar-io/include/SineWaveGenerator.h"
 #include <Layer.h>
 #include <atomic>
+#include <cstdint>
 #include <memory>
 #include <span>
 #include <vector>
@@ -16,6 +17,36 @@
 
 namespace PrecisionTuner::Layers
 {
+    /** Pitch stabilization algorithm types */
+    enum class StabilizerType
+    {
+        None,   ///< No stabilization (raw YIN output)
+        EMA,    ///< Exponential Moving Average
+        Median, ///< Median filter
+        Hybrid  ///< Hybrid (median + confidence-weighted EMA) - recommended
+    };
+
+    /** Result of pitch detection (lock‑free) */
+    struct PitchData
+    {
+        float frequency = 0.0f;  ///< Detected frequency in Hz
+        float confidence = 0.0f; ///< Detection confidence [0.0, 1.0]
+        bool detected = false;   ///< Whether a pitch was detected
+    };
+
+    /** Configuration for the audio processing layer */
+    struct AudioProcessingLayerConfig
+    {
+        uint32_t sampleRate = 48000;  ///< Sample rate (Hz)
+        uint32_t bufferSize = 2048;   ///< Buffer size (frames) – larger for better pitch accuracy
+        float minFrequency = 80.0f;   ///< Minimum detectable frequency (E2)
+        float maxFrequency = 1200.0f; ///< Maximum detectable frequency (D6)
+
+        // Pitch stabilization configuration
+        StabilizerType stabilizerType = StabilizerType::Hybrid; ///< Stabilization algorithm
+        float emaAlpha = 0.3f;                                  ///< EMA smoothing factor [0.0, 1.0]
+        uint32_t medianWindowSize = 5;                          ///< Median filter window size
+    };
 
     /**
      * @brief Layer responsible for audio I/O and real-time pitch detection
@@ -29,42 +60,11 @@ namespace PrecisionTuner::Layers
     class AudioProcessingLayer : public Kappa::Layer
     {
     public:
-        /** Pitch stabilization algorithm types */
-        enum class StabilizerType
-        {
-            None,   ///< No stabilization (raw YIN output)
-            EMA,    ///< Exponential Moving Average
-            Median, ///< Median filter
-            Hybrid  ///< Hybrid (median + confidence-weighted EMA) - recommended
-        };
-
-        /** Configuration for the audio processing layer */
-        struct Config
-        {
-            uint32_t sampleRate = 48000;  ///< Sample rate (Hz)
-            uint32_t bufferSize = 2048;   ///< Buffer size (frames) – larger for better pitch accuracy
-            float minFrequency = 80.0f;   ///< Minimum detectable frequency (E2)
-            float maxFrequency = 1200.0f; ///< Maximum detectable frequency (D6)
-
-            // Pitch stabilization configuration
-            StabilizerType stabilizerType = StabilizerType::Hybrid; ///< Stabilization algorithm
-            float emaAlpha = 0.3f;                                  ///< EMA smoothing factor [0.0, 1.0]
-            uint32_t medianWindowSize = 5;                          ///< Median filter window size
-        };
-
-        /** Result of pitch detection (lock‑free) */
-        struct PitchData
-        {
-            float frequency = 0.0f;  ///< Detected frequency in Hz
-            float confidence = 0.0f; ///< Detection confidence [0.0, 1.0]
-            bool detected = false;   ///< Whether a pitch was detected
-        };
-
         /**
          * @brief Constructs the audio processing layer
          * @param config Layer configuration
          */
-        explicit AudioProcessingLayer(const Config &config = Config{});
+        explicit AudioProcessingLayer(const AudioProcessingLayerConfig &config = AudioProcessingLayerConfig{});
 
         ~AudioProcessingLayer() override;
 
@@ -138,9 +138,9 @@ namespace PrecisionTuner::Layers
         /**
          * @brief Updates audio feedback settings
          * Applies changes to beep, reference tone, and monitoring parameters.
-         * @param audioCfg New audio configuration
+         * @param audioConfig New audio configuration
          */
-        void UpdateAudioFeedback(const PrecisionTuner::AudioConfig &audioCfg);
+        void UpdateAudioFeedback(const PrecisionTuner::AudioConfig &audioConfig);
 
         /**
          * @brief Sets frequencies for polyphonic chord playback
@@ -189,50 +189,48 @@ namespace PrecisionTuner::Layers
          */
         void MixFeedback(std::span<float> outputBuffer);
 
-        Config config;                                                 ///< Layer configuration
+        AudioProcessingLayerConfig config;                             ///< Layer configuration
         std::unique_ptr<GuitarIO::AudioDevice> inputDevice;            ///< Audio input device
         std::unique_ptr<GuitarIO::AudioDevice> outputDevice;           ///< Audio output device
         std::unique_ptr<GuitarDSP::HybridPitchDetector> pitchDetector; ///< Pitch detection algorithm
         std::unique_ptr<GuitarDSP::PitchStabilizer> pitchStabilizer;   ///< Pitch stabilization filter
 
         // Lock‑free communication
-        std::atomic<float> latestFrequency{ 0.0f };  ///< Latest detected frequency (Hz)
-        std::atomic<float> latestConfidence{ 0.0f }; ///< Latest detection confidence [0.0, 1.0]
-        std::atomic<bool> pitchDetected{ false };    ///< Whether pitch was detected in last frame
+        std::atomic<float> latestFrequency;  ///< Latest detected frequency (Hz)
+        std::atomic<float> latestConfidence; ///< Latest detection confidence [0.0, 1.0]
+        std::atomic<bool> pitchDetected;     ///< Whether pitch was detected in last frame
 
         // Pre‑allocated processing buffer
         std::vector<float> processingBuffer;    ///< Buffer for DSP processing
         std::vector<float> outputScratchBuffer; ///< Temporary buffer for output mixing
 
         // Device tracking
-        uint32_t currentInputDeviceId = static_cast<uint32_t>(-1);  ///< Active input device ID
-        uint32_t currentOutputDeviceId = static_cast<uint32_t>(-1); ///< Active output device ID
-        uint32_t outputChannels = 1;                                ///< Number of output channels
+        uint32_t currentInputDeviceId;  ///< Active input device ID
+        uint32_t currentOutputDeviceId; ///< Active output device ID
+        uint32_t outputChannels;        ///< Number of output channels
 
         // Ring buffer for input monitoring
-        std::vector<float> monitoringRingBuffer;     ///< Ring buffer for audio pass-through
-        std::atomic<size_t> monitoringWritePos{ 0 }; ///< Write position in ring buffer
-        std::atomic<size_t> monitoringReadPos{ 0 };  ///< Read position in ring buffer
+        std::vector<float> monitoringRingBuffer; ///< Ring buffer for audio pass-through
+        std::atomic<size_t> monitoringWritePos;  ///< Write position in ring buffer
+        std::atomic<size_t> monitoringReadPos;   ///< Read position in ring buffer
 
         // Audio feedback generators and state
-        GuitarIO::SineWaveGenerator beepGenerator{ static_cast<double>(config.sampleRate) }; ///< Beep generator
-        GuitarIO::SineWaveGenerator referenceGenerator{ static_cast<double>(
-            config.sampleRate) }; ///< Reference tone generator
-        GuitarIO::PolyphonicGenerator polyphonicGenerator{ static_cast<double>(
-            config.sampleRate) }; ///< Polyphonic generator
+        GuitarIO::SineWaveGenerator beepGenerator;         ///< Beep generator
+        GuitarIO::SineWaveGenerator referenceGenerator;    ///< Reference tone generator
+        GuitarIO::PolyphonicGenerator polyphonicGenerator; ///< Polyphonic generator
 
-        std::atomic<bool> beepEnabled{ false };            ///< Beep feedback enabled
-        std::atomic<bool> referenceEnabled{ false };       ///< Reference tone enabled
-        std::atomic<bool> inputMonitoringEnabled{ false }; ///< Input monitoring enabled
-        std::atomic<bool> droneEnabled{ false };           ///< Drone mode enabled
-        std::atomic<bool> polyphonicEnabled{ false };      ///< Polyphonic mode enabled
+        std::atomic<bool> beepEnabled;            ///< Beep feedback enabled
+        std::atomic<bool> referenceEnabled;       ///< Reference tone enabled
+        std::atomic<bool> inputMonitoringEnabled; ///< Input monitoring enabled
+        std::atomic<bool> droneEnabled;           ///< Drone mode enabled
+        std::atomic<bool> polyphonicEnabled;      ///< Polyphonic mode enabled
 
-        std::atomic<float> beepVolume{ 0.5f };           ///< Beep volume
-        std::atomic<float> referenceVolume{ 0.5f };      ///< Reference tone volume
-        std::atomic<float> monitoringVolume{ 0.5f };     ///< Monitoring volume
-        std::atomic<float> inputGain{ 1.0f };            ///< Input signal gain
-        std::atomic<float> referenceFrequency{ 440.0f }; ///< Reference frequency
-        std::atomic<float> currentInputLevel{ 0.0f };    ///< Current input RMS level
+        std::atomic<float> beepVolume;         ///< Beep volume
+        std::atomic<float> referenceVolume;    ///< Reference tone volume
+        std::atomic<float> monitoringVolume;   ///< Monitoring volume
+        std::atomic<float> inputGain;          ///< Input signal gain
+        std::atomic<float> referenceFrequency; ///< Reference frequency
+        std::atomic<float> currentInputLevel;  ///< Current input RMS level
     };
 
 } // namespace PrecisionTuner::Layers

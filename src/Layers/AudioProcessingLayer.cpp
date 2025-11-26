@@ -5,12 +5,11 @@
 
 namespace PrecisionTuner::Layers
 {
-
-    AudioProcessingLayer::AudioProcessingLayer(const Config &config)
+    AudioProcessingLayer::AudioProcessingLayer(const AudioProcessingLayerConfig &config)
         : config(config), inputDevice(std::make_unique<GuitarIO::AudioDevice>()),
           outputDevice(std::make_unique<GuitarIO::AudioDevice>()),
           pitchDetector(std::make_unique<GuitarDSP::HybridPitchDetector>(
-              GuitarDSP::HybridPitchDetector::Config{ .yinConfidenceThreshold = 0.8f,
+              GuitarDSP::HybridPitchDetectorConfig{ .yinConfidenceThreshold = 0.8f,
                   .enableHarmonicRejection = true,
                   .harmonicTolerance = 0.05f,
                   .yinConfig = { .threshold = 0.10f,
@@ -18,7 +17,16 @@ namespace PrecisionTuner::Layers
                       .maxFrequency = config.maxFrequency },
                   .mpmConfig = { .threshold = 0.93f,
                       .minFrequency = config.minFrequency,
-                      .maxFrequency = config.maxFrequency } }))
+                      .maxFrequency = config.maxFrequency } })),
+          pitchStabilizer(nullptr), latestFrequency(0.0f), latestConfidence(0.0f), pitchDetected(false),
+          processingBuffer({}), outputScratchBuffer({}), currentInputDeviceId(static_cast<uint32_t>(-1)),
+          currentOutputDeviceId(static_cast<uint32_t>(-1)), outputChannels(1), monitoringRingBuffer({}),
+          monitoringWritePos(0), monitoringReadPos(0), beepGenerator(static_cast<double>(config.sampleRate)),
+          referenceGenerator(static_cast<double>(config.sampleRate)),
+          polyphonicGenerator(static_cast<double>(config.sampleRate)), beepEnabled(false), referenceEnabled(false),
+          inputMonitoringEnabled(false), droneEnabled(false), polyphonicEnabled(false), beepVolume(0.5f),
+          referenceVolume(0.5f), monitoringVolume(0.5f), inputGain(1.0f), referenceFrequency(440.0f),
+          currentInputLevel(0.0f)
     {
         // Pre-allocate processing buffer (avoid allocations in audio callback)
         processingBuffer.resize(config.bufferSize);
@@ -160,18 +168,18 @@ namespace PrecisionTuner::Layers
         {
         case StabilizerType::EMA:
             pitchStabilizer = std::make_unique<GuitarDSP::ExponentialMovingAverage>(
-                GuitarDSP::ExponentialMovingAverage::Config{ .alpha = config.emaAlpha });
+                GuitarDSP::ExponentialMovingAverageConfig{ .alpha = config.emaAlpha });
             LOG_INFO("Pitch stabilization: EMA (alpha={})", config.emaAlpha);
             break;
 
         case StabilizerType::Median:
             pitchStabilizer = std::make_unique<GuitarDSP::MedianFilter>(
-                GuitarDSP::MedianFilter::Config{ .windowSize = config.medianWindowSize });
+                GuitarDSP::MedianFilterConfig{ .windowSize = config.medianWindowSize });
             LOG_INFO("Pitch stabilization: Median Filter (window={})", config.medianWindowSize);
             break;
 
         case StabilizerType::Hybrid:
-            pitchStabilizer = std::make_unique<GuitarDSP::HybridStabilizer>(GuitarDSP::HybridStabilizer::Config{
+            pitchStabilizer = std::make_unique<GuitarDSP::HybridStabilizer>(GuitarDSP::HybridStabilizerConfig{
                 .baseAlpha = config.emaAlpha, .windowSize = config.medianWindowSize });
             LOG_INFO("Pitch stabilization: Hybrid (alpha={}, window={})", config.emaAlpha, config.medianWindowSize);
             break;
@@ -679,24 +687,24 @@ namespace PrecisionTuner::Layers
         return true;
     }
 
-    void AudioProcessingLayer::UpdateAudioFeedback(const PrecisionTuner::AudioConfig &audioCfg)
+    void AudioProcessingLayer::UpdateAudioFeedback(const AudioConfig &audioConfig)
     {
-        beepEnabled.store(audioCfg.enableBeep, std::memory_order_relaxed);
-        beepVolume.store(audioCfg.beepVolume, std::memory_order_relaxed);
-        referenceEnabled.store(audioCfg.enableReference, std::memory_order_relaxed);
-        referenceVolume.store(audioCfg.referenceVolume, std::memory_order_relaxed);
-        referenceFrequency.store(audioCfg.referenceFrequency, std::memory_order_relaxed);
-        inputMonitoringEnabled.store(audioCfg.enableInputMonitoring, std::memory_order_relaxed);
-        monitoringVolume.store(audioCfg.monitoringVolume, std::memory_order_relaxed);
-        inputGain.store(audioCfg.inputGain, std::memory_order_relaxed);
+        beepEnabled.store(audioConfig.enableBeep, std::memory_order_relaxed);
+        beepVolume.store(audioConfig.beepVolume, std::memory_order_relaxed);
+        referenceEnabled.store(audioConfig.enableReference, std::memory_order_relaxed);
+        referenceVolume.store(audioConfig.referenceVolume, std::memory_order_relaxed);
+        referenceFrequency.store(audioConfig.referenceFrequency, std::memory_order_relaxed);
+        inputMonitoringEnabled.store(audioConfig.enableInputMonitoring, std::memory_order_relaxed);
+        monitoringVolume.store(audioConfig.monitoringVolume, std::memory_order_relaxed);
+        inputGain.store(audioConfig.inputGain, std::memory_order_relaxed);
 
         // Advanced modes
-        droneEnabled.store(audioCfg.enableDroneMode, std::memory_order_relaxed);
-        polyphonicEnabled.store(audioCfg.enablePolyphonicMode, std::memory_order_relaxed);
+        droneEnabled.store(audioConfig.enableDroneMode, std::memory_order_relaxed);
+        polyphonicEnabled.store(audioConfig.enablePolyphonicMode, std::memory_order_relaxed);
 
         // Update generator frequencies
         beepGenerator.SetFrequency(880.0); // A5 for beep
-        referenceGenerator.SetFrequency(static_cast<double>(audioCfg.referenceFrequency));
+        referenceGenerator.SetFrequency(static_cast<double>(audioConfig.referenceFrequency));
 
         // Note: Polyphonic frequencies are set by SetPolyphonicFrequencies() called from SettingsLayer
     }
