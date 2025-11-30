@@ -108,18 +108,26 @@ namespace PrecisionTuner
         config.enableDroneMode = j.value("enableDroneMode", AudioConfig{}.enableDroneMode);
         config.enablePolyphonicMode = j.value("enablePolyphonicMode", AudioConfig{}.enablePolyphonicMode);
     }
-
-    /**
-     * Tuning configuration
-     */
     struct TuningConfig
     {
         TuningMode mode = TuningMode::Chromatic; ///< Active tuning mode
         float referencePitch = 440.0f;           ///< A4 reference frequency (Hz)
         float tolerance = 1.0f;                  ///< In-tune tolerance in cents
 
-        // JSON serialization
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(TuningConfig, mode, referencePitch, tolerance)
+        // Custom JSON serialization to handle missing keys gracefully
+        friend void to_json(nlohmann::json &j, const TuningConfig &p)
+        {
+            j = nlohmann::json{
+                { "mode", p.mode }, { "referencePitch", p.referencePitch }, { "tolerance", p.tolerance }
+            };
+        }
+
+        friend void from_json(const nlohmann::json &j, TuningConfig &p)
+        {
+            p.mode = j.value("mode", TuningConfig{}.mode);
+            p.referencePitch = j.value("referencePitch", TuningConfig{}.referencePitch);
+            p.tolerance = j.value("tolerance", TuningConfig{}.tolerance);
+        }
     };
 
     /**
