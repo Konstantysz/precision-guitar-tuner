@@ -187,7 +187,7 @@ lib-guitar-dsp: YIN pitch detection (std::span interface)
     ↓
 Event published to UI thread
     ↓
-TunerVisualizationLayer: Update strobe/needle display
+TunerVisualizationLayer: Update needle display
 ```
 
 ### Thread Model

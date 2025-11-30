@@ -333,44 +333,135 @@ Dependencies (Git Submodules)
 
 ---
 
-### Phase 5: Strobe Tuner (Week 7)
+### Phase 3.5: Visual Enhancement & Polish (Current Priority) 🎨 PARTIALLY COMPLETE
 
-**Goals:**
+**Status:** Phase 1 (Textures & Asset Polish) Complete. Further polish deferred.
+**Goal:** Transform from beta/development UI to premium professional-grade appearance
 
-- Implement strobe tuner visualization
-- Sub-cent precision feedback
-- Professional-grade visual tuning
+**Motivation:**
 
-**Tasks:**
+- Current retro gauge uses basic ImGui primitives
+- Lacks realistic materials (chrome, aged paper, wood)
+- No depth, shadows, or professional lighting
+- Goal: Match or exceed $200 commercial tuner aesthetics
 
-#### Strobe Rendering
+#### Phase 1: Textures & Asset Polish (Priority: High, Effort: 2-3 hours) ✅ COMPLETE
 
-1. [ ] Research Peterson strobe tuner algorithm
-2. [ ] Create strobe shader (rotating disc pattern)
-3. [ ] Implement strobe speed calculation (based on cents offset)
-4. [ ] Add strobe direction indicator (sharp vs flat)
-5. [ ] Create strobe color scheme
-6. [ ] Optimize shader performance
+**Completed Visual Improvements:**
 
-#### Strobe Integration
+1. [x] **Wood Background** - Dark walnut grain texture with "Cover" scaling for professional appearance
+2. [x] **Gauge Face** - Cream-colored aged paper texture with subtle grain and recessed shadow effect
+3. [x] **Chrome Bezel** - Realistic metal texture with multi-layer programmatic shading (outer ring, inner ring, highlights)
+4. [x] **Glass Overlay** - Programmatic rendering with circular highlights and bottom rim arc for crisp reflections
+5. [x] **3D Needle** - Tapered design with programmatic soft shadow for depth and realism
+6. [x] **Settings Gear Icon** - Custom vector-style gear icon in top-right corner with hover/active states
+7. [x] **Brand Text** - "PRECISION SERIES" label with proper styling
+8. [x] **Proper Layering** - Background → bezel → gauge face → needle → glass overlay
 
-7. [ ] Add strobe mode toggle in settings
-8. [ ] Implement smooth transition (needle ↔ strobe)
-9. [ ] Add strobe sensitivity adjustment
-10. [ ] Create strobe calibration mode
+**Implementation Approach:**
+
+- [x] Hybrid rendering: Textures for materials (wood, chrome, gauge face) + programmatic effects (glass, shadows, gear icon)
+- [x] Texture loading via `stb_image.h` for PNG assets
+- [x] ImGui primitives for UI elements and vector graphics
+- [x] OpenGL texture rendering for background materials
+
+**Deferred to Later Phases:**
+
+- [ ] Custom vintage fonts for gauge labels
+- [ ] Decorative screw details on bezel corners
+- [ ] Custom brand emblem/logo
+
+**Expected Impact:** 5x more professional appearance
+
+#### Phase 2: Shader-Based Effects (Priority: Medium, Effort: 4-6 hours) ⚠️ DEFERRED
+
+**Shader Development:**
+
+1. [ ] Create `chrome_bezel.frag` - Realistic chrome with environment reflections
+2. [ ] Create `gauge_face.frag` - Aged paper with radial lighting
+3. [ ] Create `glass_overlay.frag` - Subtle window reflections and glare
+4. [ ] Create `needle_shadow.frag` - Soft shadow rendering
+5. [ ] Create `needle_motion.frag` - Motion blur for smooth needle movement
+
+**Advanced Visual Effects:**
+6. [ ] Implement ambient light rotation (subtle dynamic lighting)
+7. [ ] Add depth of field (blur background, sharp foreground)
+8. [ ] Spring-damped needle physics (realistic mechanical movement)
+9. [ ] Fresnel reflections on chrome bezel
+10. [ ] Radial shading on gauge face
+
+**Hybrid Rendering Architecture:**
+
+```cpp
+void RenderRetroGauge() {
+    // Layer 1: Background (shader or texture)
+    RenderWoodBackground();
+    
+    // Layer 2: Gauge body with shadows (shader)
+    RenderGaugeFaceAndBezel();
+    
+    // Layer 3: Tick marks and labels (ImGui - crisp text)
+    RenderTickMarksAndLabels();
+    
+    // Layer 4: Needle with shadow and motion blur (shader)
+    RenderNeedleWithPhysics();
+    
+    // Layer 5: Glass overlay with reflections (shader)
+    RenderGlassOverlay();
+    
+    // Layer 6: Odometer display (ImGui text)
+    RenderOdometerDisplay();
+    
+    // Layer 7: Effects (glow, sparkles if in-tune)
+    if (isInTune) RenderInTuneEffects();
+}
+```
+
+**Expected Impact:** Professional commercial-grade appearance
+
+#### Phase 3: Advanced Polish & Effects (Priority: Low, Effort: Optional)
+
+**Celebration Effects:**
+
+1. [ ] Pulsing green glow when in-tune (animated)
+2. [ ] Sparkle/shimmer effect on in-tune
+3. [ ] Subtle particle effects
+
+**Advanced Lighting:**
+4. [ ] Normal mapping on bezel (raised/recessed depth)
+5. [ ] Specular highlights on needle
+6. [ ] Ambient occlusion in gauge recesses
+
+**Audio-Visual Integration:**
+7. [ ] Sound effects on needle movement (subtle click)
+8. [ ] Haptic feedback (if supported)
+
+**Performance Optimizations:**
+9. [ ] Cache static elements (bezel, ticks, labels)
+10. [ ] Only redraw needle on cents change
+11. [ ] Use ImGui `ImDrawList::AddCallback` for GPU effects
+
+**Expected Impact:** Premium $200+ app aesthetics
 
 **Deliverables:**
 
-- Working strobe tuner mode
-- Visual precision at 0.1 cent level
-- Toggle between needle and strobe
+- Phase 1: Textured retro gauge with professional appearance
+- Phase 2: Shader-enhanced rendering with realistic materials
+- Phase 3: Advanced effects and polish
 
 **Success Criteria:**
 
-- Strobe stops completely when in-tune (±0.1 cent)
-- Direction clearly indicates sharp/flat
-- Performance maintains 60 FPS
-- Intuitive for professional users
+- Looks indistinguishable from commercial $50-200 tuner apps
+- Users comment on visual quality in beta feedback
+- Smooth 60 FPS with all effects enabled
+- Realistic materials (chrome, wood, aged paper)
+- Professional color palette and typography
+
+---
+
+### Phase 5: Strobe Tuner (Week 7) ⚠️ REMOVED
+
+*Note: Strobe tuner functionality has been removed to focus on a high-quality retro gauge experience.*
 
 ---
 
@@ -592,10 +683,19 @@ Dependencies (Git Submodules)
 
 ## Current Status
 
-**Phase:** Phase 4 In Progress (Accuracy & Feedback)
-**Progress:** ~75% overall
+**Phase:** Phase 3.5 In Progress (Visual Enhancement)
+**Progress:** ~80% overall
 **Completed Recently:**
 
+- ✅ **Visual Overhaul (Phase 1):**
+  - Implemented high-quality textured retro gauge
+  - Added "Cover" style wood background scaling
+  - Created solid 3D chrome bezel with metallic shading
+  - Implemented 3D ridged needle with pivot cap
+  - Added realistic glass reflections (no artifacts)
+  - Added recessed gauge face with inner shadows
+- ✅ **Strobe Tuner Removed:** Simplified codebase to focus on premium retro gauge
+- ✅ **Texture System:** Integrated `stb_image` and texture loading pipeline
 - ✅ Fixed critical crash in MPM pitch detector (unsigned underflow)
 - ✅ Fixed CI/CD build pipeline for Linux and macOS
 - ✅ Audio Feedback (in-tune beep, reference pitch playback)
@@ -615,11 +715,11 @@ Dependencies (Git Submodules)
 - ✅ lib-guitar-io (Audio I/O library)
 - ✅ Device selection controls (populate settings UI with audio device dropdowns)
 
-**Next Priority Tasks (Phase 5):**
+**Next Priority Tasks (Phase 6):**
 
-1. Strobe Tuner visualization
-2. Spectrum analyzer visualization (Optional)
+1. Cross-platform build and testing (macOS/Linux)
+2. Further GUI polish (deferred)
 
 **Blockers:** None
 
-**Last Updated:** 2025-11-26
+**Last Updated:** 2025-11-30

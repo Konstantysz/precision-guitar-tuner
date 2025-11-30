@@ -11,9 +11,13 @@
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://en.cppreference.com/w/cpp/20)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)]()
 
+<p align="center">
+  <img src="assets/images/demo.gif" alt="Precision Tuner Demo" width="600">
+</p>
+
 ## Overview
 
-**Precision Tuner** is a modern C++20 desktop application that delivers studio-quality guitar tuning with professional accuracy. Built for musicians who demand precision, it supports professional audio interfaces, achieves ultra-low latency, and offers advanced visualization modes including strobe tuning.
+**Precision Tuner** is a modern C++20 desktop application that delivers studio-quality guitar tuning with professional accuracy. Built for musicians who demand precision, it supports professional audio interfaces, achieves ultra-low latency, and offers advanced visualization modes.
 
 ### Key Features
 
@@ -21,7 +25,7 @@
 - 🎛️ **Professional audio interface support** - Works with Rocksmith cable, Focusrite, MOTU, RME, and all USB audio devices
 - 🖥️ **Cross-platform** - Native builds for Windows, macOS, and Linux
 - 🎯 **Ultra-low latency** - <10ms end-to-end on ASIO/CoreAudio/ALSA
-- 🌀 **Strobe tuner mode** - Sub-cent precision visual feedback
+- 💎 **Premium Retro Gauge** - High-quality vector rendering with realistic wood, chrome, and glass materials
 - 🎸 **Multiple tuning modes** - Standard, drop, chromatic, and custom tunings
 - 📊 **Real-time spectrum analyzer** - Visualize harmonics and overtones
 - 🆓 **GPL-free dependencies** - Commercial-friendly licensing (MIT/BSD)
@@ -53,7 +57,10 @@ Mobile apps are limited by:
 - **C++20 compiler**: MSVC 19.28+, GCC 10+, or Clang 11+
 - **CMake**: 3.20 or later
 - **Git**: For submodule management
-- **vcpkg**: C++ pack### Phase 3: Enhanced UI & Features (In Progress)
+- **vcpkg**: C++ package manager
+
+### Phase 3: Enhanced UI & Features (In Progress)
+
 - [x] External GLSL shaders
 - [x] TrueType font rendering
 - [x] Configuration persistence (JSON)
@@ -63,6 +70,7 @@ Mobile apps are limited by:
 - [x] Audio device selection (separate input/output)
 - [x] Audio feedback (reference tones, input monitoring)
 - [x] Input gain control
+- [x] **Premium Visual Overhaul** (Textures, Materials, Lighting)
 - [ ] Spectrum analyzer (optional)
 
 ### Phase 4: Advanced Tuning (In Progress)
@@ -73,7 +81,6 @@ Mobile apps are limited by:
 - [x] Fine-tuned YIN parameters for guitar
 - [x] Drone mode (continuous reference tone)
 - [x] Polyphonic mode (chord playback)
-- [ ] Strobe tuner visualization mode
 - [ ] Visual feedback improvements
 
 ## 🛠️ Building from Source

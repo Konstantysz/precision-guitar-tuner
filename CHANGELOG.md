@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Visual Overhaul** (2025-11-30)
+  - **Premium Retro Gauge**: Complete visual redesign featuring a high-quality textured retro gauge with realistic materials
+  - **Programmatic Rendering**: Replaced static textures with dynamic ImGui primitives for superior quality and crispness
+  - **Realistic Materials**:
+    - **Wood Background**: "Cover" style scaling with vignette for a seamless, premium look
+    - **Chrome Bezel**: Solid 3D metallic ring with shading and highlights
+    - **Glass Reflection**: Crisp, artifact-free glare and rim reflections simulating a convex lens
+    - **3D Needle**: Two-tone ridged needle with detailed pivot cap and soft drop shadow
+    - **Recessed Face**: Inner shadows creating depth between the bezel and the gauge face
+  - **Settings Gear Icon**: Custom vector-style gear icon for accessing settings
+
+### Removed
+
+- **Strobe Tuner** (2025-11-30)
+  - Removed strobe tuner functionality to focus development resources on perfecting the retro gauge experience and ensuring maximum visual quality.
+
+### Added
+
 - **Advanced Tuning Features** (2025-11-26)
   - **Hybrid Pitch Detection**: Implemented YIN/MPM hybrid detector with automatic fallback when YIN confidence < 0.8
   - **MPM Pitch Detector**: Added McLeod Pitch Method (MPM) for improved vibrato detection using NSDF algorithm
