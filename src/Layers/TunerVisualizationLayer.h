@@ -33,7 +33,7 @@ namespace PrecisionTuner::Layers
         /**
          * @brief Destructor
          */
-        ~TunerVisualizationLayer() override = default;
+        ~TunerVisualizationLayer() override;
 
         void OnUpdate(float deltaTime) override;
 
@@ -53,20 +53,9 @@ namespace PrecisionTuner::Layers
 
     private:
         /**
-         * @brief Renders the cent deviation meter (-50 to +50 range)
+         * @brief Renders the retro gauge visualization
          */
-        void RenderCentDeviationMeter();
-
-        /**
-         * @brief Renders the main tuning indicator (note name and status)
-         */
-        void RenderTuningIndicator();
-
-        /**
-         * @brief Render target string indicator for non-chromatic modes
-         * Shows string name and visual position (e.g., "6th String (E2)")
-         */
-        void RenderTargetStringIndicator();
+        void RenderRetroGauge();
 
         /**
          * @brief Get color based on cent deviation
@@ -74,6 +63,23 @@ namespace PrecisionTuner::Layers
          * @return Color (green=in-tune, yellow=close, orange/red=far)
          */
         ImVec4 GetColorForCents(float cents);
+
+        /**
+         * @brief Load a texture from file
+         * @param path Path to texture file
+         * @return ImGui texture ID (0 if failed)
+         */
+        ImTextureID LoadTexture(const char *path);
+
+        /**
+         * @brief Initialize all gauge textures
+         */
+        void InitializeTextures();
+
+        /**
+         * @brief Cleanup loaded textures
+         */
+        void CleanupTextures();
 
         AudioProcessingLayer &audioLayer; ///< Reference to audio processing layer
         PrecisionTuner::Config &config;   ///< Reference to application configuration
@@ -85,6 +91,11 @@ namespace PrecisionTuner::Layers
         std::optional<int> targetStringIndex;           ///< Active string index (0=6th, 5=1st)
 
         float smoothedCents; ///< Smoothed cent deviation for display
+
+        // Texture IDs for visual assets
+        ImTextureID woodBackgroundTexture; ///< Wood background texture
+        ImTextureID gaugeFaceTexture;      ///< Cream gauge face texture
+        ImTextureID chromeTexture;         ///< Chrome bezel texture
     };
 
 } // namespace PrecisionTuner::Layers

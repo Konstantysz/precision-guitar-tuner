@@ -150,7 +150,13 @@ else()
     )
 endif()
 
-# Note: Shader assets no longer needed with ImGui-based rendering
+# Copy shader assets to build directory
+add_custom_command(TARGET precision-guitar-tuner POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/assets/shaders
+        $<TARGET_FILE_DIR:precision-guitar-tuner>/assets/shaders
+    COMMENT "Copying shader assets"
+)
 
 # Installation
 install(TARGETS precision-guitar-tuner
