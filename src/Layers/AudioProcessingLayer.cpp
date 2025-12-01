@@ -308,9 +308,6 @@ namespace PrecisionTuner::Layers
 
         std::span<const float> gainedBuffer(layer->processingBuffer.data(), inputBuffer.size());
 
-        // Process audio (pitch detection) with gained signal
-        layer->ProcessAudio(gainedBuffer);
-
         // Write to ring buffer for input monitoring (with gain applied)
         if (layer->inputMonitoringEnabled.load(std::memory_order_relaxed))
         {
@@ -325,6 +322,9 @@ namespace PrecisionTuner::Layers
 
             layer->monitoringWritePos.store(writePos, std::memory_order_release);
         }
+
+        // Process audio (pitch detection) with gained signal
+        layer->ProcessAudio(gainedBuffer);
 
         // Calculate peak level for metering
         float maxVal = 0.0f;

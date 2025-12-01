@@ -46,10 +46,11 @@ namespace PrecisionTuner
      */
     struct AudioConfig
     {
-        int deviceId = -1;           ///< Input device ID (-1 means default)
-        std::string deviceName;      ///< Input device name for display/matching
-        int sampleRate = 48000;      ///< Sample rate in Hz
-        int bufferSize = 256;        ///< Buffer size in frames
+        int deviceId = -1;      ///< Input device ID (-1 means default)
+        std::string deviceName; ///< Input device name for display/matching
+        int sampleRate = 48000; ///< Sample rate in Hz
+        int bufferSize =
+            256; ///< Buffer size in frames (256 ~= 5.3ms @ 48kHz). Lower (128) = better latency but higher CPU load.
         int inputChannel = 0;        ///< Input channel index (0-based)
         bool autoSelectInput = true; ///< Automatically select first available input channel
 
