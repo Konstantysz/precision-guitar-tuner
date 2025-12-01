@@ -7,7 +7,7 @@ This file tracks all external dependencies and their pinned versions for reprodu
 | Component | Repository | Version/Commit | Date Pinned | Status |
 |-----------|------------|----------------|-------------|---------|
 | kappa-core | <https://github.com/Konstantysz/kappa-core> | v0.5.3 (66ae1ba) | 2025-11-26 | ✅ Active |
-| lib-guitar-io | <https://github.com/Konstantysz/lib-guitar-io> | v0.0.1 (ebf41a3) | 2025-11-30 | ✅ Active |
+| lib-guitar-io | <https://github.com/Konstantysz/lib-guitar-io> | v0.0.1 (71a348a) | 2025-12-01 | ✅ Active |
 | lib-guitar-dsp | <https://github.com/Konstantysz/lib-guitar-dsp> | v0.0.1 (0129b4d) | 2025-12-01 | ✅ Active |
 
 ## vcpkg Dependencies (kappa-core requirements)
