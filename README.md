@@ -13,6 +13,10 @@
   <img src="assets/images/demo.gif" alt="Precision Tuner Demo" width="600">
 </p>
 
+**📖 [Quick Start Guide](docs/QUICK_START.md)** | **📚 [User Guide](docs/USER_GUIDE.md)** | **🔧 [Developer Docs](CLAUDE.md)**
+
+---
+
 ## Overview
 
 **Precision Tuner** is a modern C++20 desktop application that delivers studio-quality guitar tuning with professional accuracy. Built for musicians who demand precision, it supports professional audio interfaces, achieves ultra-low latency, and offers advanced visualization modes.

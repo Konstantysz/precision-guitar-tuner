@@ -19,6 +19,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Latency Optimization**: Optimized `AudioProcessingLayer` to prioritize input monitoring, reducing round-trip audio latency
   - **Buffer Configuration**: Updated `Config.h` documentation to clarify buffer size impact on latency (target 128 frames for ultra-low latency)
 
+### Changed
+
+- **Performance** (2025-12-01)
+  - **Latency Optimization**: Optimized `AudioProcessingLayer` to prioritize input monitoring, reducing round-trip audio latency
+  - **Buffer Configuration**: Updated `Config.h` documentation to clarify buffer size impact on latency (target 128 frames for ultra-low latency)
+
+- **Build System** (2025-12-01)
+  - **CMake Refactoring**: Restructured CMake into modular files (`cmake/StandardSettings.cmake`, `cmake/CompilerWarnings.cmake`, `cmake/Dependencies.cmake`, `cmake/Packaging.cmake`)
+  - **Improved Organization**: Moved application target to `src/CMakeLists.txt` for better separation of concerns
+  - **UTF-8 Support**: Added `/utf-8` compiler flag for MSVC to support Unicode in fmt library
+
+- **Documentation** (2025-12-01)
+  - **User Guide**: Created comprehensive `docs/USER_GUIDE.md` with detailed feature explanations, troubleshooting, and best practices
+  - **Quick Start**: Added `docs/QUICK_START.md` for 60-second onboarding
+  - **UI Polish Plan**: Documented keyboard shortcuts and tooltip implementation plan in `docs/UI_POLISH_PLAN.md`
+
+### Fixed
+
+- **CI/CD** (2025-12-01)
+  - Fixed ALSA dependency in `tests.yml` workflow for Linux builds
+  - Fixed test linking errors by adding `spdlog::spdlog` dependency
+  - Added kappa-core include directory for tests to find `Logger.h`
+
 ### Added
 
 - **Visual Overhaul** (2025-11-30)

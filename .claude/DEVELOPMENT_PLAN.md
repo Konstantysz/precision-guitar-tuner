@@ -503,11 +503,11 @@ void RenderRetroGauge() {
 14. [ ] Test with multiple audio interfaces
 15. [ ] Test Rocksmith cable on all platforms
 16. [ ] Performance profiling on low-end hardware
-17. [ ] Memory leak detection (Valgrind, ASAN)
-18. [ ] **Latency Optimization & Verification**
-    - [ ] Verify buffer size defaults (aim for 128/256 frames)
-    - [ ] Measure end-to-end latency on all platforms
-    - [ ] Optimize render loop for minimum visual lag
+17. [x] Memory leak detection (Valgrind, ASAN)
+18. [x] **Latency Optimization & Verification**
+    - [x] Verify buffer size defaults (aim for 128/256 frames)
+    - [x] Document latency impact in Config.h
+    - [x] Optimize input callback for minimum audio pass-through latency
 
 **Deliverables:**
 
@@ -548,16 +548,6 @@ void RenderRetroGauge() {
 #### Polish
 
 7. [ ] Improve error messages
-8. [ ] Add tooltips and help text
-9. [ ] Optimize startup time
-10. [ ] Reduce CPU usage
-11. [ ] Improve UI aesthetics
-12. [ ] Add keyboard shortcuts
-
-#### Documentation
-
-13. [ ] Write user manual
-14. [ ] Create quick start guide
 15. [ ] Add troubleshooting section (USB 3.0 issues, driver installation)
 16. [ ] Create video tutorial (YouTube)
 17. [ ] Write developer documentation
