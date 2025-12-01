@@ -19,18 +19,34 @@ namespace PrecisionTuner::Layers
                       .minFrequency = config.minFrequency,
                       .maxFrequency = config.maxFrequency } })),
           pitchStabilizer(nullptr), latestFrequency(0.0f), latestConfidence(0.0f), pitchDetected(false),
-          processingBuffer({}), outputScratchBuffer({}), currentInputDeviceId(static_cast<uint32_t>(-1)),
-          currentOutputDeviceId(static_cast<uint32_t>(-1)), outputChannels(1), monitoringRingBuffer({}),
-          monitoringWritePos(0), monitoringReadPos(0), beepGenerator(static_cast<double>(config.sampleRate)),
+          bufferOverflowDetected(false), processingBuffer({}), outputScratchBuffer({}),
+          currentInputDeviceId(static_cast<uint32_t>(-1)), currentOutputDeviceId(static_cast<uint32_t>(-1)),
+          outputChannels(1), monitoringRingBuffer({}), monitoringWritePos(0), monitoringReadPos(0),
+          beepGenerator(static_cast<double>(config.sampleRate)),
           referenceGenerator(static_cast<double>(config.sampleRate)),
           polyphonicGenerator(static_cast<double>(config.sampleRate)), beepEnabled(false), referenceEnabled(false),
           inputMonitoringEnabled(false), droneEnabled(false), polyphonicEnabled(false), beepVolume(0.5f),
           referenceVolume(0.5f), monitoringVolume(0.5f), inputGain(1.0f), referenceFrequency(440.0f),
           currentInputLevel(0.0f)
     {
-        // Pre-allocate processing buffer (avoid allocations in audio callback)
-        processingBuffer.resize(config.bufferSize);
-        outputScratchBuffer.resize(config.bufferSize);
+        /**
+         * REAL-TIME AUDIO THREAD SAFETY:
+         *
+         * Pre-allocate processing buffers with a 4x safety margin to prevent dynamic
+         * allocations in the audio callback (InputCallback). Memory allocation functions
+         * like malloc() are NOT signal-safe and can cause priority inversion, blocking,
+         * and audible audio glitches if called from a real-time audio thread.
+         *
+         * The 4x multiplier accounts for:
+         *  - OS driver buffer size variations (WASAPI/ASIO/ALSA may send larger buffers)
+         *  - Sample rate conversion edge cases
+         *  - Hardware-specific quirks
+         *
+         * If bufferOverflowDetected flag is set, the main thread will log an error
+         * indicating that the safety margin was insufficient.
+         */
+        processingBuffer.resize(config.bufferSize * 4);
+        outputScratchBuffer.resize(config.bufferSize * 4);
 
         // Pre-allocate ring buffer for input monitoring (4x buffer size for safety)
         monitoringRingBuffer.resize(config.bufferSize * 4);
@@ -217,7 +233,14 @@ namespace PrecisionTuner::Layers
 
     void AudioProcessingLayer::OnUpdate([[maybe_unused]] float deltaTime)
     {
-        // UI thread update
+        // Check for buffer overflow errors from audio thread
+        if (CheckBufferOverflow())
+        {
+            LOG_ERROR(
+                "Audio buffer overflow detected! Input buffer exceeded pre-allocated size ({} frames). "
+                "Consider increasing buffer size or safety margin.",
+                config.bufferSize * 4);
+        }
     }
 
     PitchData AudioProcessingLayer::GetLatestPitch() const
@@ -258,6 +281,12 @@ namespace PrecisionTuner::Layers
         return currentInputDeviceId;
     }
 
+    bool AudioProcessingLayer::CheckBufferOverflow()
+    {
+        // Atomically check and clear the overflow flag
+        return bufferOverflowDetected.exchange(false, std::memory_order_relaxed);
+    }
+
     std::vector<std::string> AudioProcessingLayer::GetAvailableOutputDevices() const
     {
         auto &manager = GuitarIO::AudioDeviceManager::Get();
@@ -295,18 +324,23 @@ namespace PrecisionTuner::Layers
         // Apply input gain and copy to processing buffer
         float gain = layer->inputGain.load(std::memory_order_relaxed);
 
-        // Resize processing buffer if needed (should already be sized correctly)
+        // Check if buffer is sufficient
         if (layer->processingBuffer.size() < inputBuffer.size())
         {
-            layer->processingBuffer.resize(inputBuffer.size());
+            // CRITICAL: Cannot resize in audio callback!
+            // Set flag for main thread to log warning and handle error
+            layer->bufferOverflowDetected.store(true, std::memory_order_relaxed);
+            // Process only what fits in the pre-allocated buffer
         }
 
-        for (size_t i = 0; i < inputBuffer.size(); ++i)
+        size_t samplesToProcess = std::min(inputBuffer.size(), layer->processingBuffer.size());
+
+        for (size_t i = 0; i < samplesToProcess; ++i)
         {
             layer->processingBuffer[i] = inputBuffer[i] * gain;
         }
 
-        std::span<const float> gainedBuffer(layer->processingBuffer.data(), inputBuffer.size());
+        std::span<const float> gainedBuffer(layer->processingBuffer.data(), samplesToProcess);
 
         // Write to ring buffer for input monitoring (with gain applied)
         if (layer->inputMonitoringEnabled.load(std::memory_order_relaxed))
@@ -504,27 +538,8 @@ namespace PrecisionTuner::Layers
             }
         }
 
-        // Mix beep tone (TODO: trigger based on in-tune detection)
-        if (beepEnabled.load(std::memory_order_relaxed))
-        {
-            // beepGenerator.SetAmplitude(static_cast<double>(beepVolume.load(std::memory_order_relaxed)));
-
-            // if (outputChannels == 1)
-            // {
-            //     beepGenerator.Generate(outputBuffer, true);
-            // }
-            // else
-            // {
-            //     std::span<float> scratchSpan(outputScratchBuffer.data(), frames);
-            //     beepGenerator.Generate(scratchSpan, false);
-            //     for (size_t i = 0; i < frames; ++i)
-            //     {
-            //         float sample = outputScratchBuffer[i];
-            //         outputBuffer[i * 2] += sample;
-            //         outputBuffer[i * 2 + 1] += sample;
-            //     }
-            // }
-        }
+        // Note: Beep generator not yet implemented
+        // The beepEnabled flag is reserved for future in-tune notification feature
 
         // Apply limiting to prevent clipping
         GuitarIO::AudioMixer::Limit(outputBuffer);

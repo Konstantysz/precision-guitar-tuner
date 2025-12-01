@@ -4,6 +4,7 @@ find_package(imgui CONFIG REQUIRED)
 # Main application
 add_executable(precision-guitar-tuner
     PrecisionGuitarTuner.cpp
+    PrecisionGuitarTunerApp.cpp
     Config.cpp
     TuningPresets.cpp
     Layers/AudioProcessingLayer.cpp

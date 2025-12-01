@@ -42,11 +42,6 @@ namespace PrecisionTuner::Layers
 
     private:
         /**
-         * @brief Initializes ImGui context and backends
-         */
-        void InitializeImGui();
-
-        /**
          * @brief Renders input audio device selection dropdown
          */
         void RenderInputDeviceSelector();
@@ -85,8 +80,6 @@ namespace PrecisionTuner::Layers
         // Output device selection
         int selectedOutputDeviceIndex;                                 ///< Currently selected output device index
         std::vector<GuitarIO::AudioDeviceInfo> availableOutputDevices; ///< List of available output devices
-
-        bool imguiInitialized; ///< Flag indicating if ImGui has been initialized
     };
 
 } // namespace PrecisionTuner::Layers

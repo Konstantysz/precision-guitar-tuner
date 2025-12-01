@@ -509,6 +509,30 @@ void RenderRetroGauge() {
     - [x] Document latency impact in Config.h
     - [x] Optimize input callback for minimum audio pass-through latency
 
+#### Unit Testing for AudioProcessingLayer
+
+19. [ ] **Create Test Plan for AudioProcessingLayer** (Priority: High, from Deep Review)
+    - **Challenge:** `AudioProcessingLayer` depends on real hardware via `AudioDevice`
+    - **Solution:** Introduce `IAudioDevice` interface + `MockAudioDevice` for testing
+    - **Test Categories:**
+      - Audio feedback logic (reference tone, monitoring, drone, polyphonic)
+      - Buffer management (pre-allocation, overflow detection)
+      - Thread safety (atomics, lock-free operations)
+      - Device switching (stop → switch → resume)
+      - Pitch detection integration
+    - **Implementation Steps:**
+      1. Create `IAudioDevice` interface in `lib-guitar-io`
+      2. Make `AudioDevice` implement `IAudioDevice`
+      3. Create `MockAudioDevice` in `tests/mocks/`
+      4. Refactor `AudioProcessingLayer` to accept `std::unique_ptr<IAudioDevice>` (dependency injection)
+      5. Write comprehensive tests in `tests/TestAudioProcessingLayer.cpp`
+    - **Benefits:**
+      - Catch regressions in complex audio feedback logic
+      - Verify real-time safety guarantees (no allocations, no locks)
+      - Enable confident refactoring
+      - Document expected behavior through test cases
+    - **Status:** Planned (not yet implemented)
+
 **Deliverables:**
 
 - Working builds on Windows, macOS, Linux

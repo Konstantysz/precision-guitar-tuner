@@ -16,73 +16,22 @@ namespace PrecisionTuner::Layers
         PrecisionTuner::Config &config)
         : audioLayer(audioLayer), tunerLayer(tunerLayer), config(config), showSettings(true),
           selectedInputDeviceIndex(0), availableInputDevices({}), selectedOutputDeviceIndex(0),
-          availableOutputDevices({}), imguiInitialized(false)
+          availableOutputDevices({})
     {
         LOG_INFO("SettingsLayer - Initializing");
-        InitializeImGui();
     }
 
     SettingsLayer::~SettingsLayer()
     {
-        if (imguiInitialized)
-        {
-            LOG_INFO("SettingsLayer - Shutting down ImGui");
-            ImGui_ImplOpenGL3_Shutdown();
-            ImGui_ImplGlfw_Shutdown();
-            ImGui::DestroyContext();
-        }
     }
 
-    void SettingsLayer::InitializeImGui()
-    {
-        // Get GLFW window from current context
-        GLFWwindow *window = glfwGetCurrentContext();
-        if (!window)
-        {
-            LOG_ERROR("Failed to initialize ImGui: No GLFW context");
-            return;
-        }
-
-        // Create ImGui context
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGuiIO &io = ImGui::GetIO();
-        (void)io;
-
-        // Enable keyboard navigation
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-
-        // Setup ImGui style
-        ImGui::StyleColorsDark();
-
-        // Initialize ImGui backends for GLFW + OpenGL3
-        const char *glslVersion = "#version 430";
-        ImGui_ImplGlfw_InitForOpenGL(window, true);
-        ImGui_ImplOpenGL3_Init(glslVersion);
-
-        imguiInitialized = true;
-        LOG_INFO("ImGui initialized successfully");
-    }
 
     void SettingsLayer::OnUpdate([[maybe_unused]] float deltaTime)
     {
-        if (!imguiInitialized)
-        {
-            return;
-        }
-
-        // Start ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
     }
 
     void SettingsLayer::OnRender()
     {
-        if (!imguiInitialized)
-        {
-            return;
-        }
 
         // Create settings window (positioned in bottom right corner)
         // Only render if tuner layer indicates settings should be visible
@@ -130,10 +79,6 @@ namespace PrecisionTuner::Layers
 
             ImGui::PopStyleVar();
         }
-
-        // Render ImGui
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
     void SettingsLayer::RenderInputDeviceSelector()

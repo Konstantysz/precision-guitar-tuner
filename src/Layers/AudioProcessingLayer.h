@@ -49,13 +49,23 @@ namespace PrecisionTuner::Layers
     };
 
     /**
-     * @brief Layer responsible for audio I/O and real-time pitch detection
+     * @brief Audio processing layer - Manages audio I/O and pitch detection
      *
-     * This layer manages the audio callback thread and performs pitch detection
-     * using the YIN algorithm. It follows real-time audio constraints:
-     * - No allocations in audio callback
-     * - Lock‑free communication with UI thread
-     * - Pre‑allocated buffers
+     * This layer handles:
+     *  - Real-time audio input from microphone/line-in
+     *  - Real-time audio output for reference tones and monitoring
+     *  - Pitch detection via HybridPitchDetector (YIN + MPM algorithms)
+     *  - Pitch stabilization to reduce jitter
+     *  - Audio feedback: reference tone, input monitoring, drone, polyphonic
+     *
+     * THREAD SAFETY:
+     *  - Runs audio I/O callbacks on a high-priority real-time thread
+     *  - Uses std::atomic for lock-free communication with UI thread
+     *  - Pre-allocates all buffers to avoid malloc() in audio callbacks
+     *  - bufferOverflowDetected flag signals if OS sends unexpectedly large buffers
+     *
+     * IMPORTANT: Never call blocking operations or allocate memory in audio callbacks
+     *            to prevent audio glitches and dropouts.
      */
     class AudioProcessingLayer : public Kappa::Layer
     {
@@ -143,6 +153,13 @@ namespace PrecisionTuner::Layers
         void UpdateAudioFeedback(const PrecisionTuner::AudioConfig &audioConfig);
 
         /**
+         * @brief Checks if a buffer overflow occurred and clears the flag
+         * @return true if overflow was detected since last check
+         * @note Call this periodically from the main thread to detect runtime errors
+         */
+        [[nodiscard]] bool CheckBufferOverflow();
+
+        /**
          * @brief Sets frequencies for polyphonic chord playback
          * @param frequencies Array of 6 frequencies (Hz), 0 = disabled voice
          */
@@ -196,9 +213,10 @@ namespace PrecisionTuner::Layers
         std::unique_ptr<GuitarDSP::PitchStabilizer> pitchStabilizer;   ///< Pitch stabilization filter
 
         // Lock‑free communication
-        std::atomic<float> latestFrequency;  ///< Latest detected frequency (Hz)
-        std::atomic<float> latestConfidence; ///< Latest detection confidence [0.0, 1.0]
-        std::atomic<bool> pitchDetected;     ///< Whether pitch was detected in last frame
+        std::atomic<float> latestFrequency;       ///< Latest detected frequency (Hz)
+        std::atomic<float> latestConfidence;      ///< Latest detection confidence [0.0, 1.0]
+        std::atomic<bool> pitchDetected;          ///< Whether pitch was detected in last frame
+        std::atomic<bool> bufferOverflowDetected; ///< Flag set if audio buffer overflow occurs
 
         // Pre‑allocated processing buffer
         std::vector<float> processingBuffer;    ///< Buffer for DSP processing
