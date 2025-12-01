@@ -7,191 +7,21 @@ endif()
 
 project(PrecisionGuitarTuner VERSION 0.0.1 LANGUAGES CXX)
 
-# C++20 standard
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+# Include project modules
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(StandardSettings)
+include(CompilerWarnings)
+include(Dependencies)
 
-# Output directories
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-
-# Platform detection macros
-if(WIN32)
-    add_compile_definitions(PLATFORM_WINDOWS)
-elseif(APPLE)
-    add_compile_definitions(PLATFORM_MACOS)
-elseif(UNIX)
-    add_compile_definitions(PLATFORM_LINUX)
-endif()
-
-# Git submodule initialization
-find_package(Git QUIET)
-if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-    option(GIT_SUBMODULE "Check submodules during build" ON)
-    if(GIT_SUBMODULE)
-        message(STATUS "Initializing git submodules...")
-        execute_process(
-            COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-            RESULT_VARIABLE GIT_SUBMOD_RESULT
-        )
-        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}")
-        endif()
-    endif()
-endif()
-
-# Verify kappa-core submodule exists
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/kappa-core/CMakeLists.txt")
-    message(FATAL_ERROR "kappa-core submodule not found. Run: git submodule update --init --recursive")
-endif()
-
-# Add kappa-core framework
-add_subdirectory(external/kappa-core)
-
-# Verify lib-guitar-io exists
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/lib-guitar-io/CMakeLists.txt")
-    message(WARNING "lib-guitar-io not found. Audio I/O will not be available.")
-else()
-    add_subdirectory(external/lib-guitar-io)
-endif()
-
-# Verify lib-guitar-dsp exists
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/lib-guitar-dsp/CMakeLists.txt")
-    message(WARNING "lib-guitar-dsp not found. DSP algorithms will not be available.")
-else()
-    add_subdirectory(external/lib-guitar-dsp)
-endif()
-
-# Find ImGui package (from vcpkg)
-find_package(imgui CONFIG REQUIRED)
-
-# Main application
-add_executable(precision-guitar-tuner
-    src/PrecisionGuitarTuner.cpp
-    src/Config.cpp
-    src/TuningPresets.cpp
-    src/Layers/AudioProcessingLayer.cpp
-    src/Layers/TunerVisualizationLayer.cpp
-    src/Layers/SettingsLayer.cpp
-)
-
-target_include_directories(precision-guitar-tuner PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Layers
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/stb
-)
-
-# Link kappa-core framework and ImGui
-target_link_libraries(precision-guitar-tuner PRIVATE
-    Kappa
-    imgui::imgui
-)
-
-# Link lib-guitar-io and lib-guitar-dsp
-if(TARGET guitar-io)
-    target_link_libraries(precision-guitar-tuner PRIVATE guitar-io)
-    message(STATUS "lib-guitar-io linked successfully")
-endif()
-
-if(TARGET guitar-dsp)
-    target_link_libraries(precision-guitar-tuner PRIVATE guitar-dsp)
-    message(STATUS "lib-guitar-dsp linked successfully")
-endif()
-
-# Platform-specific settings
-if(WIN32)
-    # Enable ASIO support (via RtAudio in lib-guitar-io)
-    # TODO: Add when lib-guitar-io is ready
-
-    # Keep console for now (skeleton app)
-    # TODO: Change to WIN32_EXECUTABLE TRUE when GUI is ready
-    set_target_properties(precision-guitar-tuner PROPERTIES
-        WIN32_EXECUTABLE FALSE
-    )
-elseif(APPLE)
-    # CoreAudio frameworks (via RtAudio in lib-guitar-io)
-    # TODO: Add when lib-guitar-io is ready
-    # target_link_libraries(precision-guitar-tuner PRIVATE
-    #     "-framework CoreAudio"
-    #     "-framework AudioToolbox"
-    #     "-framework CoreFoundation"
-    # )
-
-    # macOS bundle settings
-    set_target_properties(precision-guitar-tuner PROPERTIES
-        MACOSX_BUNDLE TRUE
-        MACOSX_BUNDLE_GUI_IDENTIFIER "com.precisiontuner.app"
-        MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-        MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION}
-        MACOSX_BUNDLE_BUNDLE_NAME "Precision Tuner"
-    )
-elseif(UNIX)
-    # ALSA library for Linux (via RtAudio in lib-guitar-io)
-    find_package(ALSA QUIET)
-    if(ALSA_FOUND)
-        # TODO: Add when lib-guitar-io is ready
-        # target_link_libraries(precision-guitar-tuner PRIVATE ${ALSA_LIBRARIES})
-        message(STATUS "Found ALSA: ${ALSA_LIBRARIES}")
-    else()
-        message(WARNING "ALSA not found. Audio I/O may not work on Linux.")
-    endif()
-endif()
-
-# Compiler warnings
-if(MSVC)
-    target_compile_options(precision-guitar-tuner PRIVATE /WX)
-else()
-    target_compile_options(precision-guitar-tuner PRIVATE
-        -Wall -Wextra -Wpedantic
-        -Wno-unused-parameter -Werror
-    )
-endif()
-
-# Copy shader assets to build directory
-add_custom_command(TARGET precision-guitar-tuner POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/assets/shaders
-        $<TARGET_FILE_DIR:precision-guitar-tuner>/assets/shaders
-    COMMENT "Copying shader assets"
-)
-
-# Installation
-install(TARGETS precision-guitar-tuner
-    RUNTIME DESTINATION bin
-    BUNDLE DESTINATION .
-)
+# Add source directory
+add_subdirectory(src)
 
 # Testing
 enable_testing()
 add_subdirectory(tests)
 
-# ==============================================================================
-# CPack Packaging Configuration
-# ==============================================================================
-set(CPACK_PACKAGE_NAME "PrecisionGuitarTuner")
-set(CPACK_PACKAGE_VENDOR "PrecisionTuner")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Professional-grade guitar tuner")
-set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "PrecisionGuitarTuner")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
-
-if(WIN32)
-    set(CPACK_GENERATOR "ZIP") # Simple ZIP for now, NSIS requires installation
-    set(CPACK_NSIS_DISPLAY_NAME "Precision Guitar Tuner")
-    set(CPACK_NSIS_PACKAGE_NAME "Precision Guitar Tuner")
-    set(CPACK_NSIS_MODIFY_PATH ON)
-elseif(APPLE)
-    set(CPACK_GENERATOR "DragNDrop")
-    set(CPACK_DMG_VOLUME_NAME "Precision Tuner")
-elseif(UNIX)
-    set(CPACK_GENERATOR "TGZ") # Tarball for Linux, AppImage handled by CI
-endif()
-
-include(CPack)
+# Packaging
+include(Packaging)
 
 # Print configuration summary
 message(STATUS "")

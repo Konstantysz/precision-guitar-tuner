@@ -1,6 +1,7 @@
 
 # Find Google Test (provided by vcpkg via kappa-core or directly)
 find_package(GTest CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 include(GoogleTest)
 
 # Config Test executable
@@ -14,12 +15,12 @@ target_include_directories(test-config PRIVATE
     ${CMAKE_SOURCE_DIR}/src/Layers
     ${CMAKE_SOURCE_DIR}/external/stb
     ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/external/kappa-core/include
 )
 
 # Link libraries for config test
 target_link_libraries(test-config PRIVATE
-    Kappa
-    imgui::imgui
+    spdlog::spdlog
     GTest::gtest
     GTest::gtest_main
 )
@@ -48,12 +49,12 @@ target_include_directories(test-tuning-presets PRIVATE
     ${CMAKE_SOURCE_DIR}/src/Layers
     ${CMAKE_SOURCE_DIR}/external/stb
     ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/external/kappa-core/include
 )
 
 # Link libraries for tuning presets test
 target_link_libraries(test-tuning-presets PRIVATE
-    Kappa
-    imgui::imgui
+    spdlog::spdlog
     GTest::gtest
     GTest::gtest_main
 )
