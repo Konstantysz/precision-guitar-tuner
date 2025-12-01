@@ -127,6 +127,7 @@ elseif(APPLE)
         MACOSX_BUNDLE_GUI_IDENTIFIER "com.precisiontuner.app"
         MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
         MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION}
+        MACOSX_BUNDLE_BUNDLE_NAME "Precision Tuner"
     )
 elseif(UNIX)
     # ALSA library for Linux (via RtAudio in lib-guitar-io)
@@ -167,6 +168,30 @@ install(TARGETS precision-guitar-tuner
 # Testing
 enable_testing()
 add_subdirectory(tests)
+
+# ==============================================================================
+# CPack Packaging Configuration
+# ==============================================================================
+set(CPACK_PACKAGE_NAME "PrecisionGuitarTuner")
+set(CPACK_PACKAGE_VENDOR "PrecisionTuner")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Professional-grade guitar tuner")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "PrecisionGuitarTuner")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+
+if(WIN32)
+    set(CPACK_GENERATOR "ZIP") # Simple ZIP for now, NSIS requires installation
+    set(CPACK_NSIS_DISPLAY_NAME "Precision Guitar Tuner")
+    set(CPACK_NSIS_PACKAGE_NAME "Precision Guitar Tuner")
+    set(CPACK_NSIS_MODIFY_PATH ON)
+elseif(APPLE)
+    set(CPACK_GENERATOR "DragNDrop")
+    set(CPACK_DMG_VOLUME_NAME "Precision Tuner")
+elseif(UNIX)
+    set(CPACK_GENERATOR "TGZ") # Tarball for Linux, AppImage handled by CI
+endif()
+
+include(CPack)
 
 # Print configuration summary
 message(STATUS "")
