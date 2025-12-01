@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **CI/CD** (2025-12-01)
+  - Added `deploy.yml` workflow for automated multi-platform releases (Windows/macOS/Linux)
+  - Integrated CPack in `CMakeLists.txt` to generate ZIP, DMG, and TGZ installers
+
+### Changed
+
+- **Performance** (2025-12-01)
+  - **Latency Optimization**: Optimized `AudioProcessingLayer` to prioritize input monitoring, reducing round-trip audio latency
+  - **Buffer Configuration**: Updated `Config.h` documentation to clarify buffer size impact on latency (target 128 frames for ultra-low latency)
+
+### Added
+
 - **Visual Overhaul** (2025-11-30)
   - **Premium Retro Gauge**: Complete visual redesign featuring a high-quality textured retro gauge with realistic materials
   - **Programmatic Rendering**: Replaced static textures with dynamic ImGui primitives for superior quality and crispness

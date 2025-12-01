@@ -504,6 +504,10 @@ void RenderRetroGauge() {
 15. [ ] Test Rocksmith cable on all platforms
 16. [ ] Performance profiling on low-end hardware
 17. [ ] Memory leak detection (Valgrind, ASAN)
+18. [ ] **Latency Optimization & Verification**
+    - [ ] Verify buffer size defaults (aim for 128/256 frames)
+    - [ ] Measure end-to-end latency on all platforms
+    - [ ] Optimize render loop for minimum visual lag
 
 **Deliverables:**
 
@@ -649,7 +653,8 @@ void RenderRetroGauge() {
 ### Technical Metrics
 
 - **Accuracy:** ±0.1 cent (verified with oscilloscope)
-- **Latency:** <10ms end-to-end
+- **Audio Round-trip Latency:** <10ms (ASIO/CoreAudio)
+- **Visual Latency:** <30ms (Input → Needle movement)
 - **CPU Usage:** <5% single core
 - **Memory:** <50 MB resident
 - **Startup Time:** <2 seconds

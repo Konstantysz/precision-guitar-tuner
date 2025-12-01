@@ -118,6 +118,22 @@ cmake --build build
 ./build/precision-guitar-tuner
 ```
 
+### Release Process
+
+Automated releases are handled by GitHub Actions via `deploy.yml`.
+
+1. **Tag a Release**:
+
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+
+2. **Pipeline Actions**:
+   - Builds Release configuration on Windows, macOS, and Linux
+   - Packages artifacts (ZIP, DMG, TGZ) via CPack
+   - Creates a GitHub Release and uploads artifacts automatically
+
 ### Running Tests
 
 Tests are built using Google Test.

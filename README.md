@@ -3,13 +3,11 @@
 [![Build Status](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/build.yml/badge.svg)](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/build.yml)
 [![Tests](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/tests.yml/badge.svg)](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/tests.yml)
 [![Static Analysis](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/static-analysis.yml)
-[![Documentation](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/docs.yml/badge.svg)](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/docs.yml)
-
-> Professional-grade desktop guitar tuner with ±0.1 cent accuracy and native audio interface support
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://en.cppreference.com/w/cpp/20)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)]()
+
+> Professional-grade desktop guitar tuner with ±0.1 cent accuracy and native audio interface support
 
 <p align="center">
   <img src="assets/images/demo.gif" alt="Precision Tuner Demo" width="600">
@@ -24,10 +22,11 @@
 - ⚡ **±0.1 cent accuracy** - Competitive with hardware tuners and Peterson StroboSoft
 - 🎛️ **Professional audio interface support** - Works with Rocksmith cable, Focusrite, MOTU, RME, and all USB audio devices
 - 🖥️ **Cross-platform** - Native builds for Windows, macOS, and Linux
-- 🎯 **Ultra-low latency** - <10ms end-to-end on ASIO/CoreAudio/ALSA
+- 🎯 **Ultra-low latency** - <10ms end-to-end on ASIO/CoreAudio/ALSA (Optimized Input Path)
 - 💎 **Premium Retro Gauge** - High-quality vector rendering with realistic wood, chrome, and glass materials
 - 🎸 **Multiple tuning modes** - Standard, drop, chromatic, and custom tunings
 - 📊 **Real-time spectrum analyzer** - Visualize harmonics and overtones
+- 📦 **Automated Builds** - CI/CD pipeline generating installers for Windows, macOS, and Linux
 - 🆓 **GPL-free dependencies** - Commercial-friendly licensing (MIT/BSD)
 
 ### Why Desktop Over Mobile?
