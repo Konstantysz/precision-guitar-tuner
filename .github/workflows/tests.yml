@@ -35,6 +35,7 @@ jobs:
             libxinerama-dev \
             libxcursor-dev \
             libxi-dev \
+            libasound2-dev \
             libgl1-mesa-dev
 
       - name: Configure CMake
