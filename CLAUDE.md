@@ -26,18 +26,12 @@ precision-guitar-tuner/
 │   └── stb/                       # stb_truetype single-header library
 ├── src/
 │   ├── PrecisionGuitarTuner.cpp   # Application entry point
-│   ├── Layers/                    # kappa-core Layer implementations (namespace: PrecisionTuner::Layers)
+│   ├── Layers/                    # kappa-core Layer implementations
 │   │   ├── AudioProcessingLayer.h/.cpp      # Audio thread management
 │   │   └── TunerVisualizationLayer.h/.cpp   # Visual tuner rendering
 │   └── FontRenderer.h/.cpp        # TrueType font rendering (stb_truetype)
-├── assets/                        # Runtime assets
-│   └── shaders/                   # GLSL shader files
-│       ├── geometry.vert/.frag    # Shape rendering shaders
-│       └── text.vert/.frag        # Text rendering shaders
-├── tests/                         # Unit tests
-│   ├── ConfigTest.cpp             # Configuration system tests
-│   ├── TestTuningPresets.cpp      # Tuning presets unit tests
-│   └── CMakeLists.txt             # Test build configuration
+├── assets/shaders/                # GLSL shader files
+├── tests/                         # Unit tests (Google Test)
 ├── CMakeLists.txt                 # Root build configuration
 ├── vcpkg.json                     # Dependency manifest
 └── DEPENDENCIES.md                # Submodule version tracking
@@ -47,30 +41,23 @@ precision-guitar-tuner/
 
 - `src/Layers/`: All layer classes are in the `PrecisionTuner::Layers` namespace
 - `assets/shaders/`: External GLSL shader files (copied to build directory automatically)
-- `external/stb/`: Single-header libraries (stb_truetype for font rendering)
 
 ### Git Submodule Architecture
 
 This project uses git submodules for code reuse across a planned 4-application guitar software suite:
 
-- **lib-guitar-io**: Provides cross-platform audio device management and real-time I/O
-  - Wraps RtAudio with RAII patterns
-  - Uses std::span for type-safe audio buffer handling
+- **lib-guitar-io**: Cross-platform audio device management and real-time I/O
+  - Wraps RtAudio with RAII patterns, uses `std::span` for type-safe audio buffers
   - Handles device enumeration, hot-plug detection
   - Abstracts ASIO/CoreAudio/ALSA platform differences
 
-- **lib-guitar-dsp**: Provides signal processing algorithms
-  - Uses std::span for type-safe buffer interfaces
-  - PFFFT (BSD-licensed FFT, GPL-free)
-  - YIN pitch detection (primary, 0.78% error rate)
-  - MPM (McLeod Pitch Method, better for vibrato)
-  - Note/frequency conversion utilities
+- **lib-guitar-dsp**: Signal processing algorithms
+  - PFFFT (BSD-licensed FFT, GPL-free), YIN pitch detection, MPM (McLeod Pitch Method)
+  - Uses `std::span` for type-safe buffer interfaces
 
 - **kappa-core**: Application framework
-  - Layer-based architecture for organizing rendering/logic
-  - GLFW window management + OpenGL context
-  - Type-safe event system (pub/sub)
-  - spdlog integration with C++20 source locations
+  - Layer-based architecture, GLFW window management + OpenGL context
+  - Type-safe event system (pub/sub), spdlog integration
 
 ## Build System
 
@@ -80,7 +67,7 @@ This project uses git submodules for code reuse across a planned 4-application g
 # Initialize git submodules (REQUIRED on first clone)
 git submodule update --init --recursive
 
-# Install vcpkg dependencies (kappa-core requirements)
+# Install vcpkg dependencies
 vcpkg install glfw3 glad glm spdlog
 ```
 
@@ -91,24 +78,16 @@ vcpkg install glfw3 glad glm spdlog
 ```bash
 cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=[vcpkg-root]/scripts/buildsystems/vcpkg.cmake
 cmake --build build --config Release
-
-# Debug build
-cmake --build build --config Debug
 ```
 
 **macOS/Linux:**
 
 ```bash
-# Release build
 cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
-cmake --build build
-
-# Debug build
-cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug
 cmake --build build
 ```
 
-### Running
+**Running:**
 
 ```bash
 # Windows
@@ -120,52 +99,29 @@ cmake --build build
 
 ### Release Process
 
-Automated releases are handled by GitHub Actions via `deploy.yml`.
+Automated releases via GitHub Actions (`deploy.yml`):
 
-1. **Tag a Release**:
+1. Tag a release: `git tag v1.0.0 && git push origin v1.0.0`
+2. Pipeline builds for Windows, macOS, and Linux
+3. Packages artifacts (ZIP, DMG, TGZ) via CPack
+4. Creates GitHub Release and uploads artifacts
 
-   ```bash
-   git tag v1.0.0
-   git push origin v1.0.0
-   ```
+### Testing
 
-2. **Pipeline Actions**:
-   - Builds Release configuration on Windows, macOS, and Linux
-   - Packages artifacts (ZIP, DMG, TGZ) via CPack
-   - Creates a GitHub Release and uploads artifacts automatically
-
-### Running Tests
-
-Tests are built using Google Test.
-
-1. **Build Tests**:
-
-    ```bash
-    cmake --build build --config Release
-    ```
-
-2. **Run All Tests**:
-
-    ```bash
-    ctest --test-dir build -C Release --output-on-failure
-    ```
-
-3. **Run Specific Test Executable**:
-
-    ```bash
-    .\build\bin\Release\tuning-presets-test.exe
-    ```
+```bash
+# Build and run all tests
+cmake --build build --config Release
+ctest --test-dir build -C Release --output-on-failure
+```
 
 ### Updating Submodules
 
 ```bash
-# Update all submodules to latest commits
+# Update all submodules
 git submodule update --remote --merge
 
 # Update specific submodule
-cd external/lib-guitar-io
-git checkout v1.1.0  # or specific commit
-cd ../..
+cd external/lib-guitar-io && git checkout v1.1.0 && cd ../..
 git add external/lib-guitar-io
 git commit -m "Update lib-guitar-io to v1.1.0"
 
@@ -176,16 +132,12 @@ git commit -m "Update lib-guitar-io to v1.1.0"
 
 ### Layer-Based Design (kappa-core)
 
-The application uses kappa-core's layer system to separate concerns:
-
 ```cpp
 // Layers are processed in stack order
 pushLayer(new AudioProcessingLayer());      // Bottom: audio thread
 pushLayer(new TunerVisualizationLayer());   // Middle: rendering
 pushLayer(new SettingsLayer());             // Top: UI controls
 ```
-
-**Key Concepts:**
 
 - Each layer has `onUpdate()` (logic) and `onRender()` (OpenGL drawing)
 - Layers communicate via kappa-core's event bus (decoupled, type-safe)
@@ -216,10 +168,10 @@ TunerVisualizationLayer: Update needle display
 - **NO blocking I/O** in audio callback
 - Use pre-allocated circular buffers for audio → UI communication
 
-**Pattern:**
+**Example Pattern:**
 
 ```cpp
-// GOOD: Lock-free circular buffer
+// Lock-free circular buffer
 class AudioProcessingLayer : public kappa::Layer {
     LockFreeRingBuffer<float> audioBuffer;  // Pre-allocated
 
@@ -241,19 +193,25 @@ class AudioProcessingLayer : public kappa::Layer {
 
 ### Platform-Specific Audio APIs
 
-The application automatically selects the best audio API per platform:
-
 | Platform | Primary API | Fallback | Features |
 |----------|-------------|----------|----------|
 | Windows  | ASIO        | WASAPI   | 5-10ms latency with ASIO drivers |
 | macOS    | CoreAudio   | -        | 2-5ms latency, multiple clients |
 | Linux    | ALSA        | -        | 1-5ms latency (RT kernel recommended) |
 
-**Platform Macros:**
+**Platform Macros:** `PLATFORM_WINDOWS`, `PLATFORM_MACOS`, `PLATFORM_LINUX`
 
-- `PLATFORM_WINDOWS`: Windows-specific code
-- `PLATFORM_MACOS`: macOS-specific code
-- `PLATFORM_LINUX`: Linux-specific code
+**Example:**
+
+```cpp
+#ifdef PLATFORM_WINDOWS
+    rtAudio.openStream(..., RtAudio::WINDOWS_ASIO, ...);
+#elif defined(PLATFORM_MACOS)
+    rtAudio.openStream(..., RtAudio::MACOSX_CORE, ...);
+#elif defined(PLATFORM_LINUX)
+    rtAudio.openStream(..., RtAudio::LINUX_ALSA, ...);
+#endif
+```
 
 ## Development Guidelines
 
@@ -266,7 +224,6 @@ The application automatically selects the best audio API per platform:
 - **camelCase** for ALL variables (including class member variables)
   - **NO trailing underscores** on member variables
   - Examples: `config`, `audioDevice`, `pitchDetector`, `latestFrequency`
-  - Local variables: `pitchData`, `sampleRate`, `bufferSize`
 
 **Code Formatting:**
 
@@ -279,10 +236,7 @@ The application automatically selects the best audio API per platform:
 **Code Organization:**
 
 - **Function ordering:** Function definitions in `.cpp` files should match the declaration order in corresponding `.h` files
-  - Makes navigation between header/source easier
-  - Improves code review experience
-  - Keeps diffs cleaner
-  - Exception: Private helper functions can be grouped logically if needed
+  - Makes navigation between header/source easier, improves code review experience
 
 **Formatting Tools:**
 
@@ -291,7 +245,7 @@ The application automatically selects the best audio API per platform:
 - `.cmake-format` - CMake file formatting
 - `.pre-commit-config.yaml` - Automated formatting on commit
 
-Run `clang-format -i <file>` to format individual files, or let pre-commit hooks handle it automatically.
+Run `clang-format -i <file>` to format individual files.
 
 ### C++20 Standards
 
@@ -303,9 +257,7 @@ Run `clang-format -i <file>` to format individual files, or let pre-commit hooks
 
 ### Real-Time Audio Constraints
 
-When working in audio callback context:
-
-**✅ SAFE:**
+**✅ SAFE in audio callback:**
 
 - Reading/writing pre-allocated buffers
 - Simple arithmetic operations
@@ -339,107 +291,53 @@ void loadSettings() {
 }
 ```
 
-### Platform-Specific Code Isolation
-
-```cpp
-// audio/AudioEngine.cpp
-#ifdef PLATFORM_WINDOWS
-    rtAudio.openStream(..., RtAudio::WINDOWS_ASIO, ...);
-#elif defined(PLATFORM_MACOS)
-    rtAudio.openStream(..., RtAudio::MACOSX_CORE, ...);
-#elif defined(PLATFORM_LINUX)
-    rtAudio.openStream(..., RtAudio::LINUX_ALSA, ...);
-#endif
-```
-
 ## Development Principles
 
-This codebase follows core software engineering principles:
+This codebase follows core software engineering principles. For detailed explanations, see external resources on [SOLID](https://en.wikipedia.org/wiki/SOLID), [KISS](https://en.wikipedia.org/wiki/KISS_principle), [YAGNI](https://en.wikipedia.org/wiki/You_aren%27t_gonna_need_it), and [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself).
 
-### KISS (Keep It Simple, Stupid)
+### Quick Reference
+
+**KISS (Keep It Simple, Stupid):**
 
 - Prefer straightforward implementations over clever solutions
-- Each class has a single, clear responsibility (e.g., `AudioProcessingLayer` manages audio thread, `TunerVisualizationLayer` renders display)
+- Each class has a single, clear responsibility
 - Avoid unnecessary abstractions - only abstract when multiple implementations exist or are anticipated
-- Example: `NoteConverter` is a simple utility with static functions, not an elaborate type system
 
-### YAGNI (You Aren't Gonna Need It)
+**YAGNI (You Aren't Gonna Need It):**
 
 - Don't implement features or abstractions until they're actually needed
 - Avoid speculative generalization - extend when requirements emerge
-- Example: Audio system started with basic chromatic tuning and expands only when new use cases appear (alternate tunings, polyphonic, etc.)
 - Resist adding "just in case" parameters or configuration options
 
-### SOLID Principles
+**SOLID Principles:**
 
-**Single Responsibility Principle (SRP)**:
+- **SRP:** Each class has one reason to change (e.g., `AudioProcessingLayer` manages audio I/O, not rendering)
+- **OCP:** Open for extension, closed for modification (add new tuning modes without modifying core tuner logic)
+- **LSP:** Derived classes are substitutable for base classes (all `kappa::Layer` subclasses honor the lifecycle contract)
+- **ISP:** Clients shouldn't depend on interfaces they don't use (layers only receive relevant events)
+- **DIP:** Depend on abstractions, not concretions (application depends on lib-guitar-io interface, not directly on RtAudio)
 
-- Each class has one reason to change
-- `AudioProcessingLayer` manages audio I/O and pitch detection, not rendering
-- `TunerVisualizationLayer` handles OpenGL rendering, not audio processing
-- `Config` manages settings persistence, not application logic
-
-**Open/Closed Principle (OCP)**:
-
-- Open for extension, closed for modification
-- Add new tuning modes without modifying core tuner logic
-- Add new visualization types via layer inheritance without changing base rendering
-- Add new DSP algorithms in lib-guitar-dsp submodule without touching application code
-
-**Liskov Substitution Principle (LSP)**:
-
-- Derived classes are substitutable for base classes
-- All `kappa::Layer` subclasses honor the lifecycle contract (`onAttach()`, `onUpdate()`, `onRender()`, `onDetach()`)
-- All DSP algorithm implementations in lib-guitar-dsp follow the same interface contract (input buffer → output pitch/frequency)
-
-**Interface Segregation Principle (ISP)**:
-
-- Clients shouldn't depend on interfaces they don't use
-- Layers only receive relevant events via `onEvent()`, not entire application state
-- DSP algorithms expose minimal interface - just `detect()` or `process()`, not entire internal state
-- Audio device interface exposes only necessary operations (start/stop/getDevices), not internal RtAudio complexity
-
-**Dependency Inversion Principle (DIP)**:
-
-- Depend on abstractions, not concretions
-- Application depends on lib-guitar-io interface, not directly on RtAudio
-- Layers depend on kappa::Event abstractions, not concrete event implementations
-- DSP processing depends on abstract buffer interfaces, not specific audio formats
-
-### DRY (Don't Repeat Yourself)
+**DRY (Don't Repeat Yourself):**
 
 - Extract common logic into reusable functions/classes
-- Audio buffer management utilities eliminate per-layer boilerplate
-- Frequency/note conversion functions centralized in `NoteConverter`
-- OpenGL shader loading extracted into utilities
 - When you find yourself copying code, extract it into a shared utility or base class
-
-**Anti-patterns to avoid**:
-
-- Copy-pasting layer implementations - extract common base or helper functions
-- Duplicating audio processing logic - centralize in lib-guitar-dsp submodule
-- Repeating rendering code - use helper functions or rendering strategies
-- Multiple device enumeration implementations - use lib-guitar-io abstraction
 
 ### Applying These Principles
 
-When adding new features:
+**When adding new features:**
 
-1. **Start simple** (KISS) - implement the minimum that works
-2. **Don't anticipate** (YAGNI) - extend when you have concrete requirements
-3. **Check responsibilities** (SRP) - if a class does multiple things, split it into layers
-4. **Use abstractions** (OCP/DIP) - depend on interfaces (lib-guitar-io, lib-guitar-dsp), extend via inheritance/composition
-5. **Look for duplication** (DRY) - extract common patterns before they spread
+1. Start simple (KISS) - implement the minimum that works
+2. Don't anticipate (YAGNI) - extend when you have concrete requirements
+3. Check responsibilities (SRP) - if a class does multiple things, split it into layers
+4. Use abstractions (OCP/DIP) - depend on interfaces (lib-guitar-io, lib-guitar-dsp), extend via inheritance/composition
+5. Look for duplication (DRY) - extract common patterns before they spread
 
-When reviewing code:
+**When reviewing code:**
 
 - Can this be simpler? (KISS)
 - Is this solving a current problem or a hypothetical one? (YAGNI)
 - Does this class have multiple reasons to change? (SRP)
 - Are we modifying existing code instead of extending? (OCP)
-- Would changing this break substitutability? (LSP)
-- Are we forcing dependencies on unused functionality? (ISP)
-- Are we depending on concrete implementations? (DIP)
 - Have I seen this logic elsewhere? (DRY)
 
 ### Real-Time Audio Development Principles
@@ -473,100 +371,26 @@ This application uses a **HybridPitchDetector** that combines both algorithms fo
 
 **YIN (primary algorithm):**
 
-- Standard tuning scenarios
-- Best overall accuracy (0.78% error rate)
-- Fast (optimized FastYIN with FFT)
-- Robust to noise
+- Best overall accuracy (0.78% error rate), fast (optimized FastYIN with FFT)
 - Fine-tuned parameters for guitar: threshold=0.10, range=80-1200 Hz
 
 **MPM (fallback algorithm):**
 
-- Vibrato detection (better dynamic pitch tracking using NSDF)
-- Smaller analysis windows (better for changing pitch)
-- Activated when YIN confidence < 0.8
-- Higher threshold (0.93) for precise detection
-
-**Hybrid Implementation:**
-
-```cpp
-// lib-guitar-dsp/HybridPitchDetector.cpp
-GuitarDSP::PitchResult HybridPitchDetector::Detect(std::span<const float> buffer) {
-    // Try YIN first (faster)
-    auto yinResult = yinDetector.Detect(buffer);
-    
-    if (yinResult.confidence >= 0.8f) {
-        // High confidence - use YIN result, but check for harmonics
-        float corrected = RejectHarmonics(yinResult.frequency);
-        return {corrected, yinResult.confidence};
-    }
-    
-    // Low YIN confidence - try MPM
-    auto mpmResult = mpmDetector.Detect(buffer);
-    float corrected = RejectHarmonics(mpmResult.frequency);
-    return {corrected, mpmResult.confidence};
-}
-```
+- Better for vibrato detection (NSDF algorithm), activated when YIN confidence < 0.8
+- Smaller analysis windows, higher threshold (0.93) for precise detection
 
 **Harmonic Rejection:**
 
-Guitar overtones can cause octave errors. The hybrid detector includes harmonic rejection:
-
 - Detects 2x, 3x, 4x harmonics within 5% tolerance
 - Plausible guitar fundamental range: 80-400 Hz
-- Automatically corrects to fundamental frequency
 - Example: 164.8 Hz (2x error) → 82.4 Hz (Low E)
 
-### Drone Mode and Polyphonic Audio Feedback
-
-**Drone Mode:**
-
-Continuous reference tone playback for hands-free tuning:
-
-```cpp
-// Enable drone mode
-config.audio.enableDroneMode = true;
-// Drone plays the target frequency continuously while tuning
-```
-
-**Polyphonic Mode:**
-
-Simultaneous playback of all 6 string frequencies:
-
-```cpp
-// PolyphonicGenerator with automatic gain compensation
-std::array<float, 6> stringFreqs = TuningPresets::GetPreset(mode);
-polyphonicGenerator.SetVoiceFrequencies(stringFreqs);
-
-// Gain compensation prevents clipping: gain = 1/sqrt(N)
-// For 6 voices: gain ≈ 0.408 per voice
-```
-
-- Plays full chord for tuning verification
-- Mutually exclusive with drone mode
-- Uses 1/sqrt(N) gain compensation to prevent clipping
-
 ### Pitch Stabilization
-
-**Stabilization Algorithms:**
 
 **Hybrid (recommended for guitar):**
 
 - Combines median filter (spike rejection) + confidence-weighted EMA
-- High confidence → faster convergence (less smoothing)
-- Low confidence → more smoothing (reject noise)
-- Best for handling vibrato and transients
-
-**EMA (simple):**
-
-- Exponential moving average: `smoothed = alpha * new + (1-alpha) * prev`
-- Lower alpha = more smoothing, slower response
-- Best for steady tuning with minimal vibrato
-
-**Median Filter:**
-
-- Sliding window median (default 5 samples)
-- Excellent spike rejection
-- Can introduce delay
+- High confidence → faster convergence; Low confidence → more smoothing
 
 **Configuration:**
 
@@ -575,18 +399,6 @@ AudioProcessingLayer::Config config;
 config.stabilizerType = AudioProcessingLayer::Config::StabilizerType::Hybrid;
 config.emaAlpha = 0.3f;          // Higher = more responsive
 config.medianWindowSize = 5;      // Larger = more smoothing
-```
-
-### Visual Smoothing
-
-For UI elements like the tuner needle, use **Exponential Moving Average (EMA)** in the visualization layer to decouple visual fluidity from pitch detection latency.
-
-```cpp
-// TunerVisualizationLayer.cpp
-void OnUpdate(float deltaTime) {
-    // Smooth the visual indicator (independent of pitch detection rate)
-    smoothedCents += (targetCents - smoothedCents) * deltaTime * smoothingFactor;
-}
 ```
 
 ### Achieving ±0.1 Cent Accuracy
@@ -602,130 +414,30 @@ void OnUpdate(float deltaTime) {
 
 - At A4 (440 Hz): 1 cent = 0.254 Hz, 0.1 cent = 0.0254 Hz
 - YIN interpolation achieves <0.01 Hz accuracy
-- Display precision: Show to 0.1 cent (e.g., "+2.3 cents")
-
-### Rocksmith Realtone Cable Support
-
-**Auto-detection pattern:**
-
-```cpp
-bool isRocksmithCable(const RtAudio::DeviceInfo& info) {
-    return info.name.find("Rocksmith") != std::string::npos ||
-           info.name.find("Guitar Adapter") != std::string::npos;
-}
-
-// Prioritize Rocksmith cable in device list
-int selectDefaultDevice() {
-    // First pass: look for Rocksmith cable
-    for (auto& device : audioDevices) {
-        if (isRocksmithCable(device.info)) return device.id;
-    }
-    // Second pass: any input device
-    // ...
-}
-```
-
-**Known issues:**
-
-- Rocksmith cable is USB 2.0 only (may fail on USB 3.0 ports)
-- Recommend USB 2.0 hub if detection fails
-- 16-bit ADC (vs 24-bit pro interfaces), but sufficient for tuning
 
 ## Common Development Tasks
 
 ### Adding a New Tuning Mode
 
-1. Add tuning to `src/tuner/TuningPresets.cpp`:
+1. Add tuning to [TuningPresets.cpp](src/tuner/TuningPresets.cpp):
 
 ```cpp
 TuningPreset TuningPresets::DropD = {
     .name = "Drop D",
     .notes = {
         Note::D2,  // Low D (146.83 Hz)
-        Note::A2,  // A (110.00 Hz)
-        Note::D3,  // D (146.83 Hz)
-        Note::G3,  // G (196.00 Hz)
-        Note::B3,  // B (246.94 Hz)
-        Note::E4   // High E (329.63 Hz)
+        Note::A2, Note::D3, Note::G3, Note::B3, Note::E4
     }
 };
 ```
 
-2. Update UI dropdown in `src/layers/SettingsLayer.cpp`
-
-### Creating a New kappa-core Layer
-
-```cpp
-// include/tuner/MyCustomLayer.hpp
-#pragma once
-#include <kappa/Layer.hpp>
-
-class MyCustomLayer : public kappa::Layer {
-public:
-    void onAttach() override;    // Initialization
-    void onDetach() override;    // Cleanup
-    void onUpdate() override;    // Per-frame logic
-    void onRender() override;    // OpenGL rendering
-    void onEvent(kappa::Event& e) override;  // Event handling
-};
-```
-
-### Integrating a New DSP Algorithm
-
-1. Add algorithm to **lib-guitar-dsp** submodule (shared across apps):
-
-```cpp
-// external/lib-guitar-dsp/include/guitar-dsp/MyAlgorithm.hpp
-namespace GuitarDSP {
-    class MyAlgorithm {
-    public:
-        float process(const float* input, int size);
-    };
-}
-```
-
-2. Use in application:
-
-```cpp
-#include <guitar-dsp/MyAlgorithm.hpp>
-
-void AudioProcessingLayer::onUpdate() {
-    GuitarDSP::MyAlgorithm algo;
-    float result = algo.process(samples, sampleCount);
-}
-```
-
-### Testing Audio Processing Components
-
-```cpp
-// tests/TestYIN.cpp
-#include <gtest/gtest.h>
-#include <guitar-dsp/YIN.hpp>
-
-TEST(YINTest, DetectsA440) {
-    // Generate pure 440 Hz sine wave
-    constexpr int sampleRate = 48000;
-    constexpr int bufferSize = 2048;
-    float buffer[bufferSize];
-
-    for (int i = 0; i < bufferSize; ++i) {
-        buffer[i] = std::sin(2.0f * M_PI * 440.0f * i / sampleRate);
-    }
-
-    GuitarDSP::YIN yin(sampleRate);
-    float detectedPitch = yin.detect(buffer, bufferSize);
-
-    // Should detect within 0.5 Hz (generous for test)
-    EXPECT_NEAR(detectedPitch, 440.0f, 0.5f);
-}
-```
+2. Update UI dropdown in [SettingsLayer.cpp](src/layers/SettingsLayer.cpp)
 
 ### Debugging Audio Issues
 
 **Enable verbose audio logging:**
 
 ```cpp
-// main.cpp
 #define RTAUDIO_DEBUG  // Before including RtAudio
 #include <RtAudio.h>
 ```
@@ -742,9 +454,7 @@ TEST(YINTest, DetectsA440) {
 ```cpp
 void audioCallback(float* input, int frames) {
     auto start = std::chrono::high_resolution_clock::now();
-
     // ... process audio ...
-
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
@@ -758,16 +468,12 @@ void audioCallback(float* input, int frames) {
 
 ## Dependencies and Version Management
 
-Always update **DEPENDENCIES.md** when changing submodule versions:
+Always update [DEPENDENCIES.md](DEPENDENCIES.md) when changing submodule versions:
 
 ```markdown
-# DEPENDENCIES.md
-
 | Component | Repository | Version/Commit | Date Pinned |
 |-----------|------------|----------------|-------------|
 | lib-guitar-io | github.com/yourorg/lib-guitar-io | v0.0.1 (a1b2c3d) | 2025-01-15 |
-| lib-guitar-dsp | github.com/yourorg/lib-guitar-dsp | v0.0.1 (e4f5g6h) | 2025-01-15 |
-| kappa-core | github.com/Konstantysz/kappa-core | commit i7j8k9l | 2025-01-15 |
 ```
 
 Check `git submodule status` frequently to verify pinned versions.

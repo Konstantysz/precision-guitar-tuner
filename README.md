@@ -13,7 +13,7 @@
   <img src="assets/images/demo.gif" alt="Precision Tuner Demo" width="600">
 </p>
 
-**📖 [Quick Start Guide](docs/QUICK_START.md)** | **📚 [User Guide](docs/USER_GUIDE.md)** | **🔧 [Developer Docs](CLAUDE.md)**
+**📖 [Quick Start Guide](docs/QUICK_START.md)** | **📚 [User Guide](docs/USER_GUIDE.md)** | **🔧 [Developer Docs](CLAUDE.md)** | **🗺️ [Roadmap](docs/ROADMAP.md)**
 
 ---
 
@@ -210,7 +210,9 @@ ctest --test-dir build-release --output-on-failure
 
 See [CLAUDE.md](CLAUDE.md) for development guidelines and architecture details.
 
-Development roadmap is in [.claude/DEVELOPMENT_PLAN.md](.claude/DEVELOPMENT_PLAN.md).
+**Development Documentation:**
+- [DEVELOPMENT_PLAN.md](.claude/DEVELOPMENT_PLAN.md) - v1.0.0 release plan and current tasks
+- [ROADMAP.md](docs/ROADMAP.md) - Post-launch feature roadmap
 
 ## Roadmap
 
