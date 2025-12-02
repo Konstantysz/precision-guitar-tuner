@@ -76,6 +76,16 @@ namespace PrecisionTuner::Layers
          */
         explicit AudioProcessingLayer(const AudioProcessingLayerConfig &config = AudioProcessingLayerConfig{});
 
+        /**
+         * @brief Constructs the audio processing layer with injected devices (for testing)
+         * @param config Layer configuration
+         * @param inputDevice Injected input device
+         * @param outputDevice Injected output device
+         */
+        AudioProcessingLayer(const AudioProcessingLayerConfig &config,
+            std::unique_ptr<GuitarIO::AudioDevice> inputDevice,
+            std::unique_ptr<GuitarIO::AudioDevice> outputDevice);
+
         ~AudioProcessingLayer() override;
 
         void OnUpdate(float deltaTime) override;

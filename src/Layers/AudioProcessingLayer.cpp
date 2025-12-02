@@ -2,12 +2,21 @@
 #include <Logger.h>
 #include <algorithm>
 #include <AudioDeviceManager.h>
+#include <RtAudioDevice.h>
 
 namespace PrecisionTuner::Layers
 {
     AudioProcessingLayer::AudioProcessingLayer(const AudioProcessingLayerConfig &config)
-        : config(config), inputDevice(std::make_unique<GuitarIO::AudioDevice>()),
-          outputDevice(std::make_unique<GuitarIO::AudioDevice>()),
+        : AudioProcessingLayer(config,
+              std::make_unique<GuitarIO::RtAudioDevice>(),
+              std::make_unique<GuitarIO::RtAudioDevice>())
+    {
+    }
+
+    AudioProcessingLayer::AudioProcessingLayer(const AudioProcessingLayerConfig &config,
+        std::unique_ptr<GuitarIO::AudioDevice> inputDevice,
+        std::unique_ptr<GuitarIO::AudioDevice> outputDevice)
+        : config(config), inputDevice(std::move(inputDevice)), outputDevice(std::move(outputDevice)),
           pitchDetector(std::make_unique<GuitarDSP::HybridPitchDetector>(
               GuitarDSP::HybridPitchDetectorConfig{ .yinConfidenceThreshold = 0.8f,
                   .enableHarmonicRejection = true,
@@ -73,15 +82,15 @@ namespace PrecisionTuner::Layers
             .sampleRate = config.sampleRate, .bufferSize = config.bufferSize, .inputChannels = 1, .outputChannels = 0
         };
 
-        if (!inputDevice->OpenDefault(inputConfig, InputCallback, this))
+        if (!this->inputDevice->OpenDefault(inputConfig, InputCallback, this))
         {
-            LOG_ERROR("Failed to open input device: {}", inputDevice->GetLastError());
+            LOG_ERROR("Failed to open input device: {}", this->inputDevice->GetLastError());
             return;
         }
 
-        if (!inputDevice->Start())
+        if (!this->inputDevice->Start())
         {
-            LOG_ERROR("Failed to start input stream: {}", inputDevice->GetLastError());
+            LOG_ERROR("Failed to start input stream: {}", this->inputDevice->GetLastError());
             return;
         }
 
@@ -114,9 +123,9 @@ namespace PrecisionTuner::Layers
                 this->outputChannels = channels;
                 outputConfig.outputChannels = channels;
 
-                if (outputDevice->Open(device.id, outputConfig, OutputCallback, this))
+                if (this->outputDevice->Open(device.id, outputConfig, OutputCallback, this))
                 {
-                    if (outputDevice->Start())
+                    if (this->outputDevice->Start())
                     {
                         currentOutputDeviceId = device.id;
                         outputDeviceOpened = true;
@@ -131,8 +140,8 @@ namespace PrecisionTuner::Layers
                         LOG_WARN("Failed to start output device [{}] {}: {}",
                             device.id,
                             device.name,
-                            outputDevice->GetLastError());
-                        outputDevice->Close();
+                            this->outputDevice->GetLastError());
+                        this->outputDevice->Close();
                     }
                 }
                 else
@@ -140,7 +149,7 @@ namespace PrecisionTuner::Layers
                     LOG_WARN("Failed to open output device [{}] {}: {}",
                         device.id,
                         device.name,
-                        outputDevice->GetLastError());
+                        this->outputDevice->GetLastError());
 
                     // Fallback to mono if stereo failed
                     if (channels > 1)
@@ -148,16 +157,16 @@ namespace PrecisionTuner::Layers
                         LOG_WARN("Retrying with mono output...");
                         outputConfig.outputChannels = 1;
                         this->outputChannels = 1;
-                        if (outputDevice->Open(device.id, outputConfig, OutputCallback, this))
+                        if (this->outputDevice->Open(device.id, outputConfig, OutputCallback, this))
                         {
-                            if (outputDevice->Start())
+                            if (this->outputDevice->Start())
                             {
                                 currentOutputDeviceId = device.id;
                                 outputDeviceOpened = true;
                                 LOG_INFO("Successfully opened output device (Mono): [{}] {}", device.id, device.name);
                                 break;
                             }
-                            outputDevice->Close();
+                            this->outputDevice->Close();
                         }
                     }
                 }
