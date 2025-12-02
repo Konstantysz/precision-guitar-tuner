@@ -96,3 +96,37 @@ target_link_libraries(test-pitch-stabilizer PRIVATE
 
 # Register pitch stabilizer tests
 gtest_discover_tests(test-pitch-stabilizer)
+
+# AudioProcessingLayer Test executable
+add_executable(test-audio-layer
+    TestAudioProcessingLayer.cpp
+)
+
+# Include directories for audio layer test
+target_include_directories(test-audio-layer PRIVATE
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/src/Layers
+    ${CMAKE_SOURCE_DIR}/external/lib-guitar-io/include
+    ${CMAKE_SOURCE_DIR}/external/lib-guitar-dsp/include
+    ${CMAKE_SOURCE_DIR}/external/kappa-core/include
+    ${CMAKE_SOURCE_DIR}/tests
+)
+
+# Link libraries for audio layer test
+target_link_libraries(test-audio-layer PRIVATE
+    guitar-io
+    guitar-dsp
+    spdlog::spdlog
+    GTest::gtest
+    GTest::gtest_main
+)
+
+# Link source files for audio layer test
+target_sources(test-audio-layer PRIVATE
+    ${CMAKE_SOURCE_DIR}/src/Layers/AudioProcessingLayer.cpp
+    ${CMAKE_SOURCE_DIR}/src/Config.cpp
+    ${CMAKE_SOURCE_DIR}/tests/mocks/MockAudioDevice.cpp
+)
+
+# Register audio layer tests
+gtest_discover_tests(test-audio-layer)
