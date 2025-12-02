@@ -5,7 +5,7 @@
 repos:
   # General code quality hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
         exclude: \.(md|rst)$
@@ -22,7 +22,7 @@ repos:
 
   # C++ formatting with clang-format
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v16.0.6
+    rev: v20.1.8
     hooks:
       - id: clang-format
         files: \.(cpp|hpp|c|h|cc|cxx)$
@@ -37,6 +37,40 @@ repos:
         args: ['--config-files', '.cmake-format']
       - id: cmake-lint
         args: ['--config-files', '.cmake-format']
+
+  # C++ static analysis and linting
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: v1.3.5
+    hooks:
+      # Static analysis with clang-tidy
+      - id: clang-tidy
+        args: ['--config-file=.clang-tidy']
+        exclude: ^external/
+
+      # Additional static analysis with cppcheck
+      - id: cppcheck
+        args:
+          - '--enable=warning,style,performance,portability'
+          - '--inline-suppr'
+          - '--suppress=missingIncludeSystem'
+        exclude: ^external/
+
+      # Google C++ style checking (adjusted for Allman braces)
+      - id: cpplint
+        args:
+          - '--filter=-whitespace/braces,-whitespace/indent'
+          - '--linelength=120'
+        exclude: ^external/
+
+      # Code smell detection with oclint
+      - id: oclint
+        args: ['--']
+        exclude: ^external/
+
+      # Include optimization
+      - id: include-what-you-use
+        args: ['--']
+        exclude: ^external/
 
 # Global configuration
 ci:
