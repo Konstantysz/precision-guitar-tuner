@@ -1,4 +1,5 @@
 #include "AudioProcessingLayer.h"
+#include "Constants.h"
 #include <Logger.h>
 #include <algorithm>
 #include <AudioDeviceManager.h>
@@ -54,11 +55,11 @@ namespace PrecisionTuner::Layers
          * If bufferOverflowDetected flag is set, the main thread will log an error
          * indicating that the safety margin was insufficient.
          */
-        processingBuffer.resize(config.bufferSize * 4);
-        outputScratchBuffer.resize(config.bufferSize * 4);
+        processingBuffer.resize(config.bufferSize * Constants::kuBufferSafetyMultiplier);
+        outputScratchBuffer.resize(config.bufferSize * Constants::kuBufferSafetyMultiplier);
 
         // Pre-allocate ring buffer for input monitoring (4x buffer size for safety)
-        monitoringRingBuffer.resize(config.bufferSize * 4);
+        monitoringRingBuffer.resize(config.bufferSize * Constants::kuBufferSafetyMultiplier);
 
         LOG_INFO("AudioProcessingLayer - Initializing audio I/O");
 
@@ -248,7 +249,7 @@ namespace PrecisionTuner::Layers
             LOG_ERROR(
                 "Audio buffer overflow detected! Input buffer exceeded pre-allocated size ({} frames). "
                 "Consider increasing buffer size or safety margin.",
-                config.bufferSize * 4);
+                config.bufferSize * Constants::kuBufferSafetyMultiplier);
         }
     }
 
@@ -290,12 +291,6 @@ namespace PrecisionTuner::Layers
         return currentInputDeviceId;
     }
 
-    bool AudioProcessingLayer::CheckBufferOverflow()
-    {
-        // Atomically check and clear the overflow flag
-        return bufferOverflowDetected.exchange(false, std::memory_order_relaxed);
-    }
-
     std::vector<std::string> AudioProcessingLayer::GetAvailableOutputDevices() const
     {
         auto &manager = GuitarIO::AudioDeviceManager::Get();
@@ -318,240 +313,6 @@ namespace PrecisionTuner::Layers
     uint32_t AudioProcessingLayer::GetCurrentOutputDeviceId() const
     {
         return currentOutputDeviceId;
-    }
-
-    int AudioProcessingLayer::InputCallback(std::span<const float> inputBuffer,
-        [[maybe_unused]] std::span<float> outputBuffer,
-        void *userData)
-    {
-        auto *layer = static_cast<AudioProcessingLayer *>(userData);
-        if (!layer || inputBuffer.empty())
-        {
-            return 1; // Stop stream
-        }
-
-        // Apply input gain and copy to processing buffer
-        float gain = layer->inputGain.load(std::memory_order_relaxed);
-
-        // Check if buffer is sufficient
-        if (layer->processingBuffer.size() < inputBuffer.size())
-        {
-            // CRITICAL: Cannot resize in audio callback!
-            // Set flag for main thread to log warning and handle error
-            layer->bufferOverflowDetected.store(true, std::memory_order_relaxed);
-            // Process only what fits in the pre-allocated buffer
-        }
-
-        size_t samplesToProcess = std::min(inputBuffer.size(), layer->processingBuffer.size());
-
-        for (size_t i = 0; i < samplesToProcess; ++i)
-        {
-            layer->processingBuffer[i] = inputBuffer[i] * gain;
-        }
-
-        std::span<const float> gainedBuffer(layer->processingBuffer.data(), samplesToProcess);
-
-        // Write to ring buffer for input monitoring (with gain applied)
-        if (layer->inputMonitoringEnabled.load(std::memory_order_relaxed))
-        {
-            size_t writePos = layer->monitoringWritePos.load(std::memory_order_relaxed);
-            size_t bufferSize = layer->monitoringRingBuffer.size();
-
-            for (const float sample : gainedBuffer)
-            {
-                layer->monitoringRingBuffer[writePos] = sample;
-                writePos = (writePos + 1) % bufferSize;
-            }
-
-            layer->monitoringWritePos.store(writePos, std::memory_order_release);
-        }
-
-        // Process audio (pitch detection) with gained signal
-        layer->ProcessAudio(gainedBuffer);
-
-        // Calculate peak level for metering
-        float maxVal = 0.0f;
-        for (float sample : gainedBuffer)
-        {
-            float absVal = std::abs(sample);
-            if (absVal > maxVal)
-            {
-                maxVal = absVal;
-            }
-        }
-        layer->currentInputLevel.store(maxVal, std::memory_order_relaxed);
-
-        return 0; // Continue stream
-    }
-
-    int AudioProcessingLayer::OutputCallback([[maybe_unused]] std::span<const float> inputBuffer,
-        std::span<float> outputBuffer,
-        void *userData)
-    {
-        auto *layer = static_cast<AudioProcessingLayer *>(userData);
-        if (!layer || outputBuffer.empty())
-        {
-            return 1; // Stop stream
-        }
-
-        // Mix feedback audio
-        layer->MixFeedback(outputBuffer);
-
-        return 0; // Continue stream
-    }
-
-    void AudioProcessingLayer::ProcessAudio(std::span<const float> inputBuffer)
-    {
-        // Detect pitch using YIN algorithm
-        auto result = pitchDetector->Detect(inputBuffer, static_cast<float>(config.sampleRate));
-
-        if (result.has_value())
-        {
-            GuitarDSP::PitchResult stabilized = result.value();
-
-            // Apply stabilization if enabled
-            if (pitchStabilizer)
-            {
-                pitchStabilizer->Update(result.value());
-                stabilized = pitchStabilizer->GetStabilized();
-            }
-
-            latestFrequency.store(stabilized.frequency, std::memory_order_relaxed);
-            latestConfidence.store(stabilized.confidence, std::memory_order_relaxed);
-            pitchDetected.store(true, std::memory_order_relaxed);
-        }
-        else
-        {
-            pitchDetected.store(false, std::memory_order_relaxed);
-        }
-    }
-
-    void AudioProcessingLayer::MixFeedback(std::span<float> outputBuffer)
-    {
-        if (outputBuffer.empty())
-        {
-            return;
-        }
-
-        // Clear output buffer
-        GuitarIO::AudioMixer::Clear(outputBuffer);
-
-        size_t frames = outputBuffer.size() / outputChannels;
-
-        // Safety check for scratch buffer
-        if (frames > outputScratchBuffer.size())
-        {
-            frames = outputScratchBuffer.size();
-        }
-
-        // Mix input monitoring from ring buffer
-        if (inputMonitoringEnabled.load(std::memory_order_relaxed))
-        {
-            size_t readPos = monitoringReadPos.load(std::memory_order_acquire);
-            size_t writePos = monitoringWritePos.load(std::memory_order_relaxed);
-            size_t bufferSize = monitoringRingBuffer.size();
-
-            // Calculate available samples
-            size_t available = (writePos >= readPos) ? (writePos - readPos) : (bufferSize - readPos + writePos);
-            size_t samplesToRead = std::min(available, frames);
-
-            float vol = monitoringVolume.load(std::memory_order_relaxed);
-
-            for (size_t i = 0; i < samplesToRead; ++i)
-            {
-                float sample = monitoringRingBuffer[readPos] * vol;
-
-                if (outputChannels == 1)
-                {
-                    outputBuffer[i] += sample;
-                }
-                else if (outputChannels == 2)
-                {
-                    outputBuffer[i * 2] += sample;     // Left
-                    outputBuffer[i * 2 + 1] += sample; // Right
-                }
-
-                readPos = (readPos + 1) % bufferSize;
-            }
-
-            monitoringReadPos.store(readPos, std::memory_order_release);
-        }
-
-        // Mix drone mode (continuous reference tone) - takes priority over single reference
-        bool droneMode = droneEnabled.load(std::memory_order_relaxed);
-        if (droneMode)
-        {
-            referenceGenerator.SetAmplitude(static_cast<double>(referenceVolume.load(std::memory_order_relaxed)));
-
-            if (outputChannels == 1)
-            {
-                referenceGenerator.Generate(outputBuffer, true);
-            }
-            else
-            {
-                std::span<float> scratchSpan(outputScratchBuffer.data(), frames);
-                referenceGenerator.Generate(scratchSpan, false);
-
-                for (size_t i = 0; i < frames; ++i)
-                {
-                    float sample = outputScratchBuffer[i];
-                    outputBuffer[i * 2] += sample;
-                    outputBuffer[i * 2 + 1] += sample;
-                }
-            }
-        }
-        // Mix polyphonic mode (chord playback) - takes priority over single reference
-        else if (polyphonicEnabled.load(std::memory_order_relaxed))
-        {
-            polyphonicGenerator.SetGlobalVolume(referenceVolume.load(std::memory_order_relaxed));
-
-            if (outputChannels == 1)
-            {
-                polyphonicGenerator.Generate(outputBuffer, true);
-            }
-            else
-            {
-                std::span<float> scratchSpan(outputScratchBuffer.data(), frames);
-                polyphonicGenerator.Generate(scratchSpan, false);
-
-                for (size_t i = 0; i < frames; ++i)
-                {
-                    float sample = outputScratchBuffer[i];
-                    outputBuffer[i * 2] += sample;
-                    outputBuffer[i * 2 + 1] += sample;
-                }
-            }
-        }
-        // Mix reference tone (normal single-shot mode)
-        else if (referenceEnabled.load(std::memory_order_relaxed))
-        {
-            referenceGenerator.SetAmplitude(static_cast<double>(referenceVolume.load(std::memory_order_relaxed)));
-
-            if (outputChannels == 1)
-            {
-                referenceGenerator.Generate(outputBuffer, true);
-            }
-            else
-            {
-                // Generate mono to scratch buffer
-                std::span<float> scratchSpan(outputScratchBuffer.data(), frames);
-                referenceGenerator.Generate(scratchSpan, false); // Overwrite scratch
-
-                // Mix to stereo output
-                for (size_t i = 0; i < frames; ++i)
-                {
-                    float sample = outputScratchBuffer[i];
-                    outputBuffer[i * 2] += sample;
-                    outputBuffer[i * 2 + 1] += sample;
-                }
-            }
-        }
-
-        // Note: Beep generator not yet implemented
-        // The beepEnabled flag is reserved for future in-tune notification feature
-
-        // Apply limiting to prevent clipping
-        GuitarIO::AudioMixer::Limit(outputBuffer);
     }
 
     bool AudioProcessingLayer::SwitchInputDevice(uint32_t deviceId)
@@ -733,15 +494,262 @@ namespace PrecisionTuner::Layers
         // Note: Polyphonic frequencies are set by SetPolyphonicFrequencies() called from SettingsLayer
     }
 
-    float AudioProcessingLayer::GetInputLevel() const
+    bool AudioProcessingLayer::CheckBufferOverflow()
     {
-        return currentInputLevel.load(std::memory_order_relaxed);
+        // Atomically check and clear the overflow flag
+        return bufferOverflowDetected.exchange(false, std::memory_order_relaxed);
     }
 
     void AudioProcessingLayer::SetPolyphonicFrequencies(const std::array<float, 6> &frequencies)
     {
         polyphonicGenerator.SetVoiceFrequencies(frequencies);
         polyphonicGenerator.SetGlobalVolume(referenceVolume.load(std::memory_order_relaxed));
+    }
+
+    float AudioProcessingLayer::GetInputLevel() const
+    {
+        return currentInputLevel.load(std::memory_order_relaxed);
+    }
+
+    int AudioProcessingLayer::InputCallback(std::span<const float> inputBuffer,
+        [[maybe_unused]] std::span<float> outputBuffer,
+        void *userData)
+    {
+        auto *layer = static_cast<AudioProcessingLayer *>(userData);
+        if (!layer || inputBuffer.empty())
+        {
+            return 1; // Stop stream
+        }
+
+        // Apply input gain and copy to processing buffer
+        float gain = layer->inputGain.load(std::memory_order_relaxed);
+
+        // Check if buffer is sufficient
+        if (layer->processingBuffer.size() < inputBuffer.size())
+        {
+            // CRITICAL: Cannot resize in audio callback!
+            // Set flag for main thread to log warning and handle error
+            layer->bufferOverflowDetected.store(true, std::memory_order_relaxed);
+            // Process only what fits in the pre-allocated buffer
+        }
+
+        size_t samplesToProcess = std::min(inputBuffer.size(), layer->processingBuffer.size());
+
+        for (size_t i = 0; i < samplesToProcess; ++i)
+        {
+            layer->processingBuffer[i] = inputBuffer[i] * gain;
+        }
+
+        std::span<const float> gainedBuffer(layer->processingBuffer.data(), samplesToProcess);
+
+        // Write to ring buffer for input monitoring (with gain applied)
+        if (layer->inputMonitoringEnabled.load(std::memory_order_relaxed))
+        {
+            size_t writePos = layer->monitoringWritePos.load(std::memory_order_relaxed);
+            size_t bufferSize = layer->monitoringRingBuffer.size();
+
+            for (const float sample : gainedBuffer)
+            {
+                layer->monitoringRingBuffer[writePos] = sample;
+                writePos = (writePos + 1) % bufferSize;
+            }
+
+            layer->monitoringWritePos.store(writePos, std::memory_order_release);
+        }
+
+        // Process audio (pitch detection) with gained signal
+        layer->ProcessAudio(gainedBuffer);
+
+        // Calculate peak level for metering
+        float maxVal = 0.0f;
+        for (float sample : gainedBuffer)
+        {
+            float absVal = std::abs(sample);
+            if (absVal > maxVal)
+            {
+                maxVal = absVal;
+            }
+        }
+        layer->currentInputLevel.store(maxVal, std::memory_order_relaxed);
+
+        return 0; // Continue stream
+    }
+
+    int AudioProcessingLayer::OutputCallback([[maybe_unused]] std::span<const float> inputBuffer,
+        std::span<float> outputBuffer,
+        void *userData)
+    {
+        auto *layer = static_cast<AudioProcessingLayer *>(userData);
+        if (!layer || outputBuffer.empty())
+        {
+            return 1; // Stop stream
+        }
+
+        // Mix feedback audio
+        layer->MixFeedback(outputBuffer);
+
+        return 0; // Continue stream
+    }
+
+    void AudioProcessingLayer::ProcessAudio(std::span<const float> inputBuffer)
+    {
+        // Detect pitch using YIN algorithm
+        auto result = pitchDetector->Detect(inputBuffer, static_cast<float>(config.sampleRate));
+
+        if (result.has_value())
+        {
+            GuitarDSP::PitchResult stabilized = result.value();
+
+            // Apply stabilization if enabled
+            if (pitchStabilizer)
+            {
+                pitchStabilizer->Update(result.value());
+                stabilized = pitchStabilizer->GetStabilized();
+            }
+
+            latestFrequency.store(stabilized.frequency, std::memory_order_relaxed);
+            latestConfidence.store(stabilized.confidence, std::memory_order_relaxed);
+            pitchDetected.store(true, std::memory_order_relaxed);
+        }
+        else
+        {
+            pitchDetected.store(false, std::memory_order_relaxed);
+        }
+    }
+
+    void AudioProcessingLayer::MixFeedback(std::span<float> outputBuffer)
+    {
+        if (outputBuffer.empty())
+        {
+            return;
+        }
+
+        // Validate buffer alignment with channel count
+        if (outputBuffer.size() % outputChannels != 0)
+        {
+            LOG_ERROR("Output buffer size {} not aligned with {} channels", outputBuffer.size(), outputChannels);
+            return;
+        }
+
+        // Clear output buffer
+        GuitarIO::AudioMixer::Clear(outputBuffer);
+
+        size_t frames = outputBuffer.size() / outputChannels;
+
+        // Safety check for scratch buffer
+        if (frames > outputScratchBuffer.size())
+        {
+            frames = outputScratchBuffer.size();
+        }
+
+        // Mix input monitoring from ring buffer
+        if (inputMonitoringEnabled.load(std::memory_order_relaxed))
+        {
+            size_t readPos = monitoringReadPos.load(std::memory_order_acquire);
+            size_t writePos = monitoringWritePos.load(std::memory_order_relaxed);
+            size_t bufferSize = monitoringRingBuffer.size();
+
+            // Calculate available samples
+            size_t available = (writePos >= readPos) ? (writePos - readPos) : (bufferSize - readPos + writePos);
+            size_t samplesToRead = std::min(available, frames);
+
+            float vol = monitoringVolume.load(std::memory_order_relaxed);
+
+            for (size_t i = 0; i < samplesToRead; ++i)
+            {
+                float sample = monitoringRingBuffer[readPos] * vol;
+
+                if (outputChannels == 1)
+                {
+                    outputBuffer[i] += sample;
+                }
+                else if (outputChannels == 2)
+                {
+                    outputBuffer[i * 2] += sample;     // Left
+                    outputBuffer[i * 2 + 1] += sample; // Right
+                }
+
+                readPos = (readPos + 1) % bufferSize;
+            }
+
+            monitoringReadPos.store(readPos, std::memory_order_release);
+        }
+
+        // Mix drone mode (continuous reference tone) - takes priority over single reference
+        bool droneMode = droneEnabled.load(std::memory_order_relaxed);
+        if (droneMode)
+        {
+            referenceGenerator.SetAmplitude(static_cast<double>(referenceVolume.load(std::memory_order_relaxed)));
+
+            if (outputChannels == 1)
+            {
+                referenceGenerator.Generate(outputBuffer, true);
+            }
+            else
+            {
+                std::span<float> scratchSpan(outputScratchBuffer.data(), frames);
+                referenceGenerator.Generate(scratchSpan, false);
+
+                for (size_t i = 0; i < frames; ++i)
+                {
+                    float sample = outputScratchBuffer[i];
+                    outputBuffer[i * 2] += sample;
+                    outputBuffer[i * 2 + 1] += sample;
+                }
+            }
+        }
+        // Mix polyphonic mode (chord playback) - takes priority over single reference
+        else if (polyphonicEnabled.load(std::memory_order_relaxed))
+        {
+            polyphonicGenerator.SetGlobalVolume(referenceVolume.load(std::memory_order_relaxed));
+
+            if (outputChannels == 1)
+            {
+                polyphonicGenerator.Generate(outputBuffer, true);
+            }
+            else
+            {
+                std::span<float> scratchSpan(outputScratchBuffer.data(), frames);
+                polyphonicGenerator.Generate(scratchSpan, false);
+
+                for (size_t i = 0; i < frames; ++i)
+                {
+                    float sample = outputScratchBuffer[i];
+                    outputBuffer[i * 2] += sample;
+                    outputBuffer[i * 2 + 1] += sample;
+                }
+            }
+        }
+        // Mix reference tone (normal single-shot mode)
+        else if (referenceEnabled.load(std::memory_order_relaxed))
+        {
+            referenceGenerator.SetAmplitude(static_cast<double>(referenceVolume.load(std::memory_order_relaxed)));
+
+            if (outputChannels == 1)
+            {
+                referenceGenerator.Generate(outputBuffer, true);
+            }
+            else
+            {
+                // Generate mono to scratch buffer
+                std::span<float> scratchSpan(outputScratchBuffer.data(), frames);
+                referenceGenerator.Generate(scratchSpan, false); // Overwrite scratch
+
+                // Mix to stereo output
+                for (size_t i = 0; i < frames; ++i)
+                {
+                    float sample = outputScratchBuffer[i];
+                    outputBuffer[i * 2] += sample;
+                    outputBuffer[i * 2 + 1] += sample;
+                }
+            }
+        }
+
+        // Note: Beep generator not yet implemented
+        // The beepEnabled flag is reserved for future in-tune notification feature
+
+        // Apply limiting to prevent clipping
+        GuitarIO::AudioMixer::Limit(outputBuffer);
     }
 
 } // namespace PrecisionTuner::Layers

@@ -15,18 +15,24 @@ PrecisionGuitarTunerApp::PrecisionGuitarTunerApp()
 
     audioLayer = dynamic_cast<PrecisionTuner::Layers::AudioProcessingLayer *>(GetLayers().back().get());
 
-    if (audioLayer)
+    if (!audioLayer)
     {
-        audioLayer->UpdateAudioFeedback(config.audio);
-
-        PushLayer<PrecisionTuner::Layers::TunerVisualizationLayer>(*audioLayer, config);
-
-        auto *tunerLayer = dynamic_cast<PrecisionTuner::Layers::TunerVisualizationLayer *>(GetLayers().back().get());
-        if (tunerLayer)
-        {
-            PushLayer<PrecisionTuner::Layers::SettingsLayer>(*audioLayer, *tunerLayer, config);
-        }
+        LOG_ERROR("CRITICAL: Failed to initialize AudioProcessingLayer");
+        throw std::runtime_error("Failed to initialize audio system");
     }
+
+    audioLayer->UpdateAudioFeedback(config.audio);
+
+    PushLayer<PrecisionTuner::Layers::TunerVisualizationLayer>(*audioLayer, config);
+
+    auto *tunerLayer = dynamic_cast<PrecisionTuner::Layers::TunerVisualizationLayer *>(GetLayers().back().get());
+    if (!tunerLayer)
+    {
+        LOG_ERROR("CRITICAL: Failed to initialize TunerVisualizationLayer");
+        throw std::runtime_error("Failed to initialize visualization system");
+    }
+
+    PushLayer<PrecisionTuner::Layers::SettingsLayer>(*audioLayer, *tunerLayer, config);
 
     LOG_INFO("All layers initialized");
 }

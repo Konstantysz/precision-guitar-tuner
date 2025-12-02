@@ -1,3 +1,4 @@
+#include "Constants.h"
 #include <Logger.h>
 #include <imgui.h>
 #include <glad/glad.h>
@@ -70,8 +71,7 @@ namespace PrecisionTuner::Layers
                 targetStringIndex = TuningPresets::FindClosestString(config.tuning.mode,
                     pitchData.frequency,
                     config.tuning.referencePitch,
-                    25.0f // ±25 cents tolerance
-                );
+                    Constants::kfTargetStringToleranceCents);
 
                 // Log detected pitch
                 LOG_INFO("Detected: {}{} ({:.2f} Hz) | Deviation: {:+.1f} cents | Confidence: {:.0f}%",
@@ -183,7 +183,7 @@ namespace PrecisionTuner::Layers
         ImVec2 center(windowSize.x * 0.5f, windowSize.y * 0.5f);
 
         // Gauge dimensions
-        float gaugeRadius = std::min(windowSize.x, windowSize.y) * 0.38f; // Slightly larger
+        float gaugeRadius = std::min(windowSize.x, windowSize.y) * Constants::kfGaugeRadiusScale; // Slightly larger
 
         // LAYER 1: Wood Background (Scaled to COVER, not tile)
         if (woodBackgroundTexture)
@@ -264,7 +264,7 @@ namespace PrecisionTuner::Layers
         if (gaugeFaceTexture)
         {
             ImU32 tintColor = IM_COL32(255, 255, 255, 255);
-            if (hasPitchData && std::abs(smoothedCents) < 3.0f)
+            if (hasPitchData && std::abs(smoothedCents) < Constants::kfInTuneThresholdCents)
                 tintColor = IM_COL32(230, 255, 230, 255);
 
             drawList->AddImageRounded(
@@ -425,7 +425,7 @@ namespace PrecisionTuner::Layers
     {
         float absCents = std::abs(cents);
 
-        if (absCents <= 3.0f)
+        if (absCents <= Constants::kfInTuneThresholdCents)
         {
             // In tune - green
             return ImVec4(0.2f, 0.9f, 0.3f, 1.0f);
@@ -433,7 +433,7 @@ namespace PrecisionTuner::Layers
         else if (absCents <= 10.0f)
         {
             // Close - yellow-green blend
-            float t = (absCents - 3.0f) / 7.0f;
+            float t = (absCents - Constants::kfInTuneThresholdCents) / 7.0f;
             return ImVec4(0.2f + (0.7f * t), // R: 0.2 -> 0.9
                 0.9f,                        // G: 0.9
                 0.3f - (0.1f * t),           // B: 0.3 -> 0.2

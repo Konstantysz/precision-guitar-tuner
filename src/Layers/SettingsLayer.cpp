@@ -1,3 +1,4 @@
+#include "Constants.h"
 #include <Logger.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -331,7 +332,11 @@ namespace PrecisionTuner::Layers
             // Reference frequency slider
             float referenceFrequency = config.audio.referenceFrequency;
             ImGui::PushItemWidth(150.0f);
-            if (ImGui::SliderFloat("Frequency (Hz)", &referenceFrequency, 100.0f, 1000.0f, "%.1f Hz"))
+            if (ImGui::SliderFloat("Frequency (Hz)",
+                    &referenceFrequency,
+                    Constants::kfMinReferenceFrequencyHz,
+                    Constants::kfMaxReferenceFrequencyHz,
+                    "%.1f Hz"))
             {
                 config.audio.referenceFrequency = referenceFrequency;
                 audioLayer.UpdateAudioFeedback(config.audio);

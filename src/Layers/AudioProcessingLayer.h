@@ -128,7 +128,7 @@ namespace PrecisionTuner::Layers
          * @param deviceId ID of the device to switch to
          * @return true if switch was successful, false otherwise
          */
-        bool SwitchInputDevice(uint32_t deviceId);
+        [[nodiscard]] bool SwitchInputDevice(uint32_t deviceId);
 
         /**
          * @brief Gets a list of available output device names
@@ -153,7 +153,7 @@ namespace PrecisionTuner::Layers
          * @param deviceId ID of the device to switch to
          * @return true if switch was successful, false otherwise
          */
-        bool SwitchOutputDevice(uint32_t deviceId);
+        [[nodiscard]] bool SwitchOutputDevice(uint32_t deviceId);
 
         /**
          * @brief Updates audio feedback settings
