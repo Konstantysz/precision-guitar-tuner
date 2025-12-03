@@ -43,6 +43,11 @@ private:
      */
     void ShutdownImGui();
 
+    /**
+     * Handle keyboard shortcuts for application controls
+     */
+    void HandleKeyboardInput();
+
 private:
     /**
      * Create application specification from pre-loaded config
@@ -51,6 +56,9 @@ private:
     static Kappa::ApplicationSpecification CreateApplicationSpecification(const PrecisionTuner::Config &config);
 
     PrecisionTuner::Config config; ///< Application configuration
-    PrecisionTuner::Layers::AudioProcessingLayer
-        *audioLayer; ///< Audio processing layer instance (owned by layer stack)
+
+    // Layer references for keyboard shortcuts (owned by layer stack)
+    PrecisionTuner::Layers::AudioProcessingLayer *audioLayer;
+    PrecisionTuner::Layers::TunerVisualizationLayer *tunerLayer;
+    PrecisionTuner::Layers::SettingsLayer *settingsLayer;
 };

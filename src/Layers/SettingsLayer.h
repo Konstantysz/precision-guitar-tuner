@@ -40,6 +40,11 @@ namespace PrecisionTuner::Layers
 
         void OnRender() override;
 
+        /**
+         * @brief Toggle keyboard shortcuts overlay visibility
+         */
+        void ToggleKeyboardShortcuts();
+
     private:
         /**
          * @brief Renders input audio device selection dropdown
@@ -66,12 +71,35 @@ namespace PrecisionTuner::Layers
          */
         void RenderAudioFeedbackControls();
 
+        /**
+         * @brief Renders main menu bar with Help menu
+         */
+        void RenderHelpMenu();
+
+        /**
+         * @brief Renders About dialog
+         */
+        void RenderAboutDialog();
+
+        /**
+         * @brief Renders keyboard shortcuts overlay
+         */
+        void RenderKeyboardShortcutsOverlay();
+
+        /**
+         * @brief Opens URL in system default browser
+         * @param url URL to open
+         */
+        void OpenUrlInBrowser(const std::string &url);
+
         AudioProcessingLayer &audioLayer;    ///< Reference to audio processing layer
         TunerVisualizationLayer &tunerLayer; ///< Reference to tuner visualization layer
         PrecisionTuner::Config &config;      ///< Reference to application configuration
 
         // UI state
-        bool showSettings; ///< Visibility state of settings window
+        bool showSettings;          ///< Visibility state of settings window
+        bool showAboutDialog;       ///< Visibility state of About dialog
+        bool showKeyboardShortcuts; ///< Visibility state of keyboard shortcuts overlay
 
         // Input device selection
         int selectedInputDeviceIndex;                                 ///< Currently selected input device index

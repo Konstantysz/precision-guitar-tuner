@@ -15,9 +15,9 @@ namespace PrecisionTuner::Layers
     SettingsLayer::SettingsLayer(AudioProcessingLayer &audioLayer,
         TunerVisualizationLayer &tunerLayer,
         PrecisionTuner::Config &config)
-        : audioLayer(audioLayer), tunerLayer(tunerLayer), config(config), showSettings(true),
-          selectedInputDeviceIndex(0), availableInputDevices({}), selectedOutputDeviceIndex(0),
-          availableOutputDevices({})
+        : audioLayer(audioLayer), tunerLayer(tunerLayer), config(config), showSettings(true), showAboutDialog(false),
+          showKeyboardShortcuts(false), selectedInputDeviceIndex(0), availableInputDevices({}),
+          selectedOutputDeviceIndex(0), availableOutputDevices({})
     {
         LOG_INFO("SettingsLayer - Initializing");
     }
@@ -33,6 +33,7 @@ namespace PrecisionTuner::Layers
 
     void SettingsLayer::OnRender()
     {
+        RenderHelpMenu();
 
         // Create settings window (positioned in bottom right corner)
         // Only render if tuner layer indicates settings should be visible
@@ -157,6 +158,10 @@ namespace PrecisionTuner::Layers
             }
             ImGui::EndCombo();
         }
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("Select your audio interface or USB cable\nRocksmith cable auto-detected");
+        }
 
         // Show device details
         if (selectedInputDeviceIndex >= 0 && selectedInputDeviceIndex < static_cast<int>(availableInputDevices.size()))
@@ -178,6 +183,10 @@ namespace PrecisionTuner::Layers
         {
             config.tuning.referencePitch = referencePitch;
             LOG_INFO("Reference pitch updated: {:.1f} Hz", referencePitch);
+        }
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("A4 frequency (440 Hz = concert pitch)\nRange: 430-450 Hz");
         }
         ImGui::PopItemWidth();
 
@@ -213,6 +222,10 @@ namespace PrecisionTuner::Layers
                 auto preset = TuningPresets::GetPreset(config.tuning.mode, config.tuning.referencePitch);
                 audioLayer.SetPolyphonicFrequencies(preset.targetFrequencies);
             }
+        }
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("Chromatic detects any note\nPresets help verify correct string");
         }
         ImGui::PopItemWidth();
 
@@ -302,6 +315,10 @@ namespace PrecisionTuner::Layers
             }
             ImGui::EndCombo();
         }
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("Choose speakers or headphones for audio feedback");
+        }
 
         // Show device details
         if (selectedOutputDeviceIndex >= 0
@@ -323,6 +340,10 @@ namespace PrecisionTuner::Layers
             config.audio.enableReference = enableReference;
             audioLayer.UpdateAudioFeedback(config.audio);
             LOG_INFO("Reference tone {}", enableReference ? "enabled" : "disabled");
+        }
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("Pure sine wave at detected frequency\nShortcut: R");
         }
 
         if (config.audio.enableReference)
@@ -349,6 +370,10 @@ namespace PrecisionTuner::Layers
                 config.audio.referenceVolume = referenceVolume;
                 audioLayer.UpdateAudioFeedback(config.audio);
             }
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip("Volume level for reference tone");
+            }
             ImGui::PopItemWidth();
             ImGui::Unindent();
         }
@@ -361,6 +386,10 @@ namespace PrecisionTuner::Layers
             audioLayer.UpdateAudioFeedback(config.audio);
             LOG_INFO("Input monitoring {}", enableInputMonitoring ? "enabled" : "disabled");
         }
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("Hear yourself play through speakers/headphones\nShortcut: Space");
+        }
 
         if (config.audio.enableInputMonitoring)
         {
@@ -372,6 +401,10 @@ namespace PrecisionTuner::Layers
                 config.audio.monitoringVolume = monitoringVolume;
                 audioLayer.UpdateAudioFeedback(config.audio);
             }
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip("Output level for input monitoring");
+            }
 
             // Input gain slider
             float inputGain = config.audio.inputGain;
@@ -379,6 +412,11 @@ namespace PrecisionTuner::Layers
             {
                 config.audio.inputGain = inputGain;
                 audioLayer.UpdateAudioFeedback(config.audio);
+            }
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip(
+                    "Boost weak signals or reduce clipping\nShortcut: Up/Down arrows\nRange: 0.5x - 5.0x");
             }
 
             // Input Level Meter
@@ -410,6 +448,10 @@ namespace PrecisionTuner::Layers
             audioLayer.UpdateAudioFeedback(config.audio);
             LOG_INFO("In-tune beep {}", beepEnabled ? "enabled" : "disabled");
         }
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("Audio confirmation when perfectly in tune\nShortcut: B");
+        }
 
         if (config.audio.enableBeep)
         {
@@ -420,6 +462,10 @@ namespace PrecisionTuner::Layers
             {
                 config.audio.beepVolume = beepVolume;
                 audioLayer.UpdateAudioFeedback(config.audio);
+            }
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip("Volume level for in-tune beep");
             }
             ImGui::PopItemWidth();
             ImGui::TextDisabled("(Triggers when in-tune)");
@@ -443,7 +489,8 @@ namespace PrecisionTuner::Layers
         }
         if (ImGui::IsItemHovered())
         {
-            ImGui::SetTooltip("Plays a continuous reference tone while tuning");
+            ImGui::SetTooltip(
+                "Continuous reference tone for ear training\nShortcut: D\nMutually exclusive with Polyphonic Mode");
         }
 
         // Polyphonic Mode - Play full chord
@@ -465,8 +512,180 @@ namespace PrecisionTuner::Layers
         }
         if (ImGui::IsItemHovered())
         {
-            ImGui::SetTooltip("Plays all 6 string frequencies simultaneously for checking overall tuning");
+            ImGui::SetTooltip(
+                "Play all six open strings simultaneously\nShortcut: P\nMutually exclusive with Drone Mode");
         }
+    }
+
+    void SettingsLayer::RenderHelpMenu()
+    {
+        if (ImGui::BeginMainMenuBar())
+        {
+            if (ImGui::BeginMenu("Help"))
+            {
+                if (ImGui::MenuItem("Quick Start Guide"))
+                {
+                    OpenUrlInBrowser(
+                        "https://github.com/Konstantysz/precision-guitar-tuner/blob/main/docs/QUICK_START.md");
+                }
+                if (ImGui::MenuItem("User Guide"))
+                {
+                    OpenUrlInBrowser(
+                        "https://github.com/Konstantysz/precision-guitar-tuner/blob/main/docs/USER_GUIDE.md");
+                }
+                if (ImGui::MenuItem("Keyboard Shortcuts", "F1"))
+                {
+                    showKeyboardShortcuts = !showKeyboardShortcuts;
+                }
+                ImGui::Separator();
+                if (ImGui::MenuItem("About"))
+                {
+                    showAboutDialog = true;
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
+        }
+
+        if (showAboutDialog)
+        {
+            RenderAboutDialog();
+        }
+
+        if (showKeyboardShortcuts)
+        {
+            RenderKeyboardShortcutsOverlay();
+        }
+    }
+
+    void SettingsLayer::RenderAboutDialog()
+    {
+        ImGui::SetNextWindowSize(ImVec2(500, 400), ImGuiCond_FirstUseEver);
+        if (ImGui::Begin("About Precision Guitar Tuner", &showAboutDialog, ImGuiWindowFlags_NoCollapse))
+        {
+            ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "Precision Guitar Tuner v1.0.0");
+            ImGui::Spacing();
+            ImGui::TextWrapped("Professional-grade guitar tuner with ±0.1 cent accuracy");
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            ImGui::Text("Built with:");
+            ImGui::BulletText("kappa-core - OpenGL UI framework");
+            ImGui::BulletText("RtAudio - Cross-platform audio I/O");
+            ImGui::BulletText("PFFFT - Fast Fourier Transform");
+            ImGui::BulletText("YIN/MPM - Pitch detection algorithms");
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            ImGui::Text("License: MIT");
+            ImGui::Spacing();
+
+            if (ImGui::Button("GitHub Repository"))
+            {
+                OpenUrlInBrowser("https://github.com/Konstantysz/precision-guitar-tuner");
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Close"))
+            {
+                showAboutDialog = false;
+            }
+        }
+        ImGui::End();
+    }
+
+    void SettingsLayer::RenderKeyboardShortcutsOverlay()
+    {
+        ImGui::SetNextWindowSize(ImVec2(550, 500), ImGuiCond_FirstUseEver);
+        if (ImGui::Begin("Keyboard Shortcuts", &showKeyboardShortcuts, ImGuiWindowFlags_NoCollapse))
+        {
+            ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "Audio Feedback");
+            ImGui::Separator();
+            ImGui::Columns(2, "shortcuts1", false);
+            ImGui::Text("Space");
+            ImGui::NextColumn();
+            ImGui::Text("Toggle Input Monitoring");
+            ImGui::NextColumn();
+            ImGui::Text("D");
+            ImGui::NextColumn();
+            ImGui::Text("Toggle Drone Mode");
+            ImGui::NextColumn();
+            ImGui::Text("P");
+            ImGui::NextColumn();
+            ImGui::Text("Toggle Polyphonic Mode");
+            ImGui::NextColumn();
+            ImGui::Text("R");
+            ImGui::NextColumn();
+            ImGui::Text("Toggle Reference Tone");
+            ImGui::NextColumn();
+            ImGui::Text("B");
+            ImGui::NextColumn();
+            ImGui::Text("Toggle In-Tune Beep");
+            ImGui::NextColumn();
+            ImGui::Text("M");
+            ImGui::NextColumn();
+            ImGui::Text("Mute All Audio Feedback");
+            ImGui::NextColumn();
+            ImGui::Columns(1);
+            ImGui::Spacing();
+
+            ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "Controls");
+            ImGui::Separator();
+            ImGui::Columns(2, "shortcuts2", false);
+            ImGui::Text("Up Arrow");
+            ImGui::NextColumn();
+            ImGui::Text("Increase Input Gain");
+            ImGui::NextColumn();
+            ImGui::Text("Down Arrow");
+            ImGui::NextColumn();
+            ImGui::Text("Decrease Input Gain");
+            ImGui::NextColumn();
+            ImGui::Text("Ctrl + ,");
+            ImGui::NextColumn();
+            ImGui::Text("Open Settings");
+            ImGui::NextColumn();
+            ImGui::Text("Esc");
+            ImGui::NextColumn();
+            ImGui::Text("Close Settings");
+            ImGui::NextColumn();
+            ImGui::Text("F11");
+            ImGui::NextColumn();
+            ImGui::Text("Toggle Fullscreen");
+            ImGui::NextColumn();
+            ImGui::Text("F1");
+            ImGui::NextColumn();
+            ImGui::Text("Show This Help");
+            ImGui::NextColumn();
+            ImGui::Columns(1);
+            ImGui::Spacing();
+
+            if (ImGui::Button("Close"))
+            {
+                showKeyboardShortcuts = false;
+            }
+        }
+        ImGui::End();
+    }
+
+    void SettingsLayer::OpenUrlInBrowser(const std::string &url)
+    {
+#ifdef PLATFORM_WINDOWS
+        std::string command = "start " + url;
+        system(command.c_str());
+#elif defined(PLATFORM_MACOS)
+        std::string command = "open " + url;
+        system(command.c_str());
+#elif defined(PLATFORM_LINUX)
+        std::string command = "xdg-open " + url;
+        system(command.c_str());
+#endif
+        LOG_INFO("Opening URL in browser: {}", url);
+    }
+
+    void SettingsLayer::ToggleKeyboardShortcuts()
+    {
+        showKeyboardShortcuts = !showKeyboardShortcuts;
     }
 
 } // namespace PrecisionTuner::Layers
