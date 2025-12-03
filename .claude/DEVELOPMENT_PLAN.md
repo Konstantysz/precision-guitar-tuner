@@ -1,8 +1,8 @@
 # Precision Guitar Tuner - v1.0.0 Release Plan
 
 **Target Release:** v1.0.0
-**Current Status:** ~85% Complete
-**Last Updated:** 2025-12-02
+**Current Status:** ~95% Complete
+**Last Updated:** 2025-12-04
 
 ---
 
@@ -17,15 +17,17 @@ Precision Guitar Tuner is a professional-grade desktop guitar tuner built with C
 - Audio feedback features (drone, polyphonic, reference tones)
 - Configuration persistence and device management
 - Comprehensive user documentation
+- ✅ Keyboard shortcuts (11 shortcuts: Space, D, P, R, B, M, Up/Down, Ctrl+,, Esc, F11, F1)
+- ✅ Tooltips for all settings controls (13 controls)
+- ✅ Help menu and About dialog
 
 **What's Remaining for v1.0.0:**
-- Keyboard shortcuts implementation (Space, D, M, Up/Down, etc.)
-- Tooltips for all settings controls
-- Help menu and About dialog
-- Cross-platform testing (macOS, Linux)
-- Final polish and error message improvements
 
-**Estimated Time to Release:** 15-20 hours
+- Cross-platform testing (macOS, Linux)
+- User-friendly error messages
+- Latency validation
+
+**Estimated Time to Release:** 8-10 hours
 
 ---
 
@@ -33,7 +35,7 @@ Precision Guitar Tuner is a professional-grade desktop guitar tuner built with C
 
 ### Critical (Blocking Release)
 
-- [ ] **Keyboard Shortcuts Implementation** (~3 hours)
+- [x] **Keyboard Shortcuts Implementation** (~3 hours) ✅
   - Space: Toggle Input Monitoring
   - D: Toggle Drone Mode
   - P: Toggle Polyphonic Mode
@@ -44,24 +46,23 @@ Precision Guitar Tuner is a professional-grade desktop guitar tuner built with C
   - Ctrl+,: Open Settings
   - Esc: Close Settings
   - F11: Toggle Fullscreen
-  - Implementation: [PrecisionGuitarTuner.cpp:HandleKeyboardInput()](../../src/PrecisionGuitarTuner.cpp)
-  - Reference: [UI_POLISH_PLAN.md](../docs/UI_POLISH_PLAN.md#keyboard-shortcuts)
+  - F1: Show Keyboard Shortcuts Overlay
+  - Implementation: [PrecisionGuitarTunerApp.cpp:HandleKeyboardInput()](../../src/PrecisionGuitarTunerApp.cpp)
 
-- [ ] **Tooltips for Settings Controls** (~2 hours)
-  - Add tooltips to all interactive controls (~15 controls)
-  - Include keyboard shortcuts in tooltip text where applicable
-  - Keep tooltips concise (1-2 lines maximum)
-  - Implementation: [SettingsLayer.cpp:OnImGuiRender()](../../src/Layers/SettingsLayer.cpp)
-  - Reference: [UI_POLISH_PLAN.md](../docs/UI_POLISH_PLAN.md#tooltips-system)
+- [x] **Tooltips for Settings Controls** (~2 hours) ✅
+  - Added tooltips to all 13 interactive controls
+  - Included keyboard shortcuts in tooltip text
+  - All tooltips concise (1-3 lines)
+  - Implementation: [SettingsLayer.cpp](../../src/Layers/SettingsLayer.cpp)
 
-- [ ] **Help Menu** (~2 hours)
-  - Add menu bar with Help menu
-  - Link to Quick Start Guide (docs/QUICK_START.md)
-  - Link to User Guide (docs/USER_GUIDE.md)
-  - Keyboard shortcuts reference (show overlay or link to docs)
-  - Open documentation in system browser
+- [x] **Help Menu** (~2 hours) ✅
+  - Menu bar with Help menu
+  - Link to Quick Start Guide (opens in browser)
+  - Link to User Guide (opens in browser)
+  - Keyboard shortcuts overlay (F1)
+  - Cross-platform URL opening (Windows/macOS/Linux)
 
-- [ ] **About Dialog** (~1 hour)
+- [x] **About Dialog** (~1 hour) ✅
   - Version information (v1.0.0)
   - Technology credits (kappa-core, RtAudio, PFFFT, YIN/MPM)
   - License information (MIT)

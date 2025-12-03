@@ -415,6 +415,106 @@ config.medianWindowSize = 5;      // Larger = more smoothing
 - At A4 (440 Hz): 1 cent = 0.254 Hz, 0.1 cent = 0.0254 Hz
 - YIN interpolation achieves <0.01 Hz accuracy
 
+## User Interface
+
+### Keyboard Shortcuts
+
+The application implements comprehensive keyboard shortcuts for hands-free operation during tuning sessions:
+
+**Audio Feedback Controls:**
+
+- **Space**: Toggle Input Monitoring (hear your guitar through speakers/headphones)
+- **D**: Toggle Drone Mode (continuous reference tone)
+- **P**: Toggle Polyphonic Mode (play all six open strings)
+- **R**: Toggle Reference Tone (pure sine wave at detected pitch)
+- **B**: Toggle In-Tune Beep (audio confirmation when in tune)
+- **M**: Mute All Audio Feedback (disables all audio output)
+
+**Input Controls:**
+
+- **Up Arrow**: Increase Input Gain (+0.1, max 2.0x)
+- **Down Arrow**: Decrease Input Gain (-0.1, min 0.5x)
+
+**Navigation:**
+
+- **Ctrl+,**: Open Settings Panel
+- **Esc**: Close Settings Panel
+- **F11**: Toggle Fullscreen
+- **F1**: Show Keyboard Shortcuts Overlay
+
+**Implementation Pattern:**
+
+```cpp
+void PrecisionGuitarTunerApp::HandleKeyboardInput()
+{
+    // Skip keyboard shortcuts if typing in a text field
+    ImGuiIO &io = ImGui::GetIO();
+    if (io.WantTextInput)
+    {
+        return;
+    }
+
+    if (ImGui::IsKeyPressed(ImGuiKey_Space))
+    {
+        config.audio.enableInputMonitoring = !config.audio.enableInputMonitoring;
+        audioLayer->UpdateAudioFeedback(config.audio);  // Thread-safe config update
+    }
+}
+```
+
+**Thread Safety:** All keyboard shortcuts call `UpdateAudioFeedback()` to propagate config changes to the audio thread via lock-free atomics.
+
+**Input Protection:** Shortcuts are disabled when `io.WantTextInput` is true to prevent conflicts while typing.
+
+**Mutual Exclusivity:** Drone Mode and Polyphonic Mode automatically disable each other when activated.
+
+### Tooltips
+
+All 13 interactive settings controls include tooltips with keyboard shortcuts where applicable:
+
+**Tooltip Pattern:**
+
+```cpp
+ImGui::SliderFloat("Input Gain", &config.audio.inputGain, 0.5f, 2.0f);
+if (ImGui::IsItemHovered())
+{
+    ImGui::SetTooltip("Boost weak signals or reduce clipping\nShortcut: Up/Down arrows\nRange: 0.5x - 2.0x");
+}
+```
+
+Tooltips are concise (1-3 lines) and include:
+
+- Brief description of the control
+- Keyboard shortcut (if available)
+- Valid range or additional context
+
+### Help Menu
+
+The application includes a main menu bar with Help menu providing:
+
+- **Quick Start Guide** - Opens GitHub link in system browser
+- **User Guide** - Opens GitHub link in system browser
+- **Keyboard Shortcuts (F1)** - Shows overlay with all shortcuts
+- **About** - Version info, credits, license, GitHub repository link
+
+**Cross-Platform URL Opening:**
+
+```cpp
+void SettingsLayer::OpenUrlInBrowser(const std::string &url)
+{
+#ifdef PLATFORM_WINDOWS
+    std::string command = "start " + url;
+    system(command.c_str());
+#elif defined(PLATFORM_MACOS)
+    std::string command = "open " + url;
+    system(command.c_str());
+#elif defined(PLATFORM_LINUX)
+    std::string command = "xdg-open " + url;
+    system(command.c_str());
+#endif
+}
+```
+
 ## Common Development Tasks
 
 ### Adding a New Tuning Mode

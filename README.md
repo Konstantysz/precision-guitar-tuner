@@ -29,6 +29,9 @@
 - 🎯 **Ultra-low latency** - <10ms end-to-end on ASIO/CoreAudio/ALSA (Optimized Input Path)
 - 💎 **Premium Retro Gauge** - High-quality vector rendering with realistic wood, chrome, and glass materials
 - 🎸 **Multiple tuning modes** - Standard, drop, chromatic, and custom tunings
+- ⌨️ **Keyboard shortcuts** - 11 shortcuts for hands-free operation (Space, D, P, R, B, M, arrows, F11, F1)
+- 💡 **Interactive tooltips** - Context-sensitive help for all 13 settings controls
+- 📖 **Help menu** - Quick Start Guide, User Guide, keyboard shortcuts overlay, and About dialog
 - 📊 **Real-time spectrum analyzer** - Visualize harmonics and overtones
 - 📦 **Automated Builds** - CI/CD pipeline generating installers for Windows, macOS, and Linux
 - 🆓 **GPL-free dependencies** - Commercial-friendly licensing (MIT/BSD)
@@ -74,6 +77,9 @@ Mobile apps are limited by:
 - [x] Audio feedback (reference tones, input monitoring)
 - [x] Input gain control
 - [x] **Premium Visual Overhaul** (Textures, Materials, Lighting)
+- [x] **Keyboard shortcuts** (11 shortcuts for audio feedback, navigation, and controls)
+- [x] **Tooltips** (13 interactive controls with keyboard shortcuts)
+- [x] **Help menu** (Quick Start, User Guide, About dialog, keyboard shortcuts overlay)
 - [ ] Spectrum analyzer (optional)
 
 ### Phase 4: Advanced Tuning (In Progress)
