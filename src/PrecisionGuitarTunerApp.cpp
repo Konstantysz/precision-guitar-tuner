@@ -1,7 +1,8 @@
 #include "PrecisionGuitarTunerApp.h"
 
 PrecisionGuitarTunerApp::PrecisionGuitarTunerApp()
-    : config(PrecisionTuner::Config::Load()), audioLayer(nullptr), Application(CreateApplicationSpecification(config))
+    : Application(CreateApplicationSpecification(PrecisionTuner::Config::Load())),
+      config(PrecisionTuner::Config::Load()), audioLayer(nullptr)
 {
     LOG_INFO("Precision Guitar Tuner initialized");
 
