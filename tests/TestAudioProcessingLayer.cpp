@@ -93,7 +93,8 @@ protected:
 
 TEST_F(AudioProcessingLayerTest, Initialization)
 {
-    EXPECT_TRUE(layer->IsRunning());
+    EXPECT_TRUE(layer->IsInputDeviceAvailable());
+    EXPECT_TRUE(layer->IsOutputDeviceAvailable());
     EXPECT_TRUE(inputDevice->IsRunning());
     EXPECT_TRUE(outputDevice->IsRunning());
 }

@@ -98,10 +98,16 @@ namespace PrecisionTuner::Layers
         [[nodiscard]] PitchData GetLatestPitch() const;
 
         /**
-         * @brief Checks if audio processing is active
-         * @return true if audio stream is running, false otherwise
+         * @brief Checks if input device is available and running
+         * @return true if input audio stream is running, false otherwise
          */
-        [[nodiscard]] bool IsRunning() const;
+        [[nodiscard]] bool IsInputDeviceAvailable() const;
+
+        /**
+         * @brief Checks if output device is available and running
+         * @return true if output audio stream is running, false otherwise
+         */
+        [[nodiscard]] bool IsOutputDeviceAvailable() const;
 
         // Input device methods
 

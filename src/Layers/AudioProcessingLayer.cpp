@@ -262,9 +262,14 @@ namespace PrecisionTuner::Layers
         return data;
     }
 
-    bool AudioProcessingLayer::IsRunning() const
+    bool AudioProcessingLayer::IsInputDeviceAvailable() const
     {
-        return inputDevice->IsRunning() && outputDevice->IsRunning();
+        return inputDevice->IsRunning();
+    }
+
+    bool AudioProcessingLayer::IsOutputDeviceAvailable() const
+    {
+        return outputDevice->IsRunning();
     }
 
     std::vector<std::string> AudioProcessingLayer::GetAvailableInputDevices() const
