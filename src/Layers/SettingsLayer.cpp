@@ -672,13 +672,13 @@ namespace PrecisionTuner::Layers
     {
 #ifdef PLATFORM_WINDOWS
         std::string command = "start " + url;
-        system(command.c_str());
+        [[maybe_unused]] const auto result = system(command.c_str());
 #elif defined(PLATFORM_MACOS)
         std::string command = "open " + url;
-        system(command.c_str());
+        [[maybe_unused]] const auto result = system(command.c_str());
 #elif defined(PLATFORM_LINUX)
         std::string command = "xdg-open " + url;
-        system(command.c_str());
+        [[maybe_unused]] const auto result = system(command.c_str());
 #endif
         LOG_INFO("Opening URL in browser: {}", url);
     }
