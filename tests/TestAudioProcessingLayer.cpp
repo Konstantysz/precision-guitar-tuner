@@ -567,8 +567,8 @@ TEST_P(PitchStabilizationTest, StabilizesPitchDetection)
     std::vector<float> output(2048);
     int phaseIdx = 0;
 
-    // Process multiple frames
-    for (int i = 0; i < 20; ++i)
+    // Process multiple frames to allow stabilizers to converge
+    for (int i = 0; i < 50; ++i)
     {
         FillSineWave(buffer, 440.0f, 48000, phaseIdx);
         inputDevice->TriggerCallback(buffer, output);
