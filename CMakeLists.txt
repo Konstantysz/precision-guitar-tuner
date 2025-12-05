@@ -7,6 +7,14 @@ endif()
 
 project(PrecisionGuitarTuner VERSION 0.0.1 LANGUAGES CXX)
 
+# Coverage option (inherits from kappa-core if enabled there)
+option(ENABLE_COVERAGE "Enable code coverage analysis" OFF)
+
+if(ENABLE_COVERAGE)
+    # Coverage flags will be inherited from kappa-core submodule
+    message(STATUS "Code coverage enabled for precision-guitar-tuner")
+endif()
+
 # Include project modules
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(StandardSettings)

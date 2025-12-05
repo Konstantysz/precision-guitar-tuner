@@ -91,3 +91,20 @@ install(TARGETS precision-guitar-tuner
     RUNTIME DESTINATION bin
     BUNDLE DESTINATION .
 )
+
+# Install shader assets
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/assets/shaders
+    DESTINATION bin/assets
+    FILES_MATCHING PATTERN "*.vert" PATTERN "*.frag"
+)
+
+# Install texture assets
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/assets/textures
+    DESTINATION bin/assets
+    FILES_MATCHING PATTERN "*.png"
+)
+
+# Install LICENSE file (referenced in Packaging.cmake)
+install(FILES ${CMAKE_SOURCE_DIR}/LICENSE
+    DESTINATION .
+)

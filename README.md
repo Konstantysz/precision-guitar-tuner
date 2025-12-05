@@ -1,5 +1,6 @@
 # Precision Guitar Tuner
 
+[![Latest Release](https://img.shields.io/github/v/release/Konstantysz/precision-guitar-tuner)](https://github.com/Konstantysz/precision-guitar-tuner/releases/latest)
 [![Build Status](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/build.yml/badge.svg)](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/build.yml)
 [![Tests](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/tests.yml/badge.svg)](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/tests.yml)
 [![Static Analysis](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/Konstantysz/precision-guitar-tuner/actions/workflows/static-analysis.yml)

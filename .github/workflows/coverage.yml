@@ -77,7 +77,13 @@ jobs:
         id: coverage-stats
         run: |
           if [ -f build/Debug-coverage/coverage/coverage.profdata ]; then
-            TEST_EXE="build/Debug-coverage/tests/TestKappaCore.exe"
+            # Discover all test executables
+            TEST_EXES=$(find build/Debug-coverage/tests -name "test-*.exe" -o -name "test-*" ! -name "*.pdb")
+            if [ -z "$TEST_EXES" ]; then
+              echo "No test executables found!"
+              exit 1
+            fi
+            TEST_EXE=$(echo "$TEST_EXES" | head -n 1)
             PROFDATA="build/Debug-coverage/coverage/coverage.profdata"
 
             llvm-cov report "$TEST_EXE" -instr-profile="$PROFDATA" > coverage-summary.txt

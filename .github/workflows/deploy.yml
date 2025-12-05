@@ -20,13 +20,13 @@ jobs:
           - name: "Windows"
             os: windows-latest
             triplet: x64-windows
-            artifact_pattern: "PrecisionGuitarTuner-*-win64.zip"
+            artifact_pattern: "PrecisionGuitarTuner-*.zip"
             cpack_generator: "ZIP"
 
           - name: "Ubuntu"
             os: ubuntu-latest
             triplet: x64-linux
-            artifact_pattern: "PrecisionGuitarTuner-*-Linux.tar.gz"
+            artifact_pattern: "PrecisionGuitarTuner-*.tar.gz"
             cpack_generator: "TGZ"
 
           - name: "macOS"
