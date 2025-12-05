@@ -129,4 +129,4 @@ target_sources(test-audio-layer PRIVATE
 )
 
 # Register audio layer tests
-gtest_discover_tests(test-audio-layer)
+gtest_discover_tests(test-audio-layer DISCOVERY_TIMEOUT 15)
