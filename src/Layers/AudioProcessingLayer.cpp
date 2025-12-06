@@ -220,24 +220,30 @@ namespace PrecisionTuner::Layers
 
     AudioProcessingLayer::~AudioProcessingLayer()
     {
-        if (inputDevice->IsRunning())
+        if (inputDevice)
         {
-            LOG_INFO("AudioProcessingLayer - Stopping input stream");
-            inputDevice->Stop();
-        }
-        if (inputDevice->IsOpen())
-        {
-            inputDevice->Close();
+            if (inputDevice->IsRunning())
+            {
+                LOG_INFO("AudioProcessingLayer - Stopping input stream");
+                inputDevice->Stop();
+            }
+            if (inputDevice->IsOpen())
+            {
+                inputDevice->Close();
+            }
         }
 
-        if (outputDevice->IsRunning())
+        if (outputDevice)
         {
-            LOG_INFO("AudioProcessingLayer - Stopping output stream");
-            outputDevice->Stop();
-        }
-        if (outputDevice->IsOpen())
-        {
-            outputDevice->Close();
+            if (outputDevice->IsRunning())
+            {
+                LOG_INFO("AudioProcessingLayer - Stopping output stream");
+                outputDevice->Stop();
+            }
+            if (outputDevice->IsOpen())
+            {
+                outputDevice->Close();
+            }
         }
     }
 
