@@ -8,6 +8,33 @@
 
 using namespace PrecisionTuner::Layers;
 
+// Enable Google Test to print StabilizerType enum values
+namespace PrecisionTuner::Layers
+{
+    void PrintTo(const StabilizerType &type, std::ostream *os)
+    {
+        switch (type)
+        {
+        case StabilizerType::None:
+            *os << "None";
+            break;
+        case StabilizerType::EMA:
+            *os << "EMA";
+            break;
+        case StabilizerType::Median:
+            *os << "Median";
+            break;
+        case StabilizerType::Hybrid:
+            *os << "Hybrid";
+            break;
+        default:
+            *os << "Unknown";
+            break;
+        }
+    }
+} // namespace PrecisionTuner::Layers
+
+
 /**
  * @brief Test fixture for AudioProcessingLayer
  *
