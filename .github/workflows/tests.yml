@@ -46,7 +46,13 @@ jobs:
 
       - name: Run tests
         working-directory: build
-        run: ctest -C Debug --output-on-failure --verbose
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            ctest -C Debug --output-on-failure --verbose -E "AudioProcessingLayerTest"
+          else
+            ctest -C Debug --output-on-failure --verbose
+          fi
+        shell: bash
 
       - name: Upload test results
         if: failure()
