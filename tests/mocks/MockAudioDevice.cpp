@@ -38,13 +38,15 @@ bool MockAudioDevice::Start()
 bool MockAudioDevice::Stop()
 {
     isRunning = false;
+    callback = nullptr;
+    userPtr = nullptr;
     return true;
 }
 
 void MockAudioDevice::Close()
 {
     isOpen = false;
-    isRunning = false;
+    [[maybe_unused]] const auto result = Stop();
 }
 
 bool MockAudioDevice::IsOpen() const
