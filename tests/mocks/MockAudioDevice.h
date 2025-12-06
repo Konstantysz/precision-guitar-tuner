@@ -15,6 +15,7 @@ class MockAudioDevice : public GuitarIO::AudioDevice
 {
 public:
     MockAudioDevice();
+    ~MockAudioDevice() override = default;
 
     /**
      * @brief Opens the mock audio device

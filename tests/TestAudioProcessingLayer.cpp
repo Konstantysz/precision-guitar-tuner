@@ -36,6 +36,12 @@ protected:
         layer = std::make_unique<AudioProcessingLayer>(config, std::move(inputMock), std::move(outputMock));
     }
 
+    void TearDown() override
+    {
+        // Explicitly destroy layer before test fixture cleanup
+        layer.reset();
+    }
+
     /**
      * @brief Generates sine wave with continuous phase
      * @param buffer Output buffer to fill
